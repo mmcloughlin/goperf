@@ -20,5 +20,9 @@ variable "functions_path" {
 
 variable "functions" {
   type    = list(string)
-  default = ["launch"]
+  default = ["watch", "launch"]
+}
+
+variable "functions_runtime" {
+  default = "go113"
 }

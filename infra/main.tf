@@ -25,6 +25,16 @@ resource "google_storage_bucket_object" "function_zip" {
   source = "${path.root}/${each.key}.zip"
 }
 
+resource "google_cloudfunctions_function" "watch_function" {
+  name                  = "watch_function"
+  available_memory_mb   = 128
+  source_archive_bucket = google_storage_bucket.functions_bucket.name
+  source_archive_object = google_storage_bucket_object.function_zip["watch"].name
+  entry_point           = "Handle"
+  trigger_http          = true
+  runtime               = var.functions_runtime
+}
+
 resource "google_cloudfunctions_function" "launch_function" {
   name                  = "launch_function"
   available_memory_mb   = 256
@@ -32,5 +42,5 @@ resource "google_cloudfunctions_function" "launch_function" {
   source_archive_object = google_storage_bucket_object.function_zip["launch"].name
   entry_point           = "HelloHTTP"
   trigger_http          = true
-  runtime               = "go111"
+  runtime               = var.functions_runtime
 }
