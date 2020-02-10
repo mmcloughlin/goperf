@@ -13,34 +13,24 @@ data "archive_file" "function_zip" {
   for_each = toset(var.functions)
 
   type        = "zip"
-  source_dir  = "${var.functions_path}/${each.key}/"
-  output_path = "${path.root}/${each.key}.zip"
+  source_dir  = "${path.root}/fn/${each.key}/"
+  output_path = "${path.root}/tmp/${each.key}.zip"
 }
 
 resource "google_storage_bucket_object" "function_zip" {
   for_each = toset(var.functions)
 
-  name   = "${each.key}.zip"
+  name   = "${each.key}/${data.archive_file.function_zip[each.key].output_sha}.zip"
   bucket = google_storage_bucket.functions_bucket.name
-  source = "${path.root}/${each.key}.zip"
+  source = "${path.root}/tmp/${each.key}.zip"
 }
 
 resource "google_cloudfunctions_function" "watch_function" {
-  name                  = "watch_function"
+  name                  = "watch"
   available_memory_mb   = 128
   source_archive_bucket = google_storage_bucket.functions_bucket.name
   source_archive_object = google_storage_bucket_object.function_zip["watch"].name
   entry_point           = "Handle"
-  trigger_http          = true
-  runtime               = var.functions_runtime
-}
-
-resource "google_cloudfunctions_function" "launch_function" {
-  name                  = "launch_function"
-  available_memory_mb   = 256
-  source_archive_bucket = google_storage_bucket.functions_bucket.name
-  source_archive_object = google_storage_bucket_object.function_zip["launch"].name
-  entry_point           = "HelloHTTP"
   trigger_http          = true
   runtime               = var.functions_runtime
 }

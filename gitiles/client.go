@@ -26,10 +26,11 @@ func NewClient(c *http.Client, base string) *Client {
 func (c *Client) Log(ctx context.Context, repo string) (*LogResponse, error) {
 	// Build request.
 	u := c.base + "/" + repo + "/+log?format=JSON"
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(ctx)
 
 	// Execute the request.
 	res, err := c.client.Do(req)

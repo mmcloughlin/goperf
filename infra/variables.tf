@@ -14,15 +14,11 @@ variable "zone" {
   default = "us-central1-a"
 }
 
-variable "functions_path" {
-  default = "../fn"
-}
-
 variable "functions" {
   type    = list(string)
-  default = ["watch", "launch"]
+  default = ["watch"]
 }
 
 variable "functions_runtime" {
-  default = "go113"
+  default = "go111"
 }
