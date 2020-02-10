@@ -1,6 +1,6 @@
 provider "google" {
   credentials = file("account.json")
-  project     = var.project
+  project     = var.project_id
   region      = var.region
   zone        = var.zone
 }
@@ -35,4 +35,8 @@ resource "google_cloudfunctions_function" "http_function" {
   entry_point           = "Handle"
   trigger_http          = true
   runtime               = var.functions_runtime
+
+  environment_variables = {
+    CB_PROJECT_ID = var.project_id
+  }
 }

@@ -2,7 +2,7 @@ variable "project_name" {
   default = "contbench"
 }
 
-variable "project" {
+variable "project_id" {
   default = "contbench"
 }
 

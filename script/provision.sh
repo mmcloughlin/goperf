@@ -3,6 +3,7 @@
 # update vendor directory
 for dir in fn/*; do
     cd ${dir}
+    go build
     go mod tidy
     go mod vendor
     cd -
