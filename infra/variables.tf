@@ -13,3 +13,12 @@ variable "region" {
 variable "zone" {
   default = "us-central1-a"
 }
+
+variable "functions_path" {
+  default = "../fn"
+}
+
+variable "functions" {
+  type    = list(string)
+  default = ["launch"]
+}
