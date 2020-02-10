@@ -1,5 +1,13 @@
 #!/bin/bash -ex
 
+# update vendor directory
+for dir in fn/*; do
+    cd ${dir}
+    go mod tidy
+    go mod vendor
+    cd -
+done
+
 # copy functions into infra directory
 rm -rf infra/fn
 cp -r fn infra

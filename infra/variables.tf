@@ -20,5 +20,5 @@ variable "functions" {
 }
 
 variable "functions_runtime" {
-  default = "go111"
+  default = "go113"
 }
