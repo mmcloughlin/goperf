@@ -16,7 +16,7 @@ variable "zone" {
 
 variable "functions" {
   type    = list(string)
-  default = ["noop", "watch"]
+  default = ["noop", "env", "watch"]
 }
 
 variable "functions_runtime" {
