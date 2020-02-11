@@ -40,3 +40,15 @@ resource "google_cloudfunctions_function" "http_function" {
     CB_PROJECT_ID = var.project_id
   }
 }
+
+resource "google_cloud_scheduler_job" "watch_schedule" {
+  name             = "schedule_watch"
+  schedule         = "13 * * * *"
+  time_zone        = "Etc/UTC"
+  attempt_deadline = "120s"
+
+  http_target {
+    http_method = "GET"
+    uri         = google_cloudfunctions_function.http_function["watch"].https_trigger_url
+  }
+}
