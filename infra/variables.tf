@@ -15,10 +15,16 @@ variable "zone" {
 }
 
 variable "functions" {
-  type    = list(string)
-  default = ["noop", "env", "watch"]
+  type = list(object({
+    name         = string,
+    trigger_type = string,
+  }))
 }
 
 variable "functions_runtime" {
   default = "go113"
+}
+
+variable "commits_collection" {
+  default = "commits"
 }

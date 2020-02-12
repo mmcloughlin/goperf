@@ -14,14 +14,13 @@ import (
 
 // Parameters.
 var (
-	project = os.Getenv("CB_PROJECT_ID")
+	project           = os.Getenv("CB_PROJECT_ID")
+	commitscollection = os.Getenv("CB_COMMITS_COLLECTION")
 )
 
 const (
 	gitilesbase = "https://go.googlesource.com"
 	gitilesrepo = "go"
-
-	commitscollection = "commits"
 )
 
 // Services.
