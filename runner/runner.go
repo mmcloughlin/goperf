@@ -23,7 +23,7 @@ const (
 
 	owner = "klauspost"
 	repo  = "compress"
-	rev   = "v1.10.0"
+	rev   = "b949da471e55fbe4393e6eb595602d936f5c312e"
 )
 
 func main() {
