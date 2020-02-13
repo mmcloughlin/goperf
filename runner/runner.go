@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -22,14 +23,57 @@ const (
 
 	owner = "klauspost"
 	repo  = "compress"
-	rev   = "b7ccab840e50d2c3fbfdb00c8949cc32e31cd459"
+	rev   = "v1.10.0"
 )
 
 func main() {
-	r := NewRunner(buildertype, goversion)
-	if err := r.Init(); err != nil {
+	os.Exit(main1())
+}
+
+func main1() int {
+	if err := mainerr(); err != nil {
 		log.Print(err)
+		return 1
 	}
+	return 0
+}
+
+func mainerr() error {
+	r := NewRunner(buildertype, goversion)
+
+	if err := r.Init(); err != nil {
+		return err
+	}
+
+	mod := Module{
+		Path:    path.Join("github.com", owner, repo),
+		Version: rev,
+	}
+	job := Job{
+		Module: mod,
+	}
+	if err := r.Benchmark(job); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Module struct {
+	Path    string
+	Version string
+}
+
+func (m Module) String() string {
+	s := m.Path
+	if m.Version != "" {
+		s += "@" + m.Version
+	}
+	return s
+}
+
+type Job struct {
+	Module Module
 }
 
 type Runner struct {
@@ -95,11 +139,12 @@ func (r *Runner) Init() error {
 	url := buildenv.Production.SnapshotURL(r.buildertype, r.goversion)
 	r.logparam("snapshot url", url)
 
-	if err := r.ensuredir("dl"); err != nil {
+	dldir, err := r.ensuredir("dl")
+	if err != nil {
 		return err
 	}
 
-	archive := r.path("dl/go.tar.gz")
+	archive := filepath.Join(dldir, "go.tar.gz")
 	if err := r.download(url, archive); err != nil {
 		return err
 	}
@@ -113,13 +158,14 @@ func (r *Runner) Init() error {
 	r.gobin = filepath.Join(goroot, "bin", "go")
 
 	// Configure GOPATH.
-	gopath := r.path("gopath")
-	if err := r.ensuredir("gopath"); err != nil {
+	gopath, err := r.ensuredir("gopath")
+	if err != nil {
 		return err
 	}
 	r.SetEnv("GOPATH", gopath)
 
 	// Environment checks.
+	// TODO(mbm): clean these up
 	cmd := r.Go("version")
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
@@ -154,6 +200,52 @@ func (r *Runner) Go(arg ...string) *exec.Cmd {
 		Args: append([]string{"go"}, arg...),
 		Env:  append(os.Environ(), r.env...),
 	}
+}
+
+// Benchmark runs the benchmark job.
+func (r *Runner) Benchmark(j Job) error {
+	defer r.scope("benchmark")()
+
+	// Get a run directory.
+	wd, err := r.rundir("bench")
+	if err != nil {
+		return err
+	}
+	r.logparam("working directory", wd)
+
+	// Initialize a module.
+	cmd := r.Go("mod", "init", "mod")
+	cmd.Dir = wd
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Printf("output:\n%s", out)
+		return err
+	}
+
+	// Fetch module.
+	cmd = r.Go("get", "-t", j.Module.String())
+	cmd.Dir = wd
+	out, err := cmd.CombinedOutput()
+	log.Printf("output:\n%s", out)
+	if err != nil {
+		return err
+	}
+
+	// Run benchmarks.
+	cmd = r.Go(
+		"test",
+		"-run", "none^", // no tests
+		"-bench", ".", // all benchmarks
+		"-benchtime", "10ms", // 10ms each
+		j.Module.Path+"/...",
+	)
+	cmd.Dir = wd
+	out, err = cmd.CombinedOutput()
+	log.Printf("output:\n%s", out)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *Runner) download(url, path string) error {
@@ -192,9 +284,22 @@ func (r *Runner) uncompress(src, dst string) error {
 	return archiver.Unarchive(src, dst)
 }
 
+// rundir generates a new working directory for a run.
+func (r *Runner) rundir(prefix string) (string, error) {
+	rundir, err := r.ensuredir("run")
+	if err != nil {
+		return "", err
+	}
+	return ioutil.TempDir(rundir, prefix)
+}
+
 // ensuredir ensure the relative path exists.
-func (r *Runner) ensuredir(rel string) error {
-	return os.MkdirAll(r.path(rel), 0777)
+func (r *Runner) ensuredir(rel string) (string, error) {
+	dir := r.path(rel)
+	if err := os.MkdirAll(r.path(rel), 0777); err != nil {
+		return "", err
+	}
+	return dir, nil
 }
 
 // path relative to working directory.
