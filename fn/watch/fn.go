@@ -8,8 +8,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 
+	"github.com/mmcloughlin/cb/app/repo"
 	"github.com/mmcloughlin/cb/pkg/gitiles"
-	"github.com/mmcloughlin/cb/repo"
 )
 
 // Parameters.
