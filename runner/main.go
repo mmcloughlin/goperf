@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	goversion   = "60d437f99468906935f35e5c6fbd31c7228a1045"
+	gorevision  = "60d437f99468906935f35e5c6fbd31c7228a1045"
 	buildertype = "linux-amd64" // "darwin-amd64-10_14"
 
 	owner = "klauspost"
@@ -32,7 +32,8 @@ func mainerr() error {
 		return err
 	}
 
-	tc := NewSnapshot(buildertype, goversion)
+	tc := NewSnapshot(buildertype, gorevision)
+	// tc := NewRelease("1.13.8", runtime.GOOS, runtime.GOARCH)
 	r := NewRunner(w, tc)
 
 	if err := r.Init(); err != nil {

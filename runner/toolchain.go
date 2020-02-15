@@ -90,5 +90,9 @@ func (r *release) Install(w *Workspace, root string) {
 	w.Download(url, archive)
 
 	// Extract.
-	w.Uncompress(archive, root)
+	w.Uncompress(archive, dldir)
+	extracted := filepath.Join(dldir, "go")
+
+	// Move into place.
+	w.Move(extracted, root)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os/exec"
 	"path/filepath"
 
 	"github.com/mmcloughlin/cb/pkg/lg"
@@ -43,43 +44,34 @@ func (r *Runner) Init() error {
 
 	// Install toolchain.
 	lg.Param(r.w, "toolchain", r.tc.String())
-	goroot := r.w.EnsureDir("goroot")
+	goroot := r.w.Path("goroot")
 	r.tc.Install(r.w, goroot)
-	r.w.SetEnv("GOROOT", goroot)
 
 	r.gobin = filepath.Join(goroot, "bin", "go")
 
-	// Configure GOPATH.
-	gopath := r.w.EnsureDir("gopath")
-	r.w.SetEnv("GOPATH", gopath)
+	// Configure Go environment.
+	r.w.SetEnv("GOROOT", goroot)
+	r.w.SetEnv("GOPATH", r.w.EnsureDir("gopath"))
+	r.w.SetEnv("GOCACHE", r.w.EnsureDir("gocache"))
 
-	// // Environment checks.
-	// // TODO(mbm): clean these up
-	// cmd := r.Go("version")
-	// cmd.Stderr = os.Stderr
-	// cmd.Stdout = os.Stdout
-	// if err := cmd.Run(); err != nil {
-	// 	return err
-	// }
-
-	// cmd = r.Go("env")
-	// cmd.Stderr = os.Stderr
-	// cmd.Stdout = os.Stdout
-	// if err := cmd.Run(); err != nil {
-	// 	return err
-	// }
+	// Environment checks.
+	r.GoExec("version")
+	r.GoExec("env")
 
 	return r.w.Error()
 }
 
-// // Go runs a command with the downloaded go version.
-// func (r *Runner) Go(arg ...string) *exec.Cmd {
-// 	return &exec.Cmd{
-// 		Path: r.gobin,
-// 		Args: append([]string{"go"}, arg...),
-// 		Env:  append(os.Environ(), r.env...),
-// 	}
-// }
+// Go builds a command with the downloaded go version.
+func (r *Runner) Go(arg ...string) *exec.Cmd {
+	return &exec.Cmd{
+		Path: r.gobin,
+		Args: append([]string{"go"}, arg...),
+	}
+}
+
+func (r *Runner) GoExec(arg ...string) {
+	r.w.Exec(r.Go(arg...))
+}
 
 // // Benchmark runs the benchmark job.
 // func (r *Runner) Benchmark(j Job) error {

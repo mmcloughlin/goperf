@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/mholt/archiver"
@@ -158,4 +160,49 @@ func (w *Workspace) Uncompress(src, dst string) {
 	lg.Param(w, "source", src)
 	lg.Param(w, "destination", dst)
 	w.seterr(archiver.Unarchive(src, dst))
+}
+
+// Move src to dst.
+func (w *Workspace) Move(src, dst string) {
+	if w.cancelled() {
+		return
+	}
+
+	defer lg.Scope(w, "move")()
+	lg.Param(w, "source", src)
+	lg.Param(w, "destination", dst)
+
+	w.seterr(os.Rename(src, dst))
+}
+
+// Exec the provided command.
+func (w *Workspace) Exec(cmd *exec.Cmd) {
+	if w.cancelled() {
+		return
+	}
+
+	defer lg.Scope(w, "exec")()
+
+	// Set environment.
+	cmd.Env = append(cmd.Env, w.env...)
+
+	// Capture output.
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = tee(cmd.Stdout, &stdout)
+	cmd.Stderr = tee(cmd.Stderr, &stderr)
+
+	lg.Param(w, "cmd", cmd)
+	err := cmd.Run()
+
+	lg.Param(w, "stdout", stdout.String())
+	lg.Param(w, "stderr", stderr.String())
+
+	w.seterr(err)
+}
+
+func tee(w, t io.Writer) io.Writer {
+	if w == nil {
+		return t
+	}
+	return io.MultiWriter(w, t)
 }
