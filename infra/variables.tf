@@ -28,3 +28,7 @@ variable "functions_runtime" {
 variable "commits_collection" {
   default = "commits"
 }
+
+variable "jobs_topic" {
+  default = "jobs"
+}
