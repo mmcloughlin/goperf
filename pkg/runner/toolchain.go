@@ -5,8 +5,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mmcloughlin/cb/pkg/lg"
 	"golang.org/x/build/buildenv"
+
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Toolchain interface {

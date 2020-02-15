@@ -6,8 +6,9 @@ import (
 	"time"
 
 	pubsub "cloud.google.com/go/pubsub/apiv1"
-	"github.com/mmcloughlin/cb/pkg/lg"
 	pubsubpb "google.golang.org/genproto/googleapis/pubsub/v1"
+
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Handler interface {

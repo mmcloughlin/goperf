@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/mholt/archiver"
+
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
