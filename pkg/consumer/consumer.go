@@ -21,7 +21,6 @@ func (f HandlerFunc) Handle(ctx context.Context, data []byte) error {
 }
 
 type Consumer struct {
-	ctx     context.Context
 	client  *pubsub.SubscriberClient
 	sub     string
 	handler Handler
@@ -49,7 +48,6 @@ func New(ctx context.Context, sub string, h Handler, opts ...Option) (*Consumer,
 	// Populate consumer.
 	c := &Consumer{}
 	*c = defaultconsumer
-	c.ctx = ctx
 	c.client = client
 	c.sub = sub
 	c.handler = h
@@ -79,20 +77,20 @@ func (c *Consumer) Close() error {
 	return c.client.Close()
 }
 
-func (c *Consumer) Receive() error {
+func (c *Consumer) Receive(ctx context.Context) error {
 	defer lg.Scope(c.l, "consumer_receive_loop")()
 	for {
-		if err := c.receive(); err != nil {
+		if err := c.receive(ctx); err != nil {
 			return err
 		}
 	}
 }
 
-func (c *Consumer) receive() (err error) {
+func (c *Consumer) receive(ctx context.Context) (err error) {
 	defer lg.Scope(c.l, "consumer_receive")()
 
 	// Pull message.
-	m, err := c.pull()
+	m, err := c.pull(ctx)
 	if err != nil {
 		return err
 	}
@@ -105,7 +103,7 @@ func (c *Consumer) receive() (err error) {
 	lg.Param(c.l, "message id", m.Message.MessageId)
 
 	// Start notification goroutine.
-	ctx, cancel := context.WithCancel(c.ctx)
+	ctx, cancel := context.WithCancel(ctx)
 	errc := make(chan error, 1)
 	go c.notify(ctx, errc, m)
 	defer func() {
@@ -121,7 +119,7 @@ func (c *Consumer) receive() (err error) {
 	}
 
 	// Ack.
-	if err := c.ack(m); err != nil {
+	if err := c.ack(ctx, m); err != nil {
 		return err
 	}
 
@@ -129,13 +127,13 @@ func (c *Consumer) receive() (err error) {
 }
 
 // pull message from subscription.
-func (c *Consumer) pull() (*pubsubpb.ReceivedMessage, error) {
+func (c *Consumer) pull(ctx context.Context) (*pubsubpb.ReceivedMessage, error) {
 	req := &pubsubpb.PullRequest{
 		Subscription: c.sub,
 		MaxMessages:  1,
 	}
 
-	res, err := c.client.Pull(c.ctx, req)
+	res, err := c.client.Pull(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +146,8 @@ func (c *Consumer) pull() (*pubsubpb.ReceivedMessage, error) {
 }
 
 // ack message.
-func (c *Consumer) ack(m *pubsubpb.ReceivedMessage) error {
-	return c.client.Acknowledge(c.ctx, &pubsubpb.AcknowledgeRequest{
+func (c *Consumer) ack(ctx context.Context, m *pubsubpb.ReceivedMessage) error {
+	return c.client.Acknowledge(ctx, &pubsubpb.AcknowledgeRequest{
 		Subscription: c.sub,
 		AckIds:       []string{m.AckId},
 	})

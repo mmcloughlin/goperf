@@ -33,5 +33,6 @@ func mainerr() error {
 	if err != nil {
 		return err
 	}
-	return c.Receive()
+	defer c.Close()
+	return c.Receive(ctx)
 }
