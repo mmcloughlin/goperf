@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mmcloughlin/cb/pkg/consumer"
+	"github.com/mmcloughlin/cb/app/consumer"
 )
 
 var (
