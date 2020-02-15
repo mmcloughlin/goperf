@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mmcloughlin/cb/pkg/gitiles"
-	"github.com/mmcloughlin/cb/test"
+	"github.com/mmcloughlin/cb/pkg/test"
 )
 
 func TestGitilesLog(t *testing.T) {
