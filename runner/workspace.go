@@ -20,6 +20,7 @@ type Workspace struct {
 
 	client *http.Client
 	root   string
+	cwd    string
 	env    []string
 	err    error
 }
@@ -66,7 +67,9 @@ func NewWorkspace(opts ...Option) (*Workspace, error) {
 	}
 
 	w.Printf("workspace intialized")
-	lg.Param(w, "working directory", w.root)
+
+	// Start working directory at root.
+	w.CdRoot()
 
 	return w, nil
 }
@@ -112,6 +115,19 @@ func (w *Workspace) EnsureDir(rel string) string {
 	if !w.cancelled() {
 		w.seterr(os.MkdirAll(dir, 0777))
 	}
+	return dir
+}
+
+// Sandbox creates a fresh temporary directory, sets it as the working directory
+// and returns it.
+func (w *Workspace) Sandbox(task string) string {
+	if w.cancelled() {
+		return ""
+	}
+	sandbox := w.EnsureDir("sandbox")
+	dir, err := ioutil.TempDir(sandbox, task)
+	w.seterr(err)
+	w.Cd(dir)
 	return dir
 }
 
@@ -175,6 +191,15 @@ func (w *Workspace) Move(src, dst string) {
 	w.seterr(os.Rename(src, dst))
 }
 
+// Cd sets the working directory to path.
+func (w *Workspace) Cd(path string) {
+	w.cwd = path
+	lg.Param(w, "working directory", w.cwd)
+}
+
+// CdRoot sets the working directory to the root of the workspace.
+func (w *Workspace) CdRoot() { w.Cd(w.root) }
+
 // Exec the provided command.
 func (w *Workspace) Exec(cmd *exec.Cmd) {
 	if w.cancelled() {
@@ -185,6 +210,11 @@ func (w *Workspace) Exec(cmd *exec.Cmd) {
 
 	// Set environment.
 	cmd.Env = append(cmd.Env, w.env...)
+
+	// Set working directory.
+	if cmd.Dir == "" {
+		cmd.Dir = w.cwd
+	}
 
 	// Capture output.
 	var stdout, stderr bytes.Buffer

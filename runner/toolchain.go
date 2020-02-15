@@ -43,7 +43,7 @@ func (s *snapshot) Install(w *Workspace, root string) {
 	lg.Param(w, "snapshot_url", url)
 
 	// Download.
-	dldir := w.EnsureDir("dl")
+	dldir := w.Sandbox("dl")
 	archive := filepath.Join(dldir, "go.tar.gz")
 	w.Download(url, archive)
 
@@ -85,7 +85,7 @@ func (r *release) Install(w *Workspace, root string) {
 	lg.Param(w, "release_url", url)
 
 	// Download.
-	dldir := w.EnsureDir("dl")
+	dldir := w.Sandbox("dl")
 	archive := filepath.Join(dldir, filename)
 	w.Download(url, archive)
 

@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+	"path"
+	"runtime"
 )
 
 const (
@@ -27,29 +29,28 @@ func main1() int {
 }
 
 func mainerr() error {
-	w, err := NewWorkspace()
+	// TODO(mbm): get it working without inheriting environment
+	w, err := NewWorkspace(InheritEnviron())
 	if err != nil {
 		return err
 	}
 
-	tc := NewSnapshot(buildertype, gorevision)
-	// tc := NewRelease("1.13.8", runtime.GOOS, runtime.GOARCH)
+	// tc := NewSnapshot(buildertype, gorevision)
+	tc := NewRelease("1.13.8", runtime.GOOS, runtime.GOARCH)
 	r := NewRunner(w, tc)
 
 	if err := r.Init(); err != nil {
 		return err
 	}
 
-	// mod := Module{
-	// 	Path:    path.Join("github.com", owner, repo),
-	// 	Version: rev,
-	// }
-	// job := Job{
-	// 	Module: mod,
-	// }
-	// if err := r.Benchmark(job); err != nil {
-	// 	return err
-	// }
+	mod := Module{
+		Path:    path.Join("github.com", owner, repo),
+		Version: rev,
+	}
+	job := Job{
+		Module: mod,
+	}
+	r.Benchmark(job)
 
 	return nil
 }
