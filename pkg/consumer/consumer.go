@@ -14,6 +14,12 @@ type Handler interface {
 	Handle(context.Context, []byte) error
 }
 
+type HandlerFunc func(context.Context, []byte) error
+
+func (f HandlerFunc) Handle(ctx context.Context, data []byte) error {
+	return f(ctx, data)
+}
+
 type Consumer struct {
 	ctx     context.Context
 	client  *pubsub.SubscriberClient
@@ -23,7 +29,7 @@ type Consumer struct {
 	extend time.Duration
 	grace  time.Duration
 
-	l lg.Interface
+	l lg.Logger
 }
 
 var defaultconsumer = Consumer{
@@ -43,9 +49,11 @@ func New(ctx context.Context, sub string, h Handler, opts ...Option) (*Consumer,
 	// Populate consumer.
 	c := &Consumer{}
 	*c = defaultconsumer
+	c.ctx = ctx
 	c.client = client
 	c.sub = sub
 	c.handler = h
+	c.l = lg.Default()
 
 	// Custom options.
 	c.Options(opts...)
@@ -63,7 +71,7 @@ func WithExtensionPeriod(d time.Duration) Option {
 	return func(c *Consumer) { c.extend = d }
 }
 
-func WithLogger(l lg.Interface) Option {
+func WithLogger(l lg.Logger) Option {
 	return func(c *Consumer) { c.l = l }
 }
 
@@ -87,6 +95,10 @@ func (c *Consumer) receive() (err error) {
 	m, err := c.pull()
 	if err != nil {
 		return err
+	}
+
+	if m == nil {
+		return nil
 	}
 
 	c.l.Printf("received message")

@@ -1,16 +1,24 @@
 package lg
 
-import "time"
+import (
+	"log"
+	"os"
+	"time"
+)
 
-type Interface interface {
+type Logger interface {
 	Printf(format string, v ...interface{})
 }
 
-func Param(l Interface, key string, value interface{}) {
+func Default() Logger {
+	return log.New(os.Stderr, "", log.LstdFlags)
+}
+
+func Param(l Logger, key string, value interface{}) {
 	l.Printf("%s = %s\n", key, value)
 }
 
-func Scope(l Interface, name string) func() {
+func Scope(l Logger, name string) func() {
 	t0 := time.Now()
 	l.Printf("start: %s", name)
 	return func() {

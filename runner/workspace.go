@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,7 +15,7 @@ import (
 )
 
 type Workspace struct {
-	*log.Logger
+	lg.Logger
 
 	client *http.Client
 	root   string
@@ -31,7 +30,7 @@ func WithHTTPClient(c *http.Client) Option {
 	return func(w *Workspace) { w.client = c }
 }
 
-func WithLogger(l *log.Logger) Option {
+func WithLogger(l lg.Logger) Option {
 	return func(w *Workspace) { w.Logger = l }
 }
 
@@ -50,7 +49,7 @@ func InheritEnviron() Option {
 func NewWorkspace(opts ...Option) (*Workspace, error) {
 	// Defaults.
 	w := &Workspace{
-		Logger: log.New(os.Stderr, "", log.LstdFlags),
+		Logger: lg.Default(),
 		client: http.DefaultClient,
 	}
 
