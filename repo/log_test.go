@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mmcloughlin/cb/gitiles"
+	"github.com/mmcloughlin/cb/pkg/gitiles"
 	"github.com/mmcloughlin/cb/test"
 )
 

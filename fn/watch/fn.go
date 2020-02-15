@@ -8,7 +8,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 
-	"github.com/mmcloughlin/cb/gitiles"
+	"github.com/mmcloughlin/cb/pkg/gitiles"
 	"github.com/mmcloughlin/cb/repo"
 )
 

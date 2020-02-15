@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mmcloughlin/cb/gitiles"
+	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
 // Log provides access to a git repository commit log.
