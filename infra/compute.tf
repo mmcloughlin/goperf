@@ -30,7 +30,9 @@ resource "google_compute_instance" "worker" {
   allow_stopping_for_update = true
 
   metadata_startup_script = templatefile("${path.root}/init.sh", {
+    project_name        = var.project_name,
     deploy_dir          = "/opt/${var.project_name}",
+    log_dir             = "/var/log/${var.project_name}",
     dist_archive_gs_uri = "${google_storage_bucket.artifacts_bucket.url}/${google_storage_bucket_object.dist_archive.name}",
   })
 
