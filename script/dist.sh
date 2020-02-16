@@ -19,7 +19,7 @@ mkdir -p ${workdir} ${pkgdir} ${bindir}
 
 # Build ---------------------------------------------------------------------
 
-GOBIN=${bindir} go install ./app/cmd/worker
+go build -o ${bindir}/worker ./app/cmd/worker
 
 # Versioning ----------------------------------------------------------------
 

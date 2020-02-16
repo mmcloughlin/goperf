@@ -6,3 +6,4 @@ functions = [
   { name = "watch", trigger_type = "http" },
   { name = "enqueue", trigger_type = "firestore" },
 ]
+dist_path = "dist.tar.gz"

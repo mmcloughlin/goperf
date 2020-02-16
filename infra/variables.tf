@@ -32,3 +32,6 @@ variable "commits_collection" {
 variable "jobs_topic" {
   default = "jobs"
 }
+
+variable "dist_path" {
+}
