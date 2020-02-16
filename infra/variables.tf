@@ -41,5 +41,9 @@ variable "dist_path" {
 }
 
 variable "worker_machine_type" {
-  default = "f1-micro"
+  default = "n1-standard-1"
+}
+
+variable "network_tier" {
+  default = "STANDARD"
 }

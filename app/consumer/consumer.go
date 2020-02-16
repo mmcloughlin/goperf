@@ -87,7 +87,7 @@ func (c *Consumer) Receive(ctx context.Context) error {
 	}
 }
 
-func (c *Consumer) receive(ctx context.Context) (err error) {
+func (c *Consumer) receive(ctx context.Context) error {
 	defer lg.Scope(c.l, "consumer_receive")()
 
 	// Pull message.
@@ -103,28 +103,33 @@ func (c *Consumer) receive(ctx context.Context) (err error) {
 	c.l.Printf("received message")
 	lg.Param(c.l, "message id", m.Message.MessageId)
 
-	// Start notification goroutine.
-	ctx, cancel := context.WithCancel(ctx)
-	errc := make(chan error, 1)
-	go c.notify(ctx, errc, m)
-	defer func() {
-		cancel()
-		if err == nil {
-			err = <-errc
-		}
+	// Process the message in a goroutine.
+	hctx, hcancel := context.WithCancel(ctx)
+	errc := make(chan error)
+	go func() {
+		errc <- c.handler.Handle(hctx, m.Message.Data)
 	}()
 
-	// Process.
-	if err := c.handler.Handle(ctx, m.Message.Data); err != nil {
-		return err
+	// Extend the deadline while we're waiting for the result.
+	delay := 0 * time.Second
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case err := <-errc:
+			if err != nil {
+				// TODO(mbm): nack
+				return err
+			}
+			return c.ack(ctx, m)
+		case <-time.After(delay):
+			if err := c.extenddeadline(ctx, m, c.extend); err != nil {
+				hcancel()
+				return err
+			}
+			delay = c.extend - c.grace
+		}
 	}
-
-	// Ack.
-	if err := c.ack(ctx, m); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // pull message from subscription.
@@ -154,24 +159,11 @@ func (c *Consumer) ack(ctx context.Context, m *pubsubpb.ReceivedMessage) error {
 	})
 }
 
-func (c *Consumer) notify(ctx context.Context, errc chan error, m *pubsubpb.ReceivedMessage) {
-	delay := 0 * time.Second
-	for {
-		select {
-		case <-ctx.Done():
-			errc <- nil
-			return
-		case <-time.After(delay):
-			err := c.client.ModifyAckDeadline(ctx, &pubsubpb.ModifyAckDeadlineRequest{
-				Subscription:       c.sub,
-				AckIds:             []string{m.AckId},
-				AckDeadlineSeconds: int32(c.extend.Seconds()),
-			})
-			if err != nil {
-				errc <- err
-				return
-			}
-			delay = c.extend - c.grace
-		}
-	}
+// extenddeadline extends the ack deadline for m by extend duration.
+func (c *Consumer) extenddeadline(ctx context.Context, m *pubsubpb.ReceivedMessage, extend time.Duration) error {
+	return c.client.ModifyAckDeadline(ctx, &pubsubpb.ModifyAckDeadlineRequest{
+		Subscription:       c.sub,
+		AckIds:             []string{m.AckId},
+		AckDeadlineSeconds: int32(extend.Seconds()),
+	})
 }
