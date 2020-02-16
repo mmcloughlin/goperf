@@ -5,6 +5,10 @@ provider "google" {
   zone        = var.zone
 }
 
+data "google_service_account" "bot" {
+  account_id = var.service_account_id
+}
+
 resource "google_storage_bucket" "functions_bucket" {
   name = "${var.project_name}_functions"
 }

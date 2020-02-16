@@ -6,6 +6,10 @@ variable "project_id" {
   default = "contbench"
 }
 
+variable "service_account_id" {
+}
+
+
 variable "region" {
   default = "us-central1"
 }
@@ -34,4 +38,8 @@ variable "jobs_topic" {
 }
 
 variable "dist_path" {
+}
+
+variable "worker_machine_type" {
+  default = "f1-micro"
 }

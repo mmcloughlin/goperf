@@ -1,5 +1,6 @@
-project_name = "contbench"
-project_id   = "contbench"
+project_name       = "contbench"
+project_id         = "contbench"
+service_account_id = "benchbot"
 functions = [
   { name = "noop", trigger_type = "http" },
   { name = "env", trigger_type = "http" },
