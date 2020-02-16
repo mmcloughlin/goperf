@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"runtime"
+
+	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
 const (
@@ -30,24 +32,24 @@ func main1() int {
 
 func mainerr() error {
 	// TODO(mbm): get it working without inheriting environment
-	w, err := NewWorkspace(InheritEnviron())
+	w, err := runner.NewWorkspace(runner.InheritEnviron())
 	if err != nil {
 		return err
 	}
 
 	// tc := NewSnapshot(buildertype, gorevision)
-	tc := NewRelease("1.13.8", runtime.GOOS, runtime.GOARCH)
-	r := NewRunner(w, tc)
+	tc := runner.NewRelease("1.13.8", runtime.GOOS, runtime.GOARCH)
+	r := runner.NewRunner(w, tc)
 
 	if err := r.Init(); err != nil {
 		return err
 	}
 
-	mod := Module{
+	mod := runner.Module{
 		Path:    path.Join("github.com", owner, repo),
 		Version: rev,
 	}
-	job := Job{
+	job := runner.Job{
 		Module: mod,
 	}
 	r.Benchmark(job)
