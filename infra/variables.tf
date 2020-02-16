@@ -41,7 +41,9 @@ variable "dist_path" {
 }
 
 variable "worker_machine_type" {
-  default = "n1-standard-1"
+}
+
+variable "worker_min_cpu_platform" {
 }
 
 variable "network_tier" {

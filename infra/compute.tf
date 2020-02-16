@@ -26,6 +26,7 @@ resource "google_storage_bucket_object" "dist_archive" {
 resource "google_compute_instance" "worker" {
   name                      = "worker"
   machine_type              = var.worker_machine_type
+  min_cpu_platform          = var.worker_min_cpu_platform
   allow_stopping_for_update = true
 
   metadata_startup_script = templatefile("${path.root}/init.sh", {

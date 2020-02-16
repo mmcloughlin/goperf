@@ -7,4 +7,6 @@ functions = [
   { name = "watch", trigger_type = "http" },
   { name = "enqueue", trigger_type = "firestore" },
 ]
-dist_path = "dist.tar.gz"
+
+worker_machine_type     = "n1-standard-1"
+worker_min_cpu_platform = "Intel Skylake"
