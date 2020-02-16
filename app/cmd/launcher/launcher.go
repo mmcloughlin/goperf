@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// TODO(mbm): remove hardcoded topic
 	topic = "projects/contbench/topics/jobs"
 )
 
@@ -35,6 +36,7 @@ func mainerr() error {
 	defer l.Close()
 
 	// Publish a job.
+	// TODO(mbm): remove hardcoded job
 	j := &job.Job{
 		Toolchain: job.Toolchain{
 			Type: "snapshot",

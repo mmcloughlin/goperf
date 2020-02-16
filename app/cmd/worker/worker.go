@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// TODO(mbm): remove hardcoded subscription
 	subscription = "projects/contbench/subscriptions/worker_jobs"
 )
 
