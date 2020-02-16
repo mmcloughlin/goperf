@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"golang.org/x/build/buildenv"
 
@@ -14,6 +16,72 @@ type Toolchain interface {
 	// TODO(mbm): Toolchain returns configuration lines rather than a string
 	String() string
 	Install(w *Workspace, root string)
+}
+
+func NewToolchain(typ string, params map[string]string) (Toolchain, error) {
+	// Define toolchain types.
+	constructors := map[string]struct {
+		Fields []string
+		Make   func(map[string]string) (Toolchain, error)
+	}{
+		"snapshot": {
+			Fields: []string{"builder_type", "revision"},
+			Make: func(params map[string]string) (Toolchain, error) {
+				return NewSnapshot(params["builder_type"], params["revision"]), nil
+			},
+		},
+		"release": {
+			Fields: []string{"version", "os", "arch"},
+			Make: func(params map[string]string) (Toolchain, error) {
+				return NewRelease(params["version"], params["os"], params["arch"]), nil
+			},
+		},
+	}
+
+	// Lookup constructor.
+	c, ok := constructors[typ]
+	if !ok {
+		return nil, fmt.Errorf("unknown toolchain type: %q", typ)
+	}
+
+	// Ensure required fields are defined.
+	var missing []string
+	for _, field := range c.Fields {
+		if _, ok := params[field]; !ok {
+			missing = append(missing, field)
+		}
+	}
+	if len(missing) > 0 {
+		return nil, fmt.Errorf("missing parameter%s: %s", plural(missing), strings.Join(missing, ", "))
+	}
+
+	// Check for extra fields.
+	if len(params) > len(c.Fields) {
+		fieldset := map[string]bool{}
+		for _, field := range c.Fields {
+			fieldset[field] = true
+		}
+
+		var extra []string
+		for field := range params {
+			if !fieldset[field] {
+				extra = append(extra, field)
+			}
+		}
+
+		sort.Strings(extra)
+		return nil, fmt.Errorf("unknown parameter%s: %s", plural(extra), strings.Join(extra, ", "))
+	}
+
+	// Construct.
+	return c.Make(params)
+}
+
+func plural(collection []string) string {
+	if len(collection) > 1 {
+		return "s"
+	}
+	return ""
 }
 
 type snapshot struct {
