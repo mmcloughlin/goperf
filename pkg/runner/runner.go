@@ -109,4 +109,7 @@ func (r *Runner) Benchmark(j Job) {
 
 	cmd.Stdout = f
 	r.w.Exec(cmd)
+
+	// Save the result.
+	r.w.Artifact(outputfile, "bench.out")
 }

@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,17 +13,20 @@ import (
 
 	"github.com/mholt/archiver"
 
+	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Workspace struct {
 	lg.Logger
 
-	client *http.Client
-	root   string
-	cwd    string
-	env    []string
-	err    error
+	client    *http.Client
+	artifacts fs.Interface
+
+	root string
+	cwd  string
+	env  []string
+	err  error
 }
 
 type Option func(*Workspace)
@@ -47,11 +51,16 @@ func InheritEnviron() Option {
 	return WithEnviron(os.Environ())
 }
 
+func WithArtifactStore(fs fs.Interface) Option {
+	return func(w *Workspace) { w.artifacts = fs }
+}
+
 func NewWorkspace(opts ...Option) (*Workspace, error) {
 	// Defaults.
 	w := &Workspace{
-		Logger: lg.Default(),
-		client: http.DefaultClient,
+		Logger:    lg.Default(),
+		client:    http.DefaultClient,
+		artifacts: fs.Discard,
 	}
 
 	// Apply options.
@@ -84,14 +93,18 @@ func (w *Workspace) Options(opts ...Option) {
 // Error returns the first error that occurred in the workspace, if any.
 func (w *Workspace) Error() error { return w.err }
 
+func (w *Workspace) cancelled() bool {
+	return w.err != nil
+}
+
 func (w *Workspace) seterr(err error) {
 	if w.err == nil && err != nil {
 		w.err = err
 	}
 }
 
-func (w *Workspace) cancelled() bool {
-	return w.err != nil
+func (w *Workspace) close(c io.Closer) {
+	w.seterr(c.Close())
 }
 
 // Clean up the workspace.
@@ -235,4 +248,35 @@ func tee(w, t io.Writer) io.Writer {
 		return t
 	}
 	return io.MultiWriter(w, t)
+}
+
+// Artifact saves the given path as a named artifact.
+func (w *Workspace) Artifact(path, name string) {
+	if w.cancelled() {
+		return
+	}
+
+	defer lg.Scope(w, "artifact")()
+	lg.Param(w, "source", path)
+	lg.Param(w, "name", name)
+
+	// Open file to be saved.
+	src, err := os.Open(path)
+	if err != nil {
+		w.seterr(err)
+		return
+	}
+	defer w.close(src)
+
+	// Open destination.
+	dst, err := w.artifacts.Open(context.TODO(), name)
+	if err != nil {
+		w.seterr(err)
+		return
+	}
+	defer w.close(dst)
+
+	// Copy.
+	_, err = io.Copy(dst, src)
+	w.seterr(err)
 }

@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/mmcloughlin/cb/internal/flags"
+	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
@@ -38,10 +39,12 @@ func mainerr() error {
 				{Key: "version", Value: runtime.Version()},
 			},
 		}
+		output   string
 		preserve bool
 	)
 
 	flag.Var(&toolchainconfig, "toolchain", "toolchain configuration")
+	flag.StringVar(&output, "output", "", "output path")
 	flag.BoolVar(&preserve, "preserve", false, "preserve working directory")
 
 	flag.Parse()
@@ -57,6 +60,10 @@ func mainerr() error {
 	w, err := runner.NewWorkspace(runner.InheritEnviron())
 	if err != nil {
 		return err
+	}
+
+	if output != "" {
+		w.Options(runner.WithArtifactStore(fs.NewLocal(output)))
 	}
 
 	// Initialize runner.
