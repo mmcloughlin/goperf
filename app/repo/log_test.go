@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mmcloughlin/cb/internal/test"
 	"github.com/mmcloughlin/cb/pkg/gitiles"
-	"github.com/mmcloughlin/cb/pkg/test"
 )
 
 func TestGitilesLog(t *testing.T) {
