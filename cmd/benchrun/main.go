@@ -38,8 +38,12 @@ func mainerr() error {
 				{Key: "version", Value: runtime.Version()},
 			},
 		}
+		preserve bool
 	)
+
 	flag.Var(&toolchainconfig, "toolchain", "toolchain configuration")
+	flag.BoolVar(&preserve, "preserve", false, "preserve working directory")
+
 	flag.Parse()
 
 	// Build toolchain.
@@ -70,7 +74,9 @@ func mainerr() error {
 	r.Benchmark(job)
 
 	// Clean.
-	r.Clean()
+	if !preserve {
+		r.Clean()
+	}
 
 	return w.Error()
 }

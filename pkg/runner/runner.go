@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -83,14 +84,29 @@ func (r *Runner) GoExec(arg ...string) {
 func (r *Runner) Benchmark(j Job) {
 	defer lg.Scope(r.w, "benchmark")()
 
-	r.w.Sandbox("bench")
+	// Setup.
+	dir := r.w.Sandbox("bench")
 	r.GoExec("mod", "init", "bench")
 	r.GoExec("get", "-t", j.Module.String())
-	r.GoExec(
+
+	// Run the benchmark.
+	cmd := r.Go(
 		"test",
 		"-run", "none^", // no tests
 		"-bench", ".", // all benchmarks
 		"-benchtime", "10ms", // 10ms each
 		j.Module.Path+"/...",
 	)
+
+	outputfile := filepath.Join(dir, "bench.out")
+	f, err := os.Create(outputfile)
+	if err != nil {
+		// TODO(mbm): cleaner seterr() mechanism on workspace
+		r.w.seterr(err)
+		return
+	}
+	defer f.Close()
+
+	cmd.Stdout = f
+	r.w.Exec(cmd)
 }
