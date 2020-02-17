@@ -2,6 +2,7 @@ package runner
 
 import (
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -23,10 +24,9 @@ func TestNewToolchain(t *testing.T) {
 			Type: "release",
 			Params: map[string]string{
 				"version": "go1.13.8",
-				"os":      "linux",
 				"arch":    "amd64",
 			},
-			Expect: NewRelease("go1.13.8", "linux", "amd64"),
+			Expect: NewRelease("go1.13.8", runtime.GOOS, "amd64"),
 		},
 	}
 	for _, c := range cases {

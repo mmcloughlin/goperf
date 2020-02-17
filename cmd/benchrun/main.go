@@ -36,8 +36,6 @@ func mainerr() error {
 			Type: "release",
 			Params: flags.Params{
 				{Key: "version", Value: runtime.Version()},
-				{Key: "os", Value: runtime.GOOS},
-				{Key: "arch", Value: runtime.GOARCH},
 			},
 		}
 	)

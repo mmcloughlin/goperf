@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -21,8 +22,9 @@ type Toolchain interface {
 func NewToolchain(typ string, params map[string]string) (Toolchain, error) {
 	// Define toolchain types.
 	constructors := map[string]struct {
-		Fields []string
-		Make   func(map[string]string) (Toolchain, error)
+		Fields   []string
+		Defaults map[string]string
+		Make     func(map[string]string) (Toolchain, error)
 	}{
 		"snapshot": {
 			Fields: []string{"builder_type", "revision"},
@@ -32,6 +34,10 @@ func NewToolchain(typ string, params map[string]string) (Toolchain, error) {
 		},
 		"release": {
 			Fields: []string{"version", "os", "arch"},
+			Defaults: map[string]string{
+				"os":   runtime.GOOS,
+				"arch": runtime.GOARCH,
+			},
 			Make: func(params map[string]string) (Toolchain, error) {
 				return NewRelease(params["version"], params["os"], params["arch"]), nil
 			},
@@ -43,6 +49,9 @@ func NewToolchain(typ string, params map[string]string) (Toolchain, error) {
 	if !ok {
 		return nil, fmt.Errorf("unknown toolchain type: %q", typ)
 	}
+
+	// Apply defaults.
+	params = merge(c.Defaults, params)
 
 	// Ensure required fields are defined.
 	var missing []string
@@ -75,6 +84,17 @@ func NewToolchain(typ string, params map[string]string) (Toolchain, error) {
 
 	// Construct.
 	return c.Make(params)
+}
+
+// merge maps from left to right.
+func merge(ms ...map[string]string) map[string]string {
+	merged := map[string]string{}
+	for _, m := range ms {
+		for k, v := range m {
+			merged[k] = v
+		}
+	}
+	return merged
 }
 
 func plural(collection []string) string {
