@@ -1,10 +1,3 @@
-provider "google" {
-  credentials = file("account.json")
-  project     = var.project_id
-  region      = var.region
-  zone        = var.zone
-}
-
 data "google_service_account" "bot" {
   account_id = var.service_account_id
 }
