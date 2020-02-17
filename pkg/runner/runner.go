@@ -75,7 +75,7 @@ func (r *Runner) GoExec(arg ...string) {
 }
 
 // Benchmark runs the benchmark job.
-func (r *Runner) Benchmark(j Job) {
+func (r *Runner) Benchmark(j Job) error {
 	defer lg.Scope(r.w, "benchmark")()
 
 	r.w.Sandbox("bench")
@@ -88,4 +88,6 @@ func (r *Runner) Benchmark(j Job) {
 		"-benchtime", "100ms", // 10ms each
 		j.Module.Path+"/...",
 	)
+
+	return r.w.Error()
 }

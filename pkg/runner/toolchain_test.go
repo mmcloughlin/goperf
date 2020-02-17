@@ -22,11 +22,11 @@ func TestNewToolchain(t *testing.T) {
 		{
 			Type: "release",
 			Params: map[string]string{
-				"version": "1.13.8",
+				"version": "go1.13.8",
 				"os":      "linux",
 				"arch":    "amd64",
 			},
-			Expect: NewRelease("1.13.8", "linux", "amd64"),
+			Expect: NewRelease("go1.13.8", "linux", "amd64"),
 		},
 	}
 	for _, c := range cases {

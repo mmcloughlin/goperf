@@ -1,18 +1,17 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"path"
 	"runtime"
 
+	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
 const (
-	gorevision  = "60d437f99468906935f35e5c6fbd31c7228a1045"
-	buildertype = "linux-amd64" // "darwin-amd64-10_14"
-
 	owner = "klauspost"
 	repo  = "compress"
 	rev   = "b949da471e55fbe4393e6eb595602d936f5c312e"
@@ -31,20 +30,40 @@ func main1() int {
 }
 
 func mainerr() error {
+	// Flags.
+	var (
+		toolchainconfig = flags.TypeParams{
+			Type: "release",
+			Params: flags.Params{
+				{Key: "version", Value: runtime.Version()},
+				{Key: "os", Value: runtime.GOOS},
+				{Key: "arch", Value: runtime.GOARCH},
+			},
+		}
+	)
+	flag.Var(&toolchainconfig, "toolchain", "toolchain configuration")
+	flag.Parse()
+
+	// Build toolchain.
+	tc, err := runner.NewToolchain(toolchainconfig.Type, toolchainconfig.Params.Map())
+	if err != nil {
+		return err
+	}
+
+	// Construct workspace.
 	// TODO(mbm): get it working without inheriting environment
 	w, err := runner.NewWorkspace(runner.InheritEnviron())
 	if err != nil {
 		return err
 	}
 
-	// tc := NewSnapshot(buildertype, gorevision)
-	tc := runner.NewRelease("1.13.8", runtime.GOOS, runtime.GOARCH)
+	// Initialize runner.
 	r := runner.NewRunner(w, tc)
-
 	if err := r.Init(); err != nil {
 		return err
 	}
 
+	// Run benchmark.
 	mod := runner.Module{
 		Path:    path.Join("github.com", owner, repo),
 		Version: rev,
@@ -52,7 +71,9 @@ func mainerr() error {
 	job := runner.Job{
 		Module: mod,
 	}
-	r.Benchmark(job)
+	if err := r.Benchmark(job); err != nil {
+		return err
+	}
 
 	return nil
 }

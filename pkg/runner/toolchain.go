@@ -149,7 +149,7 @@ func (r *release) Install(w *Workspace, root string) {
 	// Determine download URL.
 	// TODO(mbm): fetch files list in json format
 	const base = "https://golang.org/dl/"
-	filename := fmt.Sprintf("go%s.%s-%s.tar.gz", r.version, r.os, r.arch)
+	filename := fmt.Sprintf("%s.%s-%s.tar.gz", r.version, r.os, r.arch)
 	url := base + filename
 	lg.Param(w, "release_url", url)
 
