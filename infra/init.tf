@@ -10,3 +10,7 @@ terraform {
     bucket = "contbench_terraform_state"
   }
 }
+
+data "google_service_account" "bot" {
+  account_id = var.service_account_id
+}
