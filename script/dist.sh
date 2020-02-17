@@ -19,7 +19,7 @@ mkdir -p ${workdir} ${pkgdir} ${bindir}
 
 # Build ---------------------------------------------------------------------
 
-go build -o ${bindir}/worker ./app/cmd/worker
+go build -trimpath -o ${bindir}/worker ./app/cmd/worker
 
 # Versioning ----------------------------------------------------------------
 
@@ -27,7 +27,8 @@ echo ${version} > ${pkgdir}/VERSION
 
 # Build Archive -------------------------------------------------------------
 
-tar -C ${workdir} -czf ${archive} ${name}
+tar --sort=name --owner=root:0 --group=root:0 --mtime='UTC 2020-01-01' \
+    -C ${workdir} -c ${name} | gzip -n > ${archive}
 
 # Cleanup Workspace ---------------------------------------------------------
 
