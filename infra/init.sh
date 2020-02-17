@@ -8,7 +8,7 @@ tmpdir=$(mktemp -d)
 # Install Required Packages -------------------------------------------------
 
 apt-get update
-apt-get install -y supervisor
+apt-get install -y supervisor build-essential
 
 # Download and Unpack Deploy Package ----------------------------------------
 

@@ -41,8 +41,8 @@ func mainerr() error {
 		Toolchain: job.Toolchain{
 			Type: "snapshot",
 			Params: map[string]string{
-				"revision":    "60d437f99468906935f35e5c6fbd31c7228a1045",
-				"buildertype": "linux-amd64",
+				"builder_type": "linux-amd64",
+				"revision":     "60d437f99468906935f35e5c6fbd31c7228a1045",
 			},
 		},
 		Suites: []job.Suite{
