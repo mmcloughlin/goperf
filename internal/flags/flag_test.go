@@ -1,9 +1,17 @@
 package cli
 
 import (
+	"flag"
 	"reflect"
 	"testing"
 )
+
+func TestFlagValueInterface(t *testing.T) {
+	var (
+		_ flag.Value = &Params{}
+		_ flag.Value = &TypeParams{}
+	)
+}
 
 func TestParseTypeParams(t *testing.T) {
 	cases := []struct {
@@ -12,23 +20,23 @@ func TestParseTypeParams(t *testing.T) {
 	}{
 		{
 			Input:  "",
-			Expect: &TypeParams{Type: "", Params: map[string]string{}},
+			Expect: &TypeParams{Type: "", Params: nil},
 		},
 		{
 			Input:  "type",
-			Expect: &TypeParams{Type: "type", Params: map[string]string{}},
+			Expect: &TypeParams{Type: "type", Params: nil},
 		},
 		{
 			Input:  "type:a=1",
-			Expect: &TypeParams{Type: "type", Params: map[string]string{"a": "1"}},
+			Expect: &TypeParams{Type: "type", Params: Params{{"a", "1"}}},
 		},
 		{
 			Input:  "type:a=1,b=2",
-			Expect: &TypeParams{Type: "type", Params: map[string]string{"a": "1", "b": "2"}},
+			Expect: &TypeParams{Type: "type", Params: Params{{"a", "1"}, {"b", "2"}}},
 		},
 		{
 			Input:  "type:a=1,b=2,c=d=3,e=4",
-			Expect: &TypeParams{Type: "type", Params: map[string]string{"a": "1", "b": "2", "c": "d=3", "e": "4"}},
+			Expect: &TypeParams{Type: "type", Params: Params{{"a", "1"}, {"b", "2"}, {"c", "d=3"}, {"e", "4"}}},
 		},
 	}
 	for _, c := range cases {
