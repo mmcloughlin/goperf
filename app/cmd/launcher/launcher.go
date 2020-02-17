@@ -1,11 +1,12 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 
 	"github.com/mmcloughlin/cb/app/job"
+	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 var (
@@ -26,7 +27,8 @@ func main1() int {
 }
 
 func mainerr() error {
-	ctx := context.Background()
+	logger := lg.Default()
+	ctx := command.BackgroundContext(logger)
 
 	// Create launcher.
 	l, err := job.NewLauncher(ctx, topic)

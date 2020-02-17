@@ -7,6 +7,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/consumer"
 	"github.com/mmcloughlin/cb/app/job"
+	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
@@ -29,8 +30,8 @@ func main1() int {
 }
 
 func mainerr() error {
-	ctx := context.Background()
 	l := lg.Default()
+	ctx := command.BackgroundContext(l)
 	h := &Handler{Logger: l}
 	c, err := consumer.New(ctx, subscription, h, consumer.WithLogger(l))
 	if err != nil {
