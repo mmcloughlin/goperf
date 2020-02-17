@@ -39,7 +39,7 @@ func NewRunner(w *Workspace, tc Toolchain) *Runner {
 }
 
 // Init initializes the runner.
-func (r *Runner) Init() error {
+func (r *Runner) Init() {
 	defer lg.Scope(r.w, "initializing")()
 
 	// Install toolchain.
@@ -57,8 +57,13 @@ func (r *Runner) Init() error {
 	// Environment checks.
 	r.GoExec("version")
 	r.GoExec("env")
+}
 
-	return r.w.Error()
+// Clean up the runner.
+func (r *Runner) Clean() {
+	defer lg.Scope(r.w, "clean")()
+	r.GoExec("clean", "-cache", "-testcache", "-modcache")
+	r.w.Clean()
 }
 
 // Go builds a command with the downloaded go version.
@@ -75,7 +80,7 @@ func (r *Runner) GoExec(arg ...string) {
 }
 
 // Benchmark runs the benchmark job.
-func (r *Runner) Benchmark(j Job) error {
+func (r *Runner) Benchmark(j Job) {
 	defer lg.Scope(r.w, "benchmark")()
 
 	r.w.Sandbox("bench")
@@ -85,9 +90,7 @@ func (r *Runner) Benchmark(j Job) error {
 		"test",
 		"-run", "none^", // no tests
 		"-bench", ".", // all benchmarks
-		"-benchtime", "100ms", // 10ms each
+		"-benchtime", "10ms", // 10ms each
 		j.Module.Path+"/...",
 	)
-
-	return r.w.Error()
 }

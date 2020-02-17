@@ -70,9 +70,7 @@ func (h *Handler) Handle(_ context.Context, data []byte) error {
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
-	if err := r.Init(); err != nil {
-		return err
-	}
+	r.Init()
 
 	// Run benchmarks.
 	for _, s := range j.Suites {
@@ -80,10 +78,11 @@ func (h *Handler) Handle(_ context.Context, data []byte) error {
 			Path:    s.Module.Path,
 			Version: s.Module.Version,
 		}
-		if err := r.Benchmark(runner.Job{Module: mod}); err != nil {
-			return err
-		}
+		r.Benchmark(runner.Job{Module: mod})
 	}
 
-	return nil
+	// Cleanup.
+	r.Clean()
+
+	return w.Error()
 }

@@ -57,9 +57,7 @@ func mainerr() error {
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
-	if err := r.Init(); err != nil {
-		return err
-	}
+	r.Init()
 
 	// Run benchmark.
 	mod := runner.Module{
@@ -69,9 +67,10 @@ func mainerr() error {
 	job := runner.Job{
 		Module: mod,
 	}
-	if err := r.Benchmark(job); err != nil {
-		return err
-	}
+	r.Benchmark(job)
 
-	return nil
+	// Clean.
+	r.Clean()
+
+	return w.Error()
 }
