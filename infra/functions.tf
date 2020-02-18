@@ -6,8 +6,8 @@ data "archive_file" "function_zip" {
   for_each = toset(var.functions[*].name)
 
   type        = "zip"
-  source_dir  = "${path.root}/fn/${each.key}/"
-  output_path = "${path.root}/tmp/${each.key}.zip"
+  source_dir  = "fn/${each.key}/"
+  output_path = "tmp/${each.key}.zip"
 }
 
 resource "google_storage_bucket_object" "function_zip" {
@@ -15,7 +15,7 @@ resource "google_storage_bucket_object" "function_zip" {
 
   name   = "${each.key}/${data.archive_file.function_zip[each.key].output_sha}.zip"
   bucket = google_storage_bucket.functions_bucket.name
-  source = "${path.root}/tmp/${each.key}.zip"
+  source = data.archive_file.function_zip[each.key].output_path
 }
 
 locals {

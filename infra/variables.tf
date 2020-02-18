@@ -37,9 +37,6 @@ variable "jobs_topic" {
   default = "jobs"
 }
 
-variable "dist_path" {
-}
-
 variable "worker_machine_type" {
 }
 

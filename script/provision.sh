@@ -2,8 +2,21 @@
 
 # Parameters ----------------------------------------------------------------
 
-infra="infra"
-distfile="dist.tar.gz"
+root=$(pwd)
+infra="${root}/infra"
+
+# Register Cleanup Function -------------------------------------------------
+
+__cleanup ()
+{
+    rm -rf ${root}/fn/*/vendor ${infra}/{fn,tmp,dist.tar.gz}
+}
+
+trap __cleanup EXIT
+
+# Build Distribution --------------------------------------------------------
+
+GOOS=linux GOARCH=amd64 ./script/dist.sh ${infra}/dist.tar.gz
 
 # Update Vendor Directories -------------------------------------------------
 
@@ -15,17 +28,12 @@ for dir in fn/*; do
     cd -
 done
 
-# Copy functions to infra directory -----------------------------------------
+# Copy functions to artifacts directory -------------------------------------
 
-rm -rf ${infra}/fn
 cp -r fn ${infra}
 rm -f ${infra}/fn/*/go.*
-
-# Build Distribution --------------------------------------------------------
-
-GOOS=linux GOARCH=amd64 ./script/dist.sh ${infra}/${distfile}
 
 # Run Terraform -------------------------------------------------------------
 
 cd ${infra}
-terraform apply -var "dist_path=${distfile}"
+terraform apply

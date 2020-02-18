@@ -12,7 +12,7 @@ resource "google_storage_bucket" "artifacts_bucket" {
 }
 
 locals {
-  dist_archive_path   = "${path.root}/${var.dist_path}"
+  dist_archive_path   = "dist.tar.gz"
   dist_archive_sha256 = filesha256(local.dist_archive_path)
 }
 

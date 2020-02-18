@@ -1,10 +1,5 @@
 account.json
 
-# artifacts
-tmp/
-fn/
-*.tar.gz
-
 # terraform state
 .terraform/
 *.tfstate*
