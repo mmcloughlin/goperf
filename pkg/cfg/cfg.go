@@ -2,14 +2,60 @@ package cfg
 
 import (
 	"errors"
+	"math"
+	"strconv"
 	"strings"
 	"unicode"
 )
 
+// Value is a configuration value.
+type Value interface {
+	String() string
+}
+
+type StringValue string
+
+func (s StringValue) String() string { return string(s) }
+
+type BytesValue uint64
+
+func (b BytesValue) String() string {
+	units := []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
+	i := 0
+	x := float64(b)
+	for x >= 1024 && i+1 < len(units) {
+		x /= 1024
+		i++
+	}
+	return formatfloat(x, 2) + " " + units[i]
+}
+
+type PercentageValue float64
+
+func (p PercentageValue) String() string {
+	return formatfloat(float64(p), 1) + "%"
+}
+
+func formatfloat(x float64, prec int) string {
+	e := math.Pow10(prec)
+	r := math.Round(x*e) / e
+	return strconv.FormatFloat(r, 'f', -1, 64)
+}
+
 // Property is a benchmark configuration property.
 type Property struct {
 	Key   string
-	Value string
+	Value Value
+}
+
+// String represents the property as a configuration line.
+func (p Property) String() string {
+	s := p.Key + ":"
+	v := p.Value.String()
+	if v != "" {
+		s += " " + v
+	}
+	return s
 }
 
 // Validate the benchmark property complies with the Go Benchmark Data Format.
@@ -46,9 +92,44 @@ func (p Property) Validate() error {
 		}
 	}
 
-	if strings.ContainsRune(p.Value, '\n') {
+	if strings.ContainsRune(p.Value.String(), '\n') {
 		return errors.New("value contains new line")
 	}
 
 	return nil
+}
+
+// Configuration is a set of benchmark properties.
+type Configuration []Property
+
+// Provider is a source of configuration properties.
+type Provider interface {
+	Configuration() (Configuration, error)
+}
+
+// ProviderFunc adapts a function to the Provider interface.
+type ProviderFunc func() (Configuration, error)
+
+// Configuration calls f.
+func (f ProviderFunc) Configuration() (Configuration, error) {
+	return f()
+}
+
+type Prefixed struct {
+	prefix string
+	c      Configuration
+}
+
+func NewPrefixed(prefix string) *Prefixed {
+	return &Prefixed{
+		prefix: prefix,
+	}
+}
+
+func (p *Prefixed) Add(k string, v Value) {
+	p.c = append(p.c, Property{Key: p.prefix + "-" + k, Value: v})
+}
+
+func (p *Prefixed) Configuration() (Configuration, error) {
+	return p.c, nil
 }
