@@ -28,11 +28,11 @@ func TestBytesValue(t *testing.T) {
 	}
 }
 
-func TestPropertyValidateOK(t *testing.T) {
-	valid := []Property{
-		{"k", StringValue("value")},
-		{"split-words-with-hyphens", StringValue("valid")},
-		{"empty-values-are-valid", StringValue("")},
+func TestEntryValidateOK(t *testing.T) {
+	valid := []Entry{
+		Property("k", StringValue("value")),
+		Property("split-words-with-hyphens", StringValue("valid")),
+		Property("empty-values-are-valid", StringValue("")),
 	}
 	for _, p := range valid {
 		if err := p.Validate(); err != nil {
@@ -43,40 +43,60 @@ func TestPropertyValidateOK(t *testing.T) {
 
 func TestPropertyValidateErrors(t *testing.T) {
 	cases := []struct {
-		Property     Property
+		Entry        Entry
 		ErrorMessage string
 	}{
 		{
-			Property:     Property{Key: "", Value: StringValue("value")},
+			Entry:        Property("", StringValue("value")),
 			ErrorMessage: "empty key",
 		},
 		{
-			Property:     Property{Key: "Key", Value: StringValue("value")},
+			Entry:        Property("Key", StringValue("value")),
 			ErrorMessage: "key starts with non lower case",
 		},
 		{
-			Property:     Property{Key: "cpu model", Value: StringValue("value")},
+			Entry:        Property("cpu model", StringValue("value")),
 			ErrorMessage: "key contains space character",
 		},
 		{
-			Property:     Property{Key: "cpuModel", Value: StringValue("value")},
+			Entry:        Property("cpuModel", StringValue("value")),
 			ErrorMessage: "key contains upper case character",
 		},
 		{
-			Property:     Property{Key: "cpu:model", Value: StringValue("value")},
+			Entry:        Property("cpu:model", StringValue("value")),
 			ErrorMessage: "key contains colon character",
 		},
 		{
-			Property:     Property{Key: "cpu-model", Value: StringValue("Brand: Intel\nFreq: 2.80GHz\n")},
+			Entry:        Property("cpu-model", StringValue("Brand: Intel\nFreq: 2.80GHz\n")),
 			ErrorMessage: "value contains new line",
 		},
 		{
-			Property:     Property{Key: "used-percent", Value: PercentageValue(120)},
+			Entry:        Property("used-percent", PercentageValue(120)),
 			ErrorMessage: "percentage must be between 0 and 100",
+		},
+		{
+			Entry: Entry{
+				Label: Label{Key: "empty"},
+				Value: nil,
+				Sub:   nil,
+			},
+			ErrorMessage: "empty entry",
+		},
+		{
+			Entry: Entry{
+				Label: Label{Key: "both"},
+				Value: StringValue("value"),
+				Sub: Configuration{
+					Property("a", StringValue("1")),
+					Property("b", StringValue("2")),
+					Property("c", StringValue("3")),
+				},
+			},
+			ErrorMessage: "entry has both sub-configuration and a value",
 		},
 	}
 	for _, c := range cases {
-		err := c.Property.Validate()
+		err := c.Entry.Validate()
 		if err == nil {
 			t.Fatal("expected error; got nil")
 		}

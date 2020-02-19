@@ -1,8 +1,8 @@
 package cfg
 
 import (
-	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"strconv"
@@ -58,20 +58,34 @@ func formatfloat(x float64, prec int) string {
 	return strconv.FormatFloat(r, 'f', -1, 64)
 }
 
-// Property is a benchmark configuration property.
-type Property struct {
-	Key   string
-	Value Value
+type Label struct {
+	Key         string
+	Description string
 }
 
-// String represents the property as a configuration line.
-func (p Property) String() string {
-	s := p.Key + ":"
-	v := p.Value.String()
-	if v != "" {
-		s += " " + v
+type Configuration []Entry
+
+func (c Configuration) Validate() error {
+	var errs errutil.Errors
+	for _, e := range c {
+		if err := e.Validate(); err != nil {
+			errs.Add(err)
+		}
 	}
-	return s
+	return errs.Err()
+}
+
+type Entry struct {
+	Label
+	Value Value
+	Sub   Configuration
+}
+
+func Property(k string, v Value) Entry {
+	return Entry{
+		Label: Label{Key: k},
+		Value: v,
+	}
 }
 
 // Validate the benchmark property complies with the Go Benchmark Data Format.
@@ -92,12 +106,13 @@ func (p Property) String() string {
 //	Value can be omitted entirely, in which case the colon must still be
 //	present, but need not be followed by a space.
 //
-func (p Property) Validate() error {
-	if p.Key == "" {
+func (e Entry) Validate() error {
+	// Validate the key.
+	if e.Key == "" {
 		return errors.New("empty key")
 	}
 
-	for i, r := range p.Key {
+	for i, r := range e.Key {
 		switch {
 		case i == 0 && !unicode.IsLower(r):
 			return errors.New("key starts with non lower case")
@@ -110,73 +125,81 @@ func (p Property) Validate() error {
 		}
 	}
 
-	if strings.ContainsRune(p.Value.String(), '\n') {
+	// Should have one of value or sub-config.
+	hassub := len(e.Sub) > 0
+	hasvalue := e.Value != nil
+	switch {
+	case hassub && hasvalue:
+		return errors.New("entry has both sub-configuration and a value")
+	case !hassub && !hasvalue:
+		return errors.New("empty entry")
+	}
+
+	// Validate sub-config.
+	if hassub {
+		return e.Sub.Validate()
+	}
+
+	// Validate Value.
+	if strings.ContainsRune(e.Value.String(), '\n') {
 		return errors.New("value contains new line")
 	}
 
-	if v, ok := p.Value.(Validatable); ok {
+	if v, ok := e.Value.(Validatable); ok {
 		return v.Validate()
 	}
 
 	return nil
 }
 
-// Configuration is a set of benchmark properties.
-type Configuration []Property
-
-// Validate set of benchmark properties.
-func (c Configuration) Validate() error {
-	var errs errutil.Errors
-
-	// Validate all properties.
-	for _, p := range c {
-		if err := p.Validate(); err != nil {
-			errs.Add(err)
-		}
-	}
-
-	return errs.Err()
-}
-
 // Write configuration to the writer w.
 func Write(w io.Writer, c Configuration) error {
-	b := bufio.NewWriter(w)
-	for _, p := range c {
-		if _, err := b.WriteString(p.String() + "\n"); err != nil {
-			return err
-		}
+	if err := c.Validate(); err != nil {
+		return err
 	}
-	return b.Flush()
+	wr := &writer{Writer: w}
+	wr.configuration(c)
+	return wr.err
 }
 
-// Provider is a source of configuration properties.
-type Provider interface {
-	Configuration() (Configuration, error)
-}
-
-// ProviderFunc adapts a function to the Provider interface.
-type ProviderFunc func() (Configuration, error)
-
-// Configuration calls f.
-func (f ProviderFunc) Configuration() (Configuration, error) {
-	return f()
-}
-
-type Prefixed struct {
+type writer struct {
+	io.Writer
 	prefix string
-	c      Configuration
+	err    error
 }
 
-func NewPrefixed(prefix string) *Prefixed {
-	return &Prefixed{
-		prefix: prefix,
+func (w *writer) configuration(c Configuration) {
+	for _, e := range c {
+		w.entry(e)
 	}
 }
 
-func (p *Prefixed) Add(k string, v Value) {
-	p.c = append(p.c, Property{Key: p.prefix + "-" + k, Value: v})
+func (w *writer) entry(e Entry) {
+	// Print value.
+	if e.Value != nil {
+		w.line(e.Key, e.Value.String())
+		return
+	}
+
+	// Recurse into sub-config.
+	save := w.prefix
+	w.prefix = w.prefix + e.Key + "-"
+	w.configuration(e.Sub)
+	w.prefix = save
 }
 
-func (p *Prefixed) Configuration() (Configuration, error) {
-	return p.c, nil
+func (w *writer) line(k, v string) {
+	k = w.prefix + k
+	if v == "" {
+		w.printf("%s:\n", k)
+	} else {
+		w.printf("%s: %s\n", k, v)
+	}
+}
+
+func (w *writer) printf(format string, a ...interface{}) {
+	if w.err != nil {
+		return
+	}
+	_, w.err = fmt.Fprintf(w, format, a...)
 }
