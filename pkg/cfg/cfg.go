@@ -22,10 +22,12 @@ type Value interface {
 	String() string
 }
 
+// StringValue is a string constant.
 type StringValue string
 
 func (s StringValue) String() string { return string(s) }
 
+// BytesValue represents bytes.
 type BytesValue uint64
 
 func (b BytesValue) String() string {
@@ -39,12 +41,14 @@ func (b BytesValue) String() string {
 	return formatfloat(x, 2) + " " + units[i]
 }
 
+// PercentageValue represents a percentage, therefore must be in the range 0 to 100.
 type PercentageValue float64
 
 func (p PercentageValue) String() string {
 	return formatfloat(float64(p), 1) + "%"
 }
 
+// Validate checks the p is between 0 and 100.
 func (p PercentageValue) Validate() error {
 	if !(0 <= float64(p) && float64(p) <= 100) {
 		return errors.New("percentage must be between 0 and 100")
@@ -58,13 +62,61 @@ func formatfloat(x float64, prec int) string {
 	return strconv.FormatFloat(r, 'f', -1, 64)
 }
 
-type Label struct {
-	Key         string
-	Description string
-}
-
+// Configuration is a nested key-value structure. It is a list of entries, where
+// each entry is either a key-value property or a section containing a nested
+// config.
 type Configuration []Entry
 
+// Key is an identifier for a config property or section.
+type Key string
+
+// Entry is the base type for configuration entries. (Note this is a sealed
+// interface, it may not be implemented outside this package.)
+type Entry interface {
+	Validatable
+
+	Key() Key
+	Documentation() string
+
+	entry() // sealed
+}
+
+// Label for a configuration property or section.
+type Label struct {
+	Name Key
+	Doc  string
+}
+
+// Key returns the label name.
+func (l Label) Key() Key { return l.Name }
+
+// Documentation returns human-readable description of the labeled item.
+func (l Label) Documentation() string { return l.Doc }
+
+// Property is a key-value pair.
+type Property struct {
+	Label
+	Value Value
+}
+
+// KeyValue builds an undocumented Property.
+func KeyValue(k Key, v Value) Property {
+	return Property{
+		Label: Label{Name: k},
+		Value: v,
+	}
+}
+
+// Section is a nested configuration.
+type Section struct {
+	Label
+	Sub Configuration
+}
+
+func (Property) entry() {}
+func (Section) entry()  {}
+
+// Validate checks that all entries are valid.
 func (c Configuration) Validate() error {
 	var errs errutil.Errors
 	for _, e := range c {
@@ -75,22 +127,9 @@ func (c Configuration) Validate() error {
 	return errs.Err()
 }
 
-type Entry struct {
-	Label
-	Value Value
-	Sub   Configuration
-}
-
-func Property(k string, v Value) Entry {
-	return Entry{
-		Label: Label{Key: k},
-		Value: v,
-	}
-}
-
-// Validate the benchmark property complies with the Go Benchmark Data Format.
+// Validate that the key conforms to the Go Benchmark Data Format.
 //
-// Reference: https://github.com/golang/proposal/blob/d74d825331d9b16ee286ea77c0e4caeaf0efbe30/design/14313-benchmark-format.md#L101-L113
+// Reference: https://github.com/golang/proposal/blob/d74d825331d9b16ee286ea77c0e4caeaf0efbe30/design/14313-benchmark-format.md#L101-L110
 //
 //	A configuration line is a key-value pair of the form
 //
@@ -102,17 +141,13 @@ func Property(k string, v Value) Entry {
 //	and one or more ASCII space or tab characters separate “key:” from “value.”
 //	Conventionally, multiword keys are written with the words
 //	separated by hyphens, as in cpu-speed.
-//	There are no restrictions on value, except that it cannot contain a newline character.
-//	Value can be omitted entirely, in which case the colon must still be
-//	present, but need not be followed by a space.
 //
-func (e Entry) Validate() error {
-	// Validate the key.
-	if e.Key == "" {
+func (k Key) Validate() error {
+	if k == "" {
 		return errors.New("empty key")
 	}
 
-	for i, r := range e.Key {
+	for i, r := range k {
 		switch {
 		case i == 0 && !unicode.IsLower(r):
 			return errors.New("key starts with non lower case")
@@ -125,31 +160,45 @@ func (e Entry) Validate() error {
 		}
 	}
 
-	// Should have one of value or sub-config.
-	hassub := len(e.Sub) > 0
-	hasvalue := e.Value != nil
-	switch {
-	case hassub && hasvalue:
-		return errors.New("entry has both sub-configuration and a value")
-	case !hassub && !hasvalue:
-		return errors.New("empty entry")
-	}
+	return nil
+}
 
-	// Validate sub-config.
-	if hassub {
-		return e.Sub.Validate()
+// Validate the property conforms to the Go Benchmark Data Format. This checks the key as well as the value, as described below.
+//
+// Reference: https://github.com/golang/proposal/blob/d74d825331d9b16ee286ea77c0e4caeaf0efbe30/design/14313-benchmark-format.md#L111-L113
+//
+//	There are no restrictions on value, except that it cannot contain a newline character.
+//	Value can be omitted entirely, in which case the colon must still be
+//	present, but need not be followed by a space.
+//
+// In addition, if the property value is Validatable, its Validate method will be called.
+func (p Property) Validate() error {
+	// Validate key.
+	if err := p.Key().Validate(); err != nil {
+		return err
 	}
 
 	// Validate Value.
-	if strings.ContainsRune(e.Value.String(), '\n') {
+	if strings.ContainsRune(p.Value.String(), '\n') {
 		return errors.New("value contains new line")
 	}
 
-	if v, ok := e.Value.(Validatable); ok {
+	if v, ok := p.Value.(Validatable); ok {
 		return v.Validate()
 	}
 
 	return nil
+}
+
+// Validate confirms the section key and sub-configuration are valid.
+func (s Section) Validate() error {
+	// Validate key.
+	if err := s.Key().Validate(); err != nil {
+		return err
+	}
+
+	// Validate sub-config.
+	return s.Sub.Validate()
 }
 
 // Write configuration to the writer w.
@@ -164,7 +213,7 @@ func Write(w io.Writer, c Configuration) error {
 
 type writer struct {
 	io.Writer
-	prefix string
+	prefix Key
 	err    error
 }
 
@@ -175,20 +224,20 @@ func (w *writer) configuration(c Configuration) {
 }
 
 func (w *writer) entry(e Entry) {
-	// Print value.
-	if e.Value != nil {
-		w.line(e.Key, e.Value.String())
-		return
+	switch en := e.(type) {
+	case Property:
+		w.line(en.Key(), en.Value.String())
+	case Section:
+		save := w.prefix
+		w.prefix = w.prefix + en.Key() + "-"
+		w.configuration(en.Sub)
+		w.prefix = save
+	default:
+		w.seterr(errutil.UnexpectedType(e))
 	}
-
-	// Recurse into sub-config.
-	save := w.prefix
-	w.prefix = w.prefix + e.Key + "-"
-	w.configuration(e.Sub)
-	w.prefix = save
 }
 
-func (w *writer) line(k, v string) {
+func (w *writer) line(k Key, v string) {
 	k = w.prefix + k
 	if v == "" {
 		w.printf("%s:\n", k)
@@ -201,5 +250,12 @@ func (w *writer) printf(format string, a ...interface{}) {
 	if w.err != nil {
 		return
 	}
-	_, w.err = fmt.Fprintf(w, format, a...)
+	_, err := fmt.Fprintf(w, format, a...)
+	w.seterr(err)
+}
+
+func (w *writer) seterr(err error) {
+	if w.err == nil {
+		w.err = err
+	}
 }
