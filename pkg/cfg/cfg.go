@@ -70,51 +70,66 @@ type Configuration []Entry
 // Key is an identifier for a config property or section.
 type Key string
 
+// Label for a configuration property or section.
+type Labeled interface {
+	Key() Key
+	Doc() string
+}
+
 // Entry is the base type for configuration entries. (Note this is a sealed
 // interface, it may not be implemented outside this package.)
 type Entry interface {
+	Labeled
 	Validatable
-
-	Key() Key
-	Documentation() string
 
 	entry() // sealed
 }
 
-// Label for a configuration property or section.
-type Label struct {
-	Name Key
-	Doc  string
+type label struct {
+	key Key
+	doc string
 }
 
-// Key returns the label name.
-func (l Label) Key() Key { return l.Name }
+func Label(k Key, doc string) Labeled {
+	return label{key: k, doc: doc}
+}
 
-// Documentation returns human-readable description of the labeled item.
-func (l Label) Documentation() string { return l.Doc }
+func (l label) Key() Key    { return l.key }
+func (l label) Doc() string { return l.doc }
 
-// Property is a key-value pair.
-type Property struct {
-	Label
+type PropertyEntry struct {
+	Labeled
 	Value Value
 }
 
-// KeyValue builds an undocumented Property.
-func KeyValue(k Key, v Value) Property {
-	return Property{
-		Label: Label{Name: k},
-		Value: v,
+func (PropertyEntry) entry() {}
+
+func Property(k Key, doc string, v Value) PropertyEntry {
+	return PropertyEntry{
+		Labeled: Label(k, doc),
+		Value:   v,
 	}
 }
 
-// Section is a nested configuration.
-type Section struct {
-	Label
+// KeyValue builds an undocumented property.
+func KeyValue(k Key, v Value) PropertyEntry {
+	return Property(k, "", v)
+}
+
+// SectionEntry is a nested configuration.
+type SectionEntry struct {
+	Labeled
 	Sub Configuration
 }
 
-func (Property) entry() {}
-func (Section) entry()  {}
+func (SectionEntry) entry() {}
+
+func Section(k Key, doc string, entries ...Entry) SectionEntry {
+	return SectionEntry{
+		Labeled: Label(k, doc),
+		Sub:     Configuration(entries),
+	}
+}
 
 // Validate checks that all entries are valid.
 func (c Configuration) Validate() error {
@@ -172,7 +187,7 @@ func (k Key) Validate() error {
 //	present, but need not be followed by a space.
 //
 // In addition, if the property value is Validatable, its Validate method will be called.
-func (p Property) Validate() error {
+func (p PropertyEntry) Validate() error {
 	// Validate key.
 	if err := p.Key().Validate(); err != nil {
 		return err
@@ -191,7 +206,7 @@ func (p Property) Validate() error {
 }
 
 // Validate confirms the section key and sub-configuration are valid.
-func (s Section) Validate() error {
+func (s SectionEntry) Validate() error {
 	// Validate key.
 	if err := s.Key().Validate(); err != nil {
 		return err
@@ -200,6 +215,30 @@ func (s Section) Validate() error {
 	// Validate sub-config.
 	return s.Sub.Validate()
 }
+
+// Provider is a source of configuration.
+type Provider interface {
+	Labeled
+	Configuration() (Configuration, error)
+}
+
+// Configuration satisfies the Provider interface.
+func (s SectionEntry) Configuration() (Configuration, error) { return s.Sub, nil }
+
+type provider struct {
+	Labeled
+	f func() (Configuration, error)
+}
+
+// NewProvider builds a Provider from a function.
+func NewProvider(k Key, doc string, f func() (Configuration, error)) Provider {
+	return provider{
+		Labeled: Label(k, doc),
+		f:       f,
+	}
+}
+
+func (p provider) Configuration() (Configuration, error) { return p.f() }
 
 // Write configuration to the writer w.
 func Write(w io.Writer, c Configuration) error {
@@ -225,9 +264,9 @@ func (w *writer) configuration(c Configuration) {
 
 func (w *writer) entry(e Entry) {
 	switch en := e.(type) {
-	case Property:
+	case PropertyEntry:
 		w.line(en.Key(), en.Value.String())
-	case Section:
+	case SectionEntry:
 		save := w.prefix
 		w.prefix = w.prefix + en.Key() + "-"
 		w.configuration(en.Sub)

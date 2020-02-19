@@ -28,6 +28,19 @@ func TestBytesValue(t *testing.T) {
 	}
 }
 
+func TestEntryTypes(t *testing.T) {
+	var (
+		_ Entry = PropertyEntry{}
+		_ Entry = SectionEntry{}
+		_ Entry = Property("key", "doc", StringValue("value"))
+		_ Entry = KeyValue("key", StringValue("value"))
+	)
+}
+
+func TestSectionEntryIsProvider(t *testing.T) {
+	var _ Provider = SectionEntry{}
+}
+
 func TestEntryValidateOK(t *testing.T) {
 	valid := []Entry{
 		KeyValue("k", StringValue("value")),
