@@ -63,8 +63,16 @@ func TestPropertyValidateErrors(t *testing.T) {
 			ErrorMessage: "key contains upper case character",
 		},
 		{
+			Property:     Property{Key: "cpu:model", Value: StringValue("value")},
+			ErrorMessage: "key contains colon character",
+		},
+		{
 			Property:     Property{Key: "cpu-model", Value: StringValue("Brand: Intel\nFreq: 2.80GHz\n")},
 			ErrorMessage: "value contains new line",
+		},
+		{
+			Property:     Property{Key: "used-percent", Value: PercentageValue(120)},
+			ErrorMessage: "percentage must be between 0 and 100",
 		},
 	}
 	for _, c := range cases {

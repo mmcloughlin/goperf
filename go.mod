@@ -5,8 +5,10 @@ go 1.13
 require (
 	cloud.google.com/go/firestore v1.1.1
 	cloud.google.com/go/pubsub v1.0.1
+	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
+	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect

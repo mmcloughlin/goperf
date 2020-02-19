@@ -1,12 +1,21 @@
 package cfg
 
 import (
+	"bufio"
 	"errors"
+	"io"
 	"math"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
+
+// Validatable is something that can be validated.
+type Validatable interface {
+	Validate() error
+}
 
 // Value is a configuration value.
 type Value interface {
@@ -34,6 +43,13 @@ type PercentageValue float64
 
 func (p PercentageValue) String() string {
 	return formatfloat(float64(p), 1) + "%"
+}
+
+func (p PercentageValue) Validate() error {
+	if !(0 <= float64(p) && float64(p) <= 100) {
+		return errors.New("percentage must be between 0 and 100")
+	}
+	return nil
 }
 
 func formatfloat(x float64, prec int) string {
@@ -89,6 +105,8 @@ func (p Property) Validate() error {
 			return errors.New("key contains space character")
 		case unicode.IsUpper(r):
 			return errors.New("key contains upper case character")
+		case r == ':':
+			return errors.New("key contains colon character")
 		}
 	}
 
@@ -96,11 +114,40 @@ func (p Property) Validate() error {
 		return errors.New("value contains new line")
 	}
 
+	if v, ok := p.Value.(Validatable); ok {
+		return v.Validate()
+	}
+
 	return nil
 }
 
 // Configuration is a set of benchmark properties.
 type Configuration []Property
+
+// Validate set of benchmark properties.
+func (c Configuration) Validate() error {
+	var errs errutil.Errors
+
+	// Validate all properties.
+	for _, p := range c {
+		if err := p.Validate(); err != nil {
+			errs.Add(err)
+		}
+	}
+
+	return errs.Err()
+}
+
+// Write configuration to the writer w.
+func Write(w io.Writer, c Configuration) error {
+	b := bufio.NewWriter(w)
+	for _, p := range c {
+		if _, err := b.WriteString(p.String() + "\n"); err != nil {
+			return err
+		}
+	}
+	return b.Flush()
+}
 
 // Provider is a source of configuration properties.
 type Provider interface {
