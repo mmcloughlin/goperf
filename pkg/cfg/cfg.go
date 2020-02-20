@@ -27,28 +27,42 @@ type StringValue string
 
 func (s StringValue) String() string { return string(s) }
 
+// StringsValue is a list of strings.
+type StringsValue []string
+
+func (s StringsValue) String() string { return strings.Join(s, ",") }
+
 // Float64Value is a double-precision floating point.
 type Float64Value float64
 
 func (x Float64Value) String() string { return strconv.FormatFloat(float64(x), 'f', -1, 64) }
 
-// Uint64Value is an unsigned 64-bit integer.
-type Uint64Value uint64
+// IntValue is an integer.
+type IntValue int
 
-func (x Uint64Value) String() string { return strconv.FormatUint(uint64(x), 10) }
+func (x IntValue) String() string { return strconv.Itoa(int(x)) }
 
 // BytesValue represents bytes.
 type BytesValue uint64
 
 func (b BytesValue) String() string {
-	units := []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}
+	return formatunit(float64(b), 1024, []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}, 2)
+}
+
+// BytesValue represents bytes.
+type FrequencyValue float64
+
+func (f FrequencyValue) String() string {
+	return formatunit(float64(f), 1000, []string{"Hz", "KHz", "MHz", "GHz"}, 2)
+}
+
+func formatunit(x, mult float64, units []string, prec int) string {
 	i := 0
-	x := float64(b)
-	for x >= 1024 && i+1 < len(units) {
-		x /= 1024
+	for x >= mult && i+1 < len(units) {
+		x /= mult
 		i++
 	}
-	return formatfloat(x, 2) + " " + units[i]
+	return formatfloat(x, prec) + " " + units[i]
 }
 
 // PercentageValue represents a percentage, therefore must be in the range 0 to 100.

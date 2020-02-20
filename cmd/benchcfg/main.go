@@ -55,8 +55,9 @@ func mainerr() error {
 // providers is a list of all supported config sources.
 var providers = cfg.Providers{
 	sys.Host,
-	sys.VirtualMemory,
 	sys.LoadAverage,
+	sys.VirtualMemory,
+	sys.CPU,
 }
 
 func execute(args []string) error {
