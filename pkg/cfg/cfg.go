@@ -27,6 +27,11 @@ type StringValue string
 
 func (s StringValue) String() string { return string(s) }
 
+// Uint64Value is an unsigned 64-bit integer.
+type Uint64Value uint64
+
+func (x Uint64Value) String() string { return strconv.FormatUint(uint64(x), 10) }
+
 // BytesValue represents bytes.
 type BytesValue uint64
 
