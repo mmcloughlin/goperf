@@ -27,6 +27,11 @@ type StringValue string
 
 func (s StringValue) String() string { return string(s) }
 
+// Float64Value is a double-precision floating point.
+type Float64Value float64
+
+func (x Float64Value) String() string { return strconv.FormatFloat(float64(x), 'f', -1, 64) }
+
 // Uint64Value is an unsigned 64-bit integer.
 type Uint64Value uint64
 

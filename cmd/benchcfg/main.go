@@ -56,6 +56,7 @@ func mainerr() error {
 var providers = cfg.Providers{
 	sys.Host,
 	sys.VirtualMemory,
+	sys.LoadAverage,
 }
 
 func execute(args []string) error {

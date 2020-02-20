@@ -4,7 +4,8 @@ import (
 	"time"
 
 	hostutil "github.com/shirou/gopsutil/host"
-	"github.com/shirou/gopsutil/mem"
+	loadutil "github.com/shirou/gopsutil/load"
+	memutil "github.com/shirou/gopsutil/mem"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
@@ -12,6 +13,7 @@ import (
 var (
 	Host          = cfg.NewProvider("host", "Host statistics.", host)
 	VirtualMemory = cfg.NewProvider("mem", "Virtual memory usage statistics.", virtualmemory)
+	LoadAverage   = cfg.NewProvider("load", "Load averages", load)
 )
 
 func host() (cfg.Configuration, error) {
@@ -37,36 +39,29 @@ func host() (cfg.Configuration, error) {
 }
 
 func virtualmemory() (cfg.Configuration, error) {
-	vmem, err := mem.VirtualMemory()
+	vmem, err := memutil.VirtualMemory()
 	if err != nil {
 		return nil, err
 	}
 
 	return cfg.Configuration{
-		cfg.Property(
-			"total",
-			"total amount of RAM on this system",
-			cfg.BytesValue(vmem.Total),
-		),
-		cfg.Property(
-			"available",
-			"RAM available for programs to allocate",
-			cfg.BytesValue(vmem.Available),
-		),
-		cfg.Property(
-			"used",
-			"RAM used by programs",
-			cfg.BytesValue(vmem.Used),
-		),
-		cfg.Property(
-			"used-percent",
-			"percentage of RAM used by programs",
-			cfg.PercentageValue(vmem.UsedPercent),
-		),
-		cfg.Property(
-			"free",
-			"kernel's measure of free memory",
-			cfg.BytesValue(vmem.Free),
-		),
+		cfg.Property("total", "total amount of RAM on this system", cfg.BytesValue(vmem.Total)),
+		cfg.Property("available", "RAM available for programs to allocate", cfg.BytesValue(vmem.Available)),
+		cfg.Property("used", "RAM used by programs", cfg.BytesValue(vmem.Used)),
+		cfg.Property("used-percent", "percentage of RAM used by programs", cfg.PercentageValue(vmem.UsedPercent)),
+		cfg.Property("free", "kernel's measure of free memory", cfg.BytesValue(vmem.Free)),
+	}, nil
+}
+
+func load() (cfg.Configuration, error) {
+	avg, err := loadutil.Avg()
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg.Configuration{
+		cfg.Property("avg1", "1-minute load average", cfg.Float64Value(avg.Load1)),
+		cfg.Property("avg5", "5-minute load average", cfg.Float64Value(avg.Load5)),
+		cfg.Property("avg15", "15-minute load average", cfg.Float64Value(avg.Load15)),
 	}, nil
 }
