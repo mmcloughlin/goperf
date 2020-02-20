@@ -5,6 +5,19 @@ import (
 	"strings"
 )
 
+// Strings is a list of strings satisfying the flag.Value interface.
+type Strings []string
+
+func (a Strings) String() string {
+	return strings.Join(a, ",")
+}
+
+// Set splits the comma-separated string s.
+func (a *Strings) Set(s string) error {
+	*a = strings.Split(s, ",")
+	return nil
+}
+
 // Param is a key-value pair.
 type Param struct {
 	Key   string

@@ -240,6 +240,51 @@ func NewProvider(k Key, doc string, f func() (Configuration, error)) Provider {
 
 func (p provider) Configuration() (Configuration, error) { return p.f() }
 
+// Providers is a list of providers.
+type Providers []Provider
+
+// Keys returns all keys in the provider list.
+func (p Providers) Keys() []string {
+	keys := make([]string, len(p))
+	for i := range p {
+		keys[i] = string(p[i].Key())
+	}
+	return keys
+}
+
+// Select returns the subset of providers with the given keys.
+func (p Providers) Select(keys ...string) (Providers, error) {
+	m := map[string]Provider{}
+	for i := range p {
+		m[string(p[i].Key())] = p[i]
+	}
+
+	s := make(Providers, len(keys))
+	for i, k := range keys {
+		if _, ok := m[k]; !ok {
+			return nil, fmt.Errorf("provider %q not found", k)
+		}
+		s[i] = m[k]
+	}
+	return s, nil
+}
+
+// Configuration gathers configuration from all providers.
+func (p Providers) Configuration() (Configuration, error) {
+	c := make(Configuration, len(p))
+	for i, provider := range p {
+		sub, err := provider.Configuration()
+		if err != nil {
+			return nil, err
+		}
+		c[i] = SectionEntry{
+			Labeled: provider,
+			Sub:     sub,
+		}
+	}
+	return c, nil
+}
+
 // Write configuration to the writer w.
 func Write(w io.Writer, c Configuration) error {
 	if err := c.Validate(); err != nil {
