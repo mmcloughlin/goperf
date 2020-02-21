@@ -13,15 +13,15 @@ var IntelPState = cfg.NewProvider("intelpstate", "Intel P-State driver", intelps
 func intelpstate() (cfg.Configuration, error) {
 	properties := []struct {
 		Filename string
-		Doc      string
 		Parser   func(string) (cfg.Value, error)
+		Doc      string
 	}{
-		{"max_perf_pct", "", parseint},
-		{"min_perf_pct", "", parseint},
-		{"no_turbo", "", parsebool},
-		{"num_pstates", "", parseint},
-		{"status", "", parsestring},
-		{"turbo_pct", "", parseint},
+		{"max_perf_pct", parseint, "maximum p-state that will be selected as a percentage of available performance"},
+		{"min_perf_pct", parseint, "minimum p-State that will be requested by the driver as a percentage of the max (non-turbo) performance level"},
+		{"no_turbo", parsebool, "when true the driver is limited to p-states below the turbo frequency range"},
+		{"num_pstates", parseint, "num p-states supported by the hardware"},
+		{"status", parsestring, "active/passive/off"},
+		{"turbo_pct", parseint, "percentage of the total performance that is supported by hardware that is in the turbo range"},
 	}
 	c := cfg.Configuration{}
 	for _, p := range properties {
