@@ -42,6 +42,11 @@ type IntValue int
 
 func (x IntValue) String() string { return strconv.Itoa(int(x)) }
 
+// BoolValue is a boolean.
+type BoolValue bool
+
+func (b BoolValue) String() string { return strconv.FormatBool(bool(b)) }
+
 // BytesValue represents bytes.
 type BytesValue uint64
 

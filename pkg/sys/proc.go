@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/c9s/goprocinfo/linux"
+
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
 
