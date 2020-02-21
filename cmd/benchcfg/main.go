@@ -58,6 +58,7 @@ var providers = cfg.Providers{
 	sys.LoadAverage,
 	sys.VirtualMemory,
 	sys.CPU,
+	sys.ProcStat,
 }
 
 func execute(args []string) error {
