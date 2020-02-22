@@ -10,7 +10,8 @@ import (
 
 	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/sys"
+
+	_ "github.com/mmcloughlin/cb/pkg/sys"
 )
 
 func main() {
@@ -26,6 +27,8 @@ func main1() int {
 }
 
 func mainerr() error {
+	providers := cfg.All()
+
 	// Flags.
 	var keys flags.Strings = providers.Keys()
 	flag.Var(&keys, "cfg", "config types to include")
@@ -50,16 +53,6 @@ func mainerr() error {
 
 	// Execute the sub-process.
 	return execute(args)
-}
-
-// providers is a list of all supported config sources.
-var providers = cfg.Providers{
-	sys.Host,
-	sys.LoadAverage,
-	sys.VirtualMemory,
-	sys.CPU,
-	sys.ProcStat{},
-	sys.IntelPState{},
 }
 
 func execute(args []string) error {

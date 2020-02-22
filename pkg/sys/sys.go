@@ -13,6 +13,13 @@ import (
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
 
+func init() {
+	cfg.RegisterProvider(Host)
+	cfg.RegisterProvider(VirtualMemory)
+	cfg.RegisterProvider(CPU)
+	cfg.RegisterProvider(LoadAverage)
+}
+
 var (
 	Host          = cfg.NewProvider("host", "Host statistics.", host)
 	VirtualMemory = cfg.NewProvider("mem", "Virtual memory usage statistics.", virtualmemory)
