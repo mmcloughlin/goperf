@@ -150,7 +150,7 @@ func parsesetbits(s string) (cfg.Value, error) {
 	for _, r := range s {
 		c, ok := popcnt[r]
 		if !ok {
-			return nil, errors.New("unexpected character")
+			return nil, fmt.Errorf("unexpected character in %q", s)
 		}
 		total += c
 	}
