@@ -59,6 +59,7 @@ var providers = cfg.Providers{
 	sys.VirtualMemory,
 	sys.CPU,
 	sys.ProcStat{},
+	sys.CPUFreq{},
 	sys.IntelPState{},
 }
 
