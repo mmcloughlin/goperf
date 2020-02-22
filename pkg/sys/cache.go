@@ -1,11 +1,9 @@
 package sys
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
@@ -84,7 +82,7 @@ func (Caches) Configuration() (cfg.Configuration, error) {
 		{"coherency_line_size", parseint, "minimum amount of data in bytes that gets transferred from memory to cache"},
 		{"ways_of_associativity", parseint, "degree of freedom in placing a particular block of memory in the cache"},
 		{"number_of_sets", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"},
-		{"shared_cpu_list", parsestring, "list of logical cpus sharing the cache"}, // TODO(mbm): parse as string?
+		{"shared_cpu_list", parsestring, "list of logical cpus sharing the cache"},
 		{"physical_line_partition", parseint, "number of physical cache line per cache tag"},
 	}
 
@@ -125,15 +123,4 @@ func (Caches) Configuration() (cfg.Configuration, error) {
 	}
 
 	return c, nil
-}
-
-func parsesize(s string) (cfg.Value, error) {
-	if len(s) == 0 || s[len(s)-1] != 'K' {
-		return nil, errors.New("expected last character of size to be K")
-	}
-	b, err := strconv.Atoi(s[:len(s)-1])
-	if err != nil {
-		return nil, err
-	}
-	return cfg.BytesValue(b * 1024), nil
 }

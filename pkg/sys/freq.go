@@ -2,11 +2,8 @@ package sys
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
@@ -310,60 +307,4 @@ func (CPUFreq) Configuration() (cfg.Configuration, error) {
 		c = append(c, section)
 	}
 	return c, nil
-}
-
-type fileproperty struct {
-	Filename string
-	Parser   func(string) (cfg.Value, error)
-	Doc      string
-}
-
-func parsefiles(root string, properties []fileproperty) (cfg.Configuration, error) {
-	c := cfg.Configuration{}
-	for _, p := range properties {
-		filename := filepath.Join(root, p.Filename)
-		b, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return nil, err
-		}
-		data := strings.TrimSpace(string(b))
-		v, err := p.Parser(data)
-		if err != nil {
-			return nil, err
-		}
-		c = append(c, cfg.Property(
-			cfg.Key(strings.ReplaceAll(p.Filename, "_", "")),
-			p.Doc,
-			v,
-		))
-	}
-	return c, nil
-}
-
-func parseint(s string) (cfg.Value, error) {
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return nil, err
-	}
-	return cfg.IntValue(n), nil
-}
-
-func parsekhz(s string) (cfg.Value, error) {
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return nil, err
-	}
-	return cfg.FrequencyValue(n * 1000), nil
-}
-
-func parsebool(s string) (cfg.Value, error) {
-	b, err := strconv.ParseBool(s)
-	if err != nil {
-		return nil, err
-	}
-	return cfg.BoolValue(b), nil
-}
-
-func parsestring(s string) (cfg.Value, error) {
-	return cfg.StringValue(s), nil
 }
