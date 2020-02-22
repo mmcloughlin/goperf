@@ -5,6 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go/firestore v1.1.1
 	cloud.google.com/go/pubsub v1.0.1
+	cloud.google.com/go/storage v1.0.0
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/c9s/goprocinfo v0.0.0-20200130063400-86ec00c33cd5
 	github.com/dsnet/compress v0.0.1 // indirect
