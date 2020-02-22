@@ -57,6 +57,11 @@ func (r *Runner) Init() {
 	r.w.SetEnv("GOROOT", goroot)
 	r.w.SetEnv("GOPATH", r.w.EnsureDir("gopath"))
 	r.w.SetEnv("GOCACHE", r.w.EnsureDir("gocache"))
+	r.w.SetEnv("GO111MODULE", "on")
+	r.w.DefineTool("AR", "ar")
+	r.w.DefineTool("CC", "gcc")
+	r.w.DefineTool("CXX", "g++")
+	r.w.DefineTool("PKG_CONFIG", "pkg-config")
 
 	// Environment checks.
 	r.GoExec("version")

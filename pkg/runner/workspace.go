@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/mholt/archiver"
 
@@ -25,7 +26,7 @@ type Workspace struct {
 
 	root string
 	cwd  string
-	env  []string
+	env  map[string]string
 	err  error
 }
 
@@ -44,7 +45,7 @@ func WithWorkDir(d string) Option {
 }
 
 func WithEnviron(env []string) Option {
-	return func(w *Workspace) { w.env = append(w.env, env...) }
+	return func(w *Workspace) { w.AddEnviron(env...) }
 }
 
 func InheritEnviron() Option {
@@ -61,6 +62,7 @@ func NewWorkspace(opts ...Option) (*Workspace, error) {
 		Logger:    lg.Default(),
 		client:    http.DefaultClient,
 		artifacts: fs.Discard,
+		env:       map[string]string{},
 	}
 
 	// Apply options.
@@ -114,7 +116,83 @@ func (w *Workspace) Clean() {
 
 // SetEnv sets an environment variable for all workspace operations.
 func (w *Workspace) SetEnv(key, value string) {
-	w.env = append(w.env, key+"="+value)
+	w.Logger.Printf("set env %s=%q", key, value)
+	w.env[key] = value
+}
+
+// SetEnvDefault sets an environment variable if it does not already have a value.
+func (w *Workspace) SetEnvDefault(key, value string) string {
+	if existing := w.GetEnv(key); existing == "" {
+		w.SetEnv(key, value)
+	}
+	return w.GetEnv(key)
+}
+
+// AddEnviron is a convenience for setting multiple environment variables given
+// a list of "KEY=value" strings. Provided for easy interoperability with
+// functions like os.Environ().
+func (w *Workspace) AddEnviron(env ...string) {
+	for _, e := range env {
+		kv := strings.SplitN(e, "=", 2)
+		if len(kv) != 2 {
+			w.seterr(fmt.Errorf("invalid environment variable setting %q", e))
+		}
+		w.SetEnv(kv[0], kv[1])
+	}
+}
+
+// InheritEnv sets the environment variable key to the same as the surrounding
+// environment, if it is defined. Otherwise does nothing.
+func (w *Workspace) InheritEnv(key string) {
+	if v := os.Getenv(key); v != "" {
+		w.SetEnv(key, v)
+	}
+}
+
+// GetEnv returns the environment variable key.
+func (w *Workspace) GetEnv(key string) string {
+	return w.env[key]
+}
+
+// environ returns the configured environment as a list of "KEY=value" strings.
+func (w *Workspace) environ() []string {
+	var env []string
+	for k, v := range w.env {
+		env = append(env, k+"="+v)
+	}
+	return env
+}
+
+// AppendPATH appends a directory to the PATH variable, if it is not already present.
+func (w *Workspace) AppendPATH(path string) {
+	paths := filepath.SplitList(w.GetEnv("PATH"))
+	for _, p := range paths {
+		if p == path {
+			return
+		}
+	}
+	paths = append(paths, path)
+	w.SetEnv("PATH", strings.Join(paths, string(filepath.ListSeparator)))
+}
+
+// ExposeTool makes the named tool available to the workspace by looking up its
+// location and adding the directory to the PATH.
+func (w *Workspace) ExposeTool(name string) {
+	path, err := exec.LookPath(name)
+	if err != nil {
+		w.seterr(err)
+	}
+	w.AppendPATH(filepath.Dir(path))
+}
+
+// DefineTool defines a standard tool with environment variable key and default
+// dflt, for example "CC" with default "gcc". If the environment variable is set
+// in the host environment, it is inherited, otherwise it is set to the default
+// and the PATH is edited to ensure it is accessible within the workspace.
+func (w *Workspace) DefineTool(key, dflt string) {
+	w.InheritEnv(key)
+	name := w.SetEnvDefault(key, dflt)
+	w.ExposeTool(name)
 }
 
 // Path relative to working directory.
@@ -222,7 +300,7 @@ func (w *Workspace) Exec(cmd *exec.Cmd) {
 	defer lg.Scope(w, "exec")()
 
 	// Set environment.
-	cmd.Env = append(cmd.Env, w.env...)
+	cmd.Env = append(cmd.Env, w.environ()...)
 
 	// Set working directory.
 	if cmd.Dir == "" {

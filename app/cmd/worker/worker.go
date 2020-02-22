@@ -63,8 +63,7 @@ func (h *Handler) Handle(_ context.Context, data []byte) error {
 	lg.Param(h, "toolchain", tc.String())
 
 	// Construct workspace.
-	// TODO(mbm): get it working without inheriting environment
-	w, err := runner.NewWorkspace(runner.InheritEnviron(), runner.WithLogger(h))
+	w, err := runner.NewWorkspace(runner.WithLogger(h))
 	if err != nil {
 		return err
 	}

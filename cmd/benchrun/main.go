@@ -56,8 +56,7 @@ func mainerr() error {
 	}
 
 	// Construct workspace.
-	// TODO(mbm): get it working without inheriting environment
-	w, err := runner.NewWorkspace(runner.InheritEnviron())
+	w, err := runner.NewWorkspace()
 	if err != nil {
 		return err
 	}
