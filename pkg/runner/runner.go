@@ -1,9 +1,12 @@
 package runner
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
@@ -111,5 +114,7 @@ func (r *Runner) Benchmark(j Job) {
 	r.w.Exec(cmd)
 
 	// Save the result.
-	r.w.Artifact(outputfile, "bench.out")
+	filename := fmt.Sprintf("%s.out", uuid.New())
+	path := filepath.Join(r.tc.String(), j.Module.String(), filename)
+	r.w.Artifact(outputfile, path)
 }
