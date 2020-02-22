@@ -1,7 +1,6 @@
 package sys
 
 import (
-	"errors"
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
@@ -11,29 +10,33 @@ import (
 )
 
 type fileproperty struct {
-	Filename string
-	Parser   func(string) (cfg.Value, error)
-	Doc      string
+	filename string
+	alias    string
+	parser   func(string) (cfg.Value, error)
+	doc      string
+}
+
+func (p fileproperty) key() cfg.Key {
+	if p.alias != "" {
+		return cfg.Key(p.alias)
+	}
+	return cfg.Key(strings.ReplaceAll(p.filename, "_", ""))
 }
 
 func parsefiles(root string, properties []fileproperty) (cfg.Configuration, error) {
 	c := cfg.Configuration{}
 	for _, p := range properties {
-		filename := filepath.Join(root, p.Filename)
+		filename := filepath.Join(root, p.filename)
 		b, err := ioutil.ReadFile(filename)
 		if err != nil {
 			return nil, err
 		}
 		data := strings.TrimSpace(string(b))
-		v, err := p.Parser(data)
+		v, err := p.parser(data)
 		if err != nil {
 			return nil, err
 		}
-		c = append(c, cfg.Property(
-			cfg.Key(strings.ReplaceAll(p.Filename, "_", "")),
-			p.Doc,
-			v,
-		))
+		c = append(c, cfg.Property(p.key(), p.doc, v))
 	}
 	return c, nil
 }
@@ -64,15 +67,4 @@ func parsebool(s string) (cfg.Value, error) {
 
 func parsestring(s string) (cfg.Value, error) {
 	return cfg.StringValue(s), nil
-}
-
-func parsesize(s string) (cfg.Value, error) {
-	if len(s) == 0 || s[len(s)-1] != 'K' {
-		return nil, errors.New("expected last character of size to be K")
-	}
-	b, err := strconv.Atoi(s[:len(s)-1])
-	if err != nil {
-		return nil, err
-	}
-	return cfg.BytesValue(b * 1024), nil
 }

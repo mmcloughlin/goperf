@@ -1,9 +1,11 @@
 package sys
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
@@ -76,14 +78,15 @@ func (Caches) Available() bool {
 // Configuration queries sysfs for cache configuration.
 func (Caches) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
-		{"type", parsestring, "cache type: Data, Instruction or Unified"},
-		{"level", parseint, "the cache hierarchy in the multi-level cache configuration"},
-		{"size", parsesize, "total cache size"},
-		{"coherency_line_size", parseint, "minimum amount of data in bytes that gets transferred from memory to cache"},
-		{"ways_of_associativity", parseint, "degree of freedom in placing a particular block of memory in the cache"},
-		{"number_of_sets", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"},
-		{"shared_cpu_list", parsestring, "list of logical cpus sharing the cache"},
-		{"physical_line_partition", parseint, "number of physical cache line per cache tag"},
+		{"type", "", parsestring, "cache type: Data, Instruction or Unified"},
+		{"level", "", parseint, "the cache hierarchy in the multi-level cache configuration"},
+		{"size", "", parsesize, "total cache size"},
+		{"coherency_line_size", "", parseint, "minimum amount of data in bytes that gets transferred from memory to cache"},
+		{"ways_of_associativity", "", parseint, "degree of freedom in placing a particular block of memory in the cache"},
+		{"number_of_sets", "", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"},
+		{"shared_cpu_list", "", parsestring, "list of logical cpus sharing the cache"},
+		{"shared_cpu_map", "numsharing", parsesetbits, "number of cpus sharing the cache"},
+		{"physical_line_partition", "", parseint, "number of physical cache line per cache tag"},
 	}
 
 	cpudirs, err := filepath.Glob("/sys/devices/system/cpu/cpu*")
@@ -123,4 +126,33 @@ func (Caches) Configuration() (cfg.Configuration, error) {
 	}
 
 	return c, nil
+}
+
+func parsesize(s string) (cfg.Value, error) {
+	if len(s) == 0 || s[len(s)-1] != 'K' {
+		return nil, errors.New("expected last character of size to be K")
+	}
+	b, err := strconv.Atoi(s[:len(s)-1])
+	if err != nil {
+		return nil, err
+	}
+	return cfg.BytesValue(b * 1024), nil
+}
+
+func parsesetbits(s string) (cfg.Value, error) {
+	popcnt := map[rune]int{
+		'0': 0, '1': 1, '2': 1, '3': 2,
+		'4': 1, '5': 2, '6': 2, '7': 3,
+		'8': 1, '9': 2, 'a': 2, 'b': 3,
+		'c': 2, 'd': 3, 'e': 3, 'f': 4,
+	}
+	total := 0
+	for _, r := range s {
+		c, ok := popcnt[r]
+		if !ok {
+			return nil, errors.New("unexpected character")
+		}
+		total += c
+	}
+	return cfg.IntValue(total), nil
 }
