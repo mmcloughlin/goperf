@@ -7,6 +7,10 @@ data "google_compute_image" "ubuntu" {
   project = "ubuntu-os-cloud"
 }
 
+resource "google_storage_bucket" "results_bucket" {
+  name = "${var.project_name}_results"
+}
+
 resource "google_storage_bucket" "artifacts_bucket" {
   name = "${var.project_name}_artifacts"
 }
@@ -15,7 +19,6 @@ locals {
   dist_archive_path   = "dist.tar.gz"
   dist_archive_sha256 = filesha256(local.dist_archive_path)
 }
-
 
 resource "google_storage_bucket_object" "dist_archive" {
   name   = "${var.project_name}/${local.dist_archive_sha256}.tar.gz"

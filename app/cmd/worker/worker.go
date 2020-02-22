@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/mmcloughlin/cb/app/consumer"
+	"github.com/mmcloughlin/cb/app/gcs"
 	"github.com/mmcloughlin/cb/app/job"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/lg"
@@ -15,6 +16,8 @@ import (
 var (
 	// TODO(mbm): remove hardcoded subscription
 	subscription = "projects/contbench/subscriptions/worker_jobs"
+	// TODO(mbm): remove hardcoded bucket
+	bucket = "contbench_results"
 )
 
 func main() {
@@ -45,7 +48,7 @@ type Handler struct {
 	lg.Logger
 }
 
-func (h *Handler) Handle(_ context.Context, data []byte) error {
+func (h *Handler) Handle(ctx context.Context, data []byte) error {
 	// TODO(mbm): make runner context aware
 	// TODO(mbm): reduce duplication with cmd/benchrun
 
@@ -62,8 +65,17 @@ func (h *Handler) Handle(_ context.Context, data []byte) error {
 	}
 	lg.Param(h, "toolchain", tc.String())
 
+	// GCS filesystem.
+	store, err := gcs.New(ctx, bucket)
+	if err != nil {
+		return err
+	}
+
 	// Construct workspace.
-	w, err := runner.NewWorkspace(runner.WithLogger(h))
+	w, err := runner.NewWorkspace(
+		runner.WithLogger(h),
+		runner.WithArtifactStore(store),
+	)
 	if err != nil {
 		return err
 	}
