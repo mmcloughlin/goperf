@@ -85,7 +85,7 @@ func (Caches) Configuration() (cfg.Configuration, error) {
 		{"ways_of_associativity", "", parseint, "degree of freedom in placing a particular block of memory in the cache"},
 		{"number_of_sets", "", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"},
 		{"shared_cpu_list", "", parsestring, "list of logical cpus sharing the cache"},
-		{"shared_cpu_map", "numsharing", parsesetbits, "number of cpus sharing the cache"},
+		{"shared_cpu_map", "numsharing", parsecpumasksetbits, "number of cpus sharing the cache"},
 		{"physical_line_partition", "", parseint, "number of physical cache line per cache tag"},
 	}
 
@@ -139,12 +139,13 @@ func parsesize(s string) (cfg.Value, error) {
 	return cfg.BytesValue(b * 1024), nil
 }
 
-func parsesetbits(s string) (cfg.Value, error) {
+func parsecpumasksetbits(s string) (cfg.Value, error) {
 	popcnt := map[rune]int{
 		'0': 0, '1': 1, '2': 1, '3': 2,
 		'4': 1, '5': 2, '6': 2, '7': 3,
 		'8': 1, '9': 2, 'a': 2, 'b': 3,
 		'c': 2, 'd': 3, 'e': 3, 'f': 4,
+		',': 0, // for large cpu counts the mask is comma-separated
 	}
 	total := 0
 	for _, r := range s {
