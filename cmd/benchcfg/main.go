@@ -59,7 +59,7 @@ var providers = cfg.Providers{
 	sys.VirtualMemory,
 	sys.CPU,
 	sys.ProcStat,
-	sys.IntelPState,
+	sys.IntelPState{},
 }
 
 func execute(args []string) error {

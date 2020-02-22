@@ -248,6 +248,7 @@ func (s SectionEntry) Validate() error {
 // Provider is a source of configuration.
 type Provider interface {
 	Labeled
+	Available() bool
 	Configuration() (Configuration, error)
 }
 
@@ -267,10 +268,15 @@ func NewProvider(k Key, doc string, f func() (Configuration, error)) Provider {
 	}
 }
 
+func (p provider) Available() bool                       { return true }
 func (p provider) Configuration() (Configuration, error) { return p.f() }
 
 // Providers is a list of providers.
 type Providers []Provider
+
+// Available returns true. Note that sub-providers will be checked for
+// availability when Configuration() is called.
+func (p Providers) Available() bool { return true }
 
 // Keys returns all keys in the provider list.
 func (p Providers) Keys() []string {
@@ -279,6 +285,17 @@ func (p Providers) Keys() []string {
 		keys[i] = string(p[i].Key())
 	}
 	return keys
+}
+
+// FilterAvailable returns the available sub-providers.
+func (p Providers) FilterAvailable() Providers {
+	a := make(Providers, 0, len(p))
+	for i := range p {
+		if p[i].Available() {
+			a = append(a, p[i])
+		}
+	}
+	return a
 }
 
 // Select returns the subset of providers with the given keys.
@@ -301,17 +318,38 @@ func (p Providers) Select(keys ...string) (Providers, error) {
 // Configuration gathers configuration from all providers.
 func (p Providers) Configuration() (Configuration, error) {
 	c := make(Configuration, len(p))
-	for i, provider := range p {
-		sub, err := provider.Configuration()
+	for i := range p {
+		e, err := providerentry(p[i])
 		if err != nil {
 			return nil, err
 		}
-		c[i] = SectionEntry{
-			Labeled: provider,
-			Sub:     sub,
-		}
+		c[i] = e
 	}
 	return c, nil
+}
+
+func providerentry(p Provider) (Entry, error) {
+	section := SectionEntry{
+		Labeled: p,
+	}
+
+	if !p.Available() {
+		section.Sub = Configuration{
+			Property(
+				"available",
+				fmt.Sprintf("availability of the %s provider", p.Key()),
+				BoolValue(false),
+			),
+		}
+	} else {
+		sub, err := p.Configuration()
+		if err != nil {
+			return nil, err
+		}
+		section.Sub = sub
+	}
+
+	return section, nil
 }
 
 // Write configuration to the writer w.

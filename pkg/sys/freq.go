@@ -8,9 +8,20 @@ import (
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
 
-var IntelPState = cfg.NewProvider("intelpstate", "Intel P-State driver", intelpstate)
+// IntelPState provides configuration about the Intel P-State driver.
+type IntelPState struct{}
 
-func intelpstate() (cfg.Configuration, error) {
+// Key returns "intelpstate".
+func (IntelPState) Key() cfg.Key { return "intelpstate" }
+
+// Doc for the configuration provider.
+func (IntelPState) Doc() string { return "Intel P-State driver" }
+
+// Available checks whether the Intel P-State sysfs files are present.
+func (IntelPState) Available() bool { return true }
+
+// Configuration queries sysfs for Intel P-state configuration.
+func (IntelPState) Configuration() (cfg.Configuration, error) {
 	properties := []struct {
 		Filename string
 		Parser   func(string) (cfg.Value, error)
