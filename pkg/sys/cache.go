@@ -73,7 +73,7 @@ func (Caches) Available() bool {
 	return err == nil && info.IsDir()
 }
 
-// Configuration queries sysfs for Intel P-state configuration.
+// Configuration queries sysfs for cache configuration.
 func (Caches) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
 		{"type", parsestring, "cache type: Data, Instruction or Unified"},
