@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -43,7 +44,7 @@ func NewRunner(w *Workspace, tc Toolchain) *Runner {
 }
 
 // Init initializes the runner.
-func (r *Runner) Init() {
+func (r *Runner) Init(ctx context.Context) {
 	defer lg.Scope(r.w, "initializing")()
 
 	// Install toolchain.
@@ -64,41 +65,39 @@ func (r *Runner) Init() {
 	r.w.DefineTool("PKG_CONFIG", "pkg-config")
 
 	// Environment checks.
-	r.GoExec("version")
-	r.GoExec("env")
+	r.GoExec(ctx, "version")
+	r.GoExec(ctx, "env")
 }
 
 // Clean up the runner.
-func (r *Runner) Clean() {
+func (r *Runner) Clean(ctx context.Context) {
 	defer lg.Scope(r.w, "clean")()
-	r.GoExec("clean", "-cache", "-testcache", "-modcache")
+	r.GoExec(ctx, "clean", "-cache", "-testcache", "-modcache")
 	r.w.Clean()
 }
 
 // Go builds a command with the downloaded go version.
-func (r *Runner) Go(arg ...string) *exec.Cmd {
-	return &exec.Cmd{
-		Path: r.gobin,
-		Args: append([]string{"go"}, arg...),
-	}
+func (r *Runner) Go(ctx context.Context, arg ...string) *exec.Cmd {
+	return exec.CommandContext(ctx, r.gobin, arg...)
 }
 
 // GoExec executes the go binary with the given arguments.
-func (r *Runner) GoExec(arg ...string) {
-	r.w.Exec(r.Go(arg...))
+func (r *Runner) GoExec(ctx context.Context, arg ...string) {
+	r.w.Exec(r.Go(ctx, arg...))
 }
 
 // Benchmark runs the benchmark job.
-func (r *Runner) Benchmark(j Job) {
+func (r *Runner) Benchmark(ctx context.Context, j Job) {
 	defer lg.Scope(r.w, "benchmark")()
 
 	// Setup.
 	dir := r.w.Sandbox("bench")
-	r.GoExec("mod", "init", "bench")
-	r.GoExec("get", "-t", j.Module.String())
+	r.GoExec(ctx, "mod", "init", "bench")
+	r.GoExec(ctx, "get", "-t", j.Module.String())
 
 	// Run the benchmark.
 	cmd := r.Go(
+		ctx,
 		"test",
 		"-run", "none^", // no tests
 		"-bench", ".", // all benchmarks

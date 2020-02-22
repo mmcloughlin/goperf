@@ -8,7 +8,9 @@ import (
 	"runtime"
 
 	"github.com/mmcloughlin/cb/internal/flags"
+	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
@@ -31,6 +33,9 @@ func main1() int {
 }
 
 func mainerr() error {
+	logger := lg.Default()
+	ctx := command.BackgroundContext(logger)
+
 	// Flags.
 	var (
 		toolchainconfig = flags.TypeParams{
@@ -56,7 +61,7 @@ func mainerr() error {
 	}
 
 	// Construct workspace.
-	w, err := runner.NewWorkspace()
+	w, err := runner.NewWorkspace(runner.WithLogger(logger))
 	if err != nil {
 		return err
 	}
@@ -67,7 +72,7 @@ func mainerr() error {
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
-	r.Init()
+	r.Init(ctx)
 
 	// Run benchmark.
 	mod := runner.Module{
@@ -77,11 +82,11 @@ func mainerr() error {
 	job := runner.Job{
 		Module: mod,
 	}
-	r.Benchmark(job)
+	r.Benchmark(ctx, job)
 
 	// Clean.
 	if !preserve {
-		r.Clean()
+		r.Clean(ctx)
 	}
 
 	return w.Error()

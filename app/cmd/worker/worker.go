@@ -82,7 +82,7 @@ func (h *Handler) Handle(ctx context.Context, data []byte) error {
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
-	r.Init()
+	r.Init(ctx)
 
 	// Run benchmarks.
 	for _, s := range j.Suites {
@@ -90,11 +90,11 @@ func (h *Handler) Handle(ctx context.Context, data []byte) error {
 			Path:    s.Module.Path,
 			Version: s.Module.Version,
 		}
-		r.Benchmark(runner.Job{Module: mod})
+		r.Benchmark(ctx, runner.Job{Module: mod})
 	}
 
 	// Cleanup.
-	r.Clean()
+	r.Clean(ctx)
 
 	return w.Error()
 }
