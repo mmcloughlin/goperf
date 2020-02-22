@@ -252,6 +252,9 @@ type Provider interface {
 	Configuration() (Configuration, error)
 }
 
+// Available returns true (satisfies the Provider interface).
+func (s SectionEntry) Available() bool { return true }
+
 // Configuration satisfies the Provider interface.
 func (s SectionEntry) Configuration() (Configuration, error) { return s.Sub, nil }
 
