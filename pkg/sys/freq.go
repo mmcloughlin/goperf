@@ -2,11 +2,15 @@ package sys
 
 import (
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
+
+const intelpstateroot = "/sys/devices/system/cpu/intel_pstate"
 
 // IntelPState provides configuration about the Intel P-State driver.
 type IntelPState struct{}
@@ -18,7 +22,10 @@ func (IntelPState) Key() cfg.Key { return "intelpstate" }
 func (IntelPState) Doc() string { return "Intel P-State driver" }
 
 // Available checks whether the Intel P-State sysfs files are present.
-func (IntelPState) Available() bool { return true }
+func (IntelPState) Available() bool {
+	info, err := os.Stat(intelpstateroot)
+	return err == nil && info.IsDir()
+}
 
 // Configuration queries sysfs for Intel P-state configuration.
 func (IntelPState) Configuration() (cfg.Configuration, error) {
@@ -36,7 +43,7 @@ func (IntelPState) Configuration() (cfg.Configuration, error) {
 	}
 	c := cfg.Configuration{}
 	for _, p := range properties {
-		filename := "/sys/devices/system/cpu/intel_pstate/" + p.Filename
+		filename := filepath.Join(intelpstateroot, p.Filename)
 		b, err := ioutil.ReadFile(filename)
 		if err != nil {
 			return nil, err
