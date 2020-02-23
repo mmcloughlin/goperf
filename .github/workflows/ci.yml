@@ -23,5 +23,5 @@ jobs:
         run: go build ./...
       - name: Test
         run: go test ./...
-      - name: Run benchcfg Tool
-        run: go run ./cmd/benchcfg true
+      - name: Run bench cfg Tool
+        run: go run ./cmd/bench cfg true
