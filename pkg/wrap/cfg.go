@@ -22,9 +22,9 @@ var DefaultProviders = cfg.Providers{
 	sys.VirtualMemory,
 	sys.CPU,
 	sys.Caches{},
-	proc.Stat{},
 	sys.CPUFreq{},
 	sys.IntelPState{},
+	proc.Stat{},
 }
 
 type Config struct {
