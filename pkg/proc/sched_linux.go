@@ -1,7 +1,6 @@
 package proc
 
 import (
-	"syscall"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -20,12 +19,15 @@ type SchedParam struct {
 }
 
 // SetScheduler sets the linux scheduling policy for process pid, where 0 is the calling process.
-func SetScheduler(pid int, policy Policy, param *SchedParam) syscall.Errno {
-	_, _, err := unix.Syscall(
+func SetScheduler(pid int, policy Policy, param *SchedParam) error {
+	_, _, errno := unix.Syscall(
 		unix.SYS_SCHED_SETSCHEDULER,
 		uintptr(pid),
 		uintptr(policy),
 		uintptr(unsafe.Pointer(param)),
 	)
-	return err
+	if errno != 0 {
+		return errno
+	}
+	return nil
 }

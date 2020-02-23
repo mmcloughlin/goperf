@@ -18,6 +18,7 @@ func main() {
 	base := command.NewBase(logger)
 	subcommands.Register(NewRun(base), "")
 	subcommands.Register(wrap.NewConfigDefault(base), "")
+	subcommands.Register(wrap.NewPrioritize(base), "")
 	subcommands.Register(subcommands.HelpCommand(), "")
 
 	flag.Parse()

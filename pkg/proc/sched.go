@@ -2,15 +2,17 @@ package proc
 
 import (
 	"strconv"
-	"syscall"
 
 	"golang.org/x/sys/unix"
 )
 
 // SetPriority sets the priority of process with the given pid, where 0 is the calling process.
-func SetPriority(pid, priority int) syscall.Errno {
-	_, _, err := unix.Syscall(unix.SYS_SETPRIORITY, unix.PRIO_PROCESS, uintptr(pid), uintptr(priority))
-	return err
+func SetPriority(pid, priority int) error {
+	_, _, errno := unix.Syscall(unix.SYS_SETPRIORITY, unix.PRIO_PROCESS, uintptr(pid), uintptr(priority))
+	if errno != 0 {
+		return errno
+	}
+	return nil
 }
 
 // Policy is a linux scheduling policy.
