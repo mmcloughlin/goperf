@@ -4,12 +4,11 @@ import (
 	"flag"
 	"os"
 
-	"github.com/mmcloughlin/cb/pkg/wrap"
+	"github.com/google/subcommands"
 
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/lg"
-
-	"github.com/google/subcommands"
+	"github.com/mmcloughlin/cb/pkg/wrap"
 )
 
 func main() {
