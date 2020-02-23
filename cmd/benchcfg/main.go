@@ -10,6 +10,7 @@ import (
 
 	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/cb/pkg/proc"
 	"github.com/mmcloughlin/cb/pkg/sys"
 )
 
@@ -59,7 +60,7 @@ var providers = cfg.Providers{
 	sys.VirtualMemory,
 	sys.CPU,
 	sys.Caches{},
-	sys.ProcStat{},
+	proc.Stat{},
 	sys.CPUFreq{},
 	sys.IntelPState{},
 }

@@ -1,4 +1,4 @@
-package sys
+package proc
 
 import (
 	"os"
@@ -9,25 +9,25 @@ import (
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
 
-const procstatfile = "/proc/self/stat"
+const selfstatfile = "/proc/self/stat"
 
-// ProcStat is a config provider based on the `/proc/*/stat` file.
-type ProcStat struct{}
+// Stat is a config provider based on the `/proc/*/stat` file.
+type Stat struct{}
 
 // Key returns "procstat".
-func (ProcStat) Key() cfg.Key { return "procstat" }
+func (Stat) Key() cfg.Key { return "procstat" }
 
 // Doc for the configuration provider.
-func (ProcStat) Doc() string { return "Linux process status information from /proc/*/stat" }
+func (Stat) Doc() string { return "Linux process status information from /proc/*/stat" }
 
 // Available checks for the /proc/self/stat file.
-func (ProcStat) Available() bool {
-	_, err := os.Stat(procstatfile)
+func (Stat) Available() bool {
+	_, err := os.Stat(selfstatfile)
 	return err == nil
 }
 
 // Configuration reports performance-critical parameters from the /proc/self/stat file.
-func (ProcStat) Configuration() (cfg.Configuration, error) {
+func (Stat) Configuration() (cfg.Configuration, error) {
 	stat, err := linux.ReadProcessStat("/proc/self/stat")
 	if err != nil {
 		return nil, err
