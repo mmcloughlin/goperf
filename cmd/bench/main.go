@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 
 	"github.com/google/subcommands"
@@ -13,14 +14,32 @@ import (
 
 func main() {
 	logger := lg.Default()
-	ctx := command.BackgroundContext(logger)
-
 	base := command.NewBase(logger)
-	subcommands.Register(NewRun(base), "")
-	subcommands.Register(wrap.NewConfigDefault(base), "")
-	subcommands.Register(wrap.NewPrioritize(base), "")
-	subcommands.Register(subcommands.HelpCommand(), "")
 
+	// Runner.
+	r := NewRun(base)
+	subcommands.Register(r, "benchmark execution")
+
+	// Wrappers.
+	wrapcmds := []subcommands.Command{
+		wrap.NewConfigDefault(base),
+		wrap.NewPrioritize(base),
+	}
+	for _, wrapcmd := range wrapcmds {
+		subcommands.Register(wrapcmd, "process wrapping")
+		w, err := wrap.RunUnder(wrapcmd)
+		if err != nil {
+			log.Fatal(err)
+		}
+		r.AddWrapper(w)
+	}
+
+	// Help.
+	subcommands.Register(subcommands.HelpCommand(), "help")
+	subcommands.Register(subcommands.CommandsCommand(), "help")
+
+	// Execute.
 	flag.Parse()
+	ctx := command.BackgroundContext(logger)
 	os.Exit(int(subcommands.Execute(ctx)))
 }

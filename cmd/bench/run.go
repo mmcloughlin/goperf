@@ -23,6 +23,8 @@ const (
 type Run struct {
 	command.Base
 
+	wrappers []runner.Wrapper
+
 	toolchainconfig flags.TypeParams
 	output          string
 	preserve        bool
@@ -39,6 +41,11 @@ func NewRun(b command.Base) *Run {
 			},
 		},
 	}
+}
+
+// AddWrapper configures a wrapper around benchmark runs.
+func (r *Run) AddWrapper(w runner.Wrapper) {
+	r.wrappers = append(r.wrappers, w)
 }
 
 func (*Run) Name() string { return "run" }
@@ -74,6 +81,8 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
+	r.Wrap(cmd.wrappers...)
+
 	r.Init(ctx)
 
 	// Run benchmark.

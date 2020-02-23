@@ -33,7 +33,8 @@ type Runner struct {
 	w  *Workspace
 	tc Toolchain
 
-	gobin string
+	gobin    string
+	wrappers []Wrapper
 }
 
 func NewRunner(w *Workspace, tc Toolchain) *Runner {
@@ -86,6 +87,11 @@ func (r *Runner) GoExec(ctx context.Context, arg ...string) {
 	r.w.Exec(r.Go(ctx, arg...))
 }
 
+// Wrap configures the wrapper w to be applied to benchmark runs. Wrappers are applied in the order they are added.
+func (r *Runner) Wrap(w ...Wrapper) {
+	r.wrappers = append(r.wrappers, w...)
+}
+
 // Benchmark runs the benchmark job.
 func (r *Runner) Benchmark(ctx context.Context, j Job) {
 	defer lg.Scope(r.w, "benchmark")()
@@ -104,6 +110,10 @@ func (r *Runner) Benchmark(ctx context.Context, j Job) {
 		"-benchtime", "10ms", // 10ms each
 		j.Module.Path+"/...",
 	)
+
+	for _, w := range r.wrappers {
+		w(cmd)
+	}
 
 	outputfile := filepath.Join(dir, "bench.out")
 	f, err := os.Create(outputfile)
