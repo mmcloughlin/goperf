@@ -75,10 +75,15 @@ type policy int
 //	#define SCHED_IDLE		5
 //	#define SCHED_DEADLINE		6
 //
+// Reference: https://github.com/torvalds/linux/blob/c309b6f24222246c18a8b65d3950e6e755440865/Documentation/scheduler/sched-design-CFS.rst#L124-L125
+//
+//	  - SCHED_NORMAL (traditionally called SCHED_OTHER): The scheduling
+//	    policy that is used for regular tasks.
+//
 func (p policy) String() string {
 	switch p {
 	case 0:
-		return "SCHED_NORMAL"
+		return "SCHED_OTHER"
 	case 1:
 		return "SCHED_FIFO"
 	case 2:
