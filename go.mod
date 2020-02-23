@@ -12,6 +12,7 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
@@ -19,5 +20,6 @@ require (
 	github.com/shirou/gopsutil v2.20.1+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/build v0.0.0-20200207163221-ab7b028cb90c
+	golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f
 )
