@@ -1,9 +1,84 @@
 package cpuset
 
 import (
-	"strings"
 	"testing"
 )
+
+func TestSetMaskFormatBidirectional(t *testing.T) {
+	cases := []struct {
+		Mask    string
+		Members []uint
+	}{
+		{
+			Mask:    "00000000",
+			Members: []uint{},
+		},
+		{
+			Mask:    "00000001",
+			Members: []uint{0},
+		},
+		{
+			Mask:    "40000000,00000000,00000000",
+			Members: []uint{94},
+		},
+		{
+			Mask:    "00000001,00000000,00000000",
+			Members: []uint{64},
+		},
+		{
+			Mask:    "000000ff,00000000",
+			Members: []uint{32, 33, 34, 35, 36, 37, 38, 39},
+		},
+		{
+			Mask:    "000e3862",
+			Members: []uint{1, 5, 6, 11, 12, 13, 17, 18, 19},
+		},
+		{
+			Mask:    "00000001,00000001,00010117",
+			Members: []uint{0, 1, 2, 4, 8, 16, 32, 64},
+		},
+	}
+	for _, c := range cases {
+		set := NewSet(c.Members...)
+
+		// Parse
+		got, err := ParseMask(c.Mask)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !got.Equals(set) {
+			t.Errorf("ParseMask(%v) = %v; expect %v", c.Mask, got, set)
+		}
+
+		// Format
+		if s := set.FormatMask(); s != c.Mask {
+			t.Errorf("(%v).FormatMask() = %v; expect %v", set, s, c.Mask)
+		}
+	}
+}
+
+func TestSetParseMaskErrors(t *testing.T) {
+	cases := []struct {
+		Mask  string
+		Error string
+	}{
+		{"0", `parsing mask word "0": expected 8 hex characters`},
+		{"00000100,qwertyui,11223344", `parsing mask word "qwertyui": invalid`},
+		{"0x112233", `parsing mask word "0x112233": invalid`},
+	}
+	for _, c := range cases {
+		got, err := ParseMask(c.Mask)
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if got != nil {
+			t.Fatal("expected nil return with error")
+		}
+		if err.Error() != c.Error {
+			t.Errorf("got error %q; expect %q", err, c.Error)
+		}
+	}
+}
 
 func TestSetListFormatBidirectional(t *testing.T) {
 	cases := []struct {
@@ -52,8 +127,8 @@ func TestSetListFormatBidirectional(t *testing.T) {
 
 func TestSetParseListErrors(t *testing.T) {
 	cases := []struct {
-		List           string
-		ErrorSubstring string
+		List  string
+		Error string
 	}{
 		{"wat", `parse unsigned integer: "wat" invalid`},
 		{"wat-2", `parse unsigned integer: "wat" invalid`},
@@ -69,8 +144,8 @@ func TestSetParseListErrors(t *testing.T) {
 		if got != nil {
 			t.Fatal("expected nil return with error")
 		}
-		if !strings.Contains(err.Error(), c.ErrorSubstring) {
-			t.Errorf("expect error %q to contain %q", err, c.ErrorSubstring)
+		if err.Error() != c.Error {
+			t.Errorf("got error %q; expect %q", err, c.Error)
 		}
 	}
 }
