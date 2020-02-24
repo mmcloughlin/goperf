@@ -39,7 +39,7 @@ func (s *CPUSet) Tasks() ([]int, error) {
 // moved to a different cpuset) and all child cpuset directories have been
 // removed.
 func (s *CPUSet) NotifyOnRelease() (bool, error) {
-	return flagfile(s.path("cpuset.notify_on_release"))
+	return flagfile(s.path("notify_on_release"))
 }
 
 // CPUs returns the set of physical numbers of the CPUs on which processes in
@@ -64,8 +64,8 @@ func (s *CPUSet) CPUExclusive() (bool, error) {
 
 // Mems returns the list of memory nodes on which processes in this cpuset are
 // allowed to allocate memory.
-func (s *CPUSet) Mems() ([]int, error) {
-	return intsfile(s.path("mems"))
+func (s *CPUSet) Mems() (Set, error) {
+	return listfile(s.path("cpuset.mems"))
 }
 
 // MemExclusive reports whether the cpuset has exclusive use of its memory nodes
