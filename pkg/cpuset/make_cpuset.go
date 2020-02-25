@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"go/format"
 	"log"
 	"os"
 )
@@ -208,7 +209,10 @@ func mainerr() error {
 	// Generate.
 	g := NewGenerator("cpuset", "CPUSet", "s")
 	g.Methods(Properties)
-	b := g.Bytes()
+	src, err := g.Format()
+	if err != nil {
+		return err
+	}
 
 	// Output.
 	w := os.Stdout
@@ -221,7 +225,7 @@ func mainerr() error {
 		w = f
 	}
 
-	_, err := w.Write(b)
+	_, err = w.Write(src)
 	return err
 }
 
@@ -241,6 +245,10 @@ func NewGenerator(pkg, name, receiver string) *Generator {
 	}
 }
 
+func (g *Generator) Format() ([]byte, error) {
+	return format.Source(g.Bytes())
+}
+
 func (g *Generator) Methods(ps []Property) {
 	g.Printf("package %s\n", g.pkg)
 	for _, p := range ps {
@@ -249,15 +257,22 @@ func (g *Generator) Methods(ps []Property) {
 }
 
 func (g *Generator) Property(p Property) {
-	g.Printf("\n")
+	g.Linef("")
 	for _, line := range p.Doc {
-		g.Printf("// %s\n", line)
+		g.Linef("// %s", line)
 	}
-	g.Printf("func (%s *%s) %s() (%s, error) {\n", g.receiver, g.name, p.FunctionName, p.Type.Go)
-	g.Printf("\treturn %sfile(%s.path(%q))\n", p.Type.Name, g.receiver, p.Filename)
-	g.Printf("}\n")
+	g.Linef("//")
+	g.Linef("// Corresponds to the %q file in the cpuset directory.", p.Filename)
+
+	g.Linef("func (%s *%s) %s() (%s, error) {", g.receiver, g.name, p.FunctionName, p.Type.Go)
+	g.Linef("\treturn %sfile(%s.path(%q))", p.Type.Name, g.receiver, p.Filename)
+	g.Linef("}")
 }
 
 func (g *Generator) Printf(format string, a ...interface{}) {
 	fmt.Fprintf(g, format, a...)
+}
+
+func (g *Generator) Linef(format string, a ...interface{}) {
+	g.Printf(format+"\n", a...)
 }

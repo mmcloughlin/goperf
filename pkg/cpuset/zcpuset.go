@@ -1,6 +1,8 @@
 package cpuset
 
 // Tasks returns the list of process IDs (PIDs) of the processes in the cpuset.
+//
+// Corresponds to the "tasks" file in the cpuset directory.
 func (s *CPUSet) Tasks() ([]int, error) {
 	return intsfile(s.path("tasks"))
 }
@@ -10,12 +12,16 @@ func (s *CPUSet) Tasks() ([]int, error) {
 // released, that is, after all processes cease using it (i.e., terminate or are
 // moved to a different cpuset) and all child cpuset directories have been
 // removed.
+//
+// Corresponds to the "notify_on_release" file in the cpuset directory.
 func (s *CPUSet) NotifyOnRelease() (bool, error) {
 	return flagfile(s.path("notify_on_release"))
 }
 
 // CPUs returns the set of physical numbers of the CPUs on which processes in
 // the cpuset are allowed to execute.
+//
+// Corresponds to the "cpuset.cpus" file in the cpuset directory.
 func (s *CPUSet) CPUs() (Set, error) {
 	return listfile(s.path("cpuset.cpus"))
 }
@@ -30,12 +36,16 @@ func (s *CPUSet) CPUs() (Set, error) {
 // of another, and if both of these cpusets have nonempty cpus, then their cpus
 // must overlap, because the cpus of any cpuset are always a subset of the cpus
 // of its parent cpuset.
+//
+// Corresponds to the "cpuset.cpu_exclusive" file in the cpuset directory.
 func (s *CPUSet) CPUExclusive() (bool, error) {
 	return flagfile(s.path("cpuset.cpu_exclusive"))
 }
 
 // Mems returns the list of memory nodes on which processes in this cpuset are
 // allowed to allocate memory.
+//
+// Corresponds to the "cpuset.mems" file in the cpuset directory.
 func (s *CPUSet) Mems() (Set, error) {
 	return listfile(s.path("cpuset.mems"))
 }
@@ -49,6 +59,8 @@ func (s *CPUSet) Mems() (Set, error) {
 // another, then their memory nodes must overlap, because the memory nodes of
 // any cpuset are always a subset of the memory nodes of that cpuset's parent
 // cpuset.
+//
+// Corresponds to the "cpuset.mem_exclusive" file in the cpuset directory.
 func (s *CPUSet) MemExclusive() (bool, error) {
 	return flagfile(s.path("cpuset.mem_exclusive"))
 }
@@ -58,11 +70,15 @@ func (s *CPUSet) MemExclusive() (bool, error) {
 // mem_hardwall may have overlapping memory nodes with sibling or cousin
 // cpusets. By default, this is off. Newly created cpusets also initially
 // default this to off.
+//
+// Corresponds to the "cpuset.mem_hardwall" file in the cpuset directory.
 func (s *CPUSet) MemHardwall() (bool, error) {
 	return flagfile(s.path("cpuset.mem_hardwall"))
 }
 
 // MemoryMigrate reports whether memory migration is enabled.
+//
+// Corresponds to the "cpuset.memory_migrate" file in the cpuset directory.
 func (s *CPUSet) MemoryMigrate() (bool, error) {
 	return flagfile(s.path("cpuset.memory_migrate"))
 }
@@ -70,6 +86,8 @@ func (s *CPUSet) MemoryMigrate() (bool, error) {
 // MemoryPressure reports a measure of how much memory pressure the processes in
 // this cpuset are causing. If MemoryPressureEnabled() is false this will always
 // be 0.
+//
+// Corresponds to the "cpuset.memory_pressure" file in the cpuset directory.
 func (s *CPUSet) MemoryPressure() (int, error) {
 	return intfile(s.path("cpuset.memory_pressure"))
 }
@@ -77,6 +95,8 @@ func (s *CPUSet) MemoryPressure() (int, error) {
 // MemoryPressureEnabled reports whether memory pressure calculations are
 // enabled for all cpusets in the system. This method only works for the root
 // cpuset. By default, this is off.
+//
+// Corresponds to the "cpuset.memory_pressure_enabled" file in the cpuset directory.
 func (s *CPUSet) MemoryPressureEnabled() (bool, error) {
 	return flagfile(s.path("cpuset.memory_pressure_enabled"))
 }
@@ -85,6 +105,8 @@ func (s *CPUSet) MemoryPressureEnabled() (bool, error) {
 // (filesystem buffers) are uniformly spread across the cpuset.
 // By default, this is off (0) in the top cpuset, and inherited
 // from the parent cpuset in newly created cpusets.
+//
+// Corresponds to the "cpuset.memory_spread_page" file in the cpuset directory.
 func (s *CPUSet) MemorySpreadPage() (bool, error) {
 	return flagfile(s.path("cpuset.memory_spread_page"))
 }
@@ -93,6 +115,8 @@ func (s *CPUSet) MemorySpreadPage() (bool, error) {
 // (directory and inode structures) are uniformly spread across the cpuset. By
 // default, this is off (0) in the top cpuset, and inherited from the parent
 // cpuset in newly created cpusets.
+//
+// Corresponds to the "cpuset.memory_spread_slab" file in the cpuset directory.
 func (s *CPUSet) MemorySpreadSlab() (bool, error) {
 	return flagfile(s.path("cpuset.memory_spread_slab"))
 }
@@ -103,6 +127,8 @@ func (s *CPUSet) MemorySpreadSlab() (bool, error) {
 // avoid load balancing processes in this cpuset, unless some
 // other cpuset with overlapping CPUs has its sched_load_balance
 // flag set.
+//
+// Corresponds to the "cpuset.sched_load_balance" file in the cpuset directory.
 func (s *CPUSet) SchedLoadBalance() (bool, error) {
 	return flagfile(s.path("cpuset.sched_load_balance"))
 }
@@ -114,6 +140,8 @@ func (s *CPUSet) SchedLoadBalance() (bool, error) {
 // If sched_load_balance is enabled, then the higher the value of the
 // sched_relax_domain_level, the wider the range of CPUs over which immediate
 // load balancing is attempted.
+//
+// Corresponds to the "cpuset.sched_relax_domain_level" file in the cpuset directory.
 func (s *CPUSet) SchedRelaxDomainLevel() (int, error) {
 	return intfile(s.path("cpuset.sched_relax_domain_level"))
 }
