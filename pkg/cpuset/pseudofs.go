@@ -20,6 +20,11 @@ func intfile(path string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(string(b)))
 }
 
+func writeintfile(path string, n int) error {
+	data := strconv.Itoa(n) + "\n"
+	return ioutil.WriteFile(path, []byte(data), 0644)
+}
+
 func flagfile(path string) (bool, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -34,6 +39,14 @@ func flagfile(path string) (bool, error) {
 	default:
 		return false, errutil.AssertionFailure("unexpected file contents %q", b)
 	}
+}
+
+func writeflagfile(path string, enabled bool) error {
+	data := "0\n"
+	if enabled {
+		data = "1\n"
+	}
+	return ioutil.WriteFile(path, []byte(data), 0644)
 }
 
 func intsfile(path string) ([]int, error) {
@@ -58,6 +71,20 @@ func intsfile(path string) ([]int, error) {
 	return ns, nil
 }
 
+func writeintsfile(path string, ns []int) error {
+	// Note the warning in cpuset(7):
+	//
+	// Warning: only one PID may be written to the tasks file at a
+	// time.  If a string is written that contains more than one PID,
+	// only the first one will be used.
+	for _, n := range ns {
+		if err := writeintfile(path, n); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func listfile(path string) (Set, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -65,4 +92,9 @@ func listfile(path string) (Set, error) {
 	}
 	s := strings.TrimSpace(string(b))
 	return ParseList(s)
+}
+
+func writelistfile(path string, s Set) error {
+	data := s.FormatList() + "\n"
+	return ioutil.WriteFile(path, []byte(data), 0644)
 }

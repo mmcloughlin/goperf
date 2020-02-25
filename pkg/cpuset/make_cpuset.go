@@ -12,22 +12,37 @@ import (
 )
 
 type Type struct {
-	Name string
-	Go   string
+	Name       string
+	Go         string
+	WriteVerb  string
+	DefaultVar string
 }
 
 var (
-	Flag = Type{"flag", "bool"}
-	Set  = Type{"list", "Set"}
-	Int  = Type{"int", "int"}
-	Ints = Type{"ints", "[]int"}
+	Flag = Type{"flag", "bool", "Set", "enabled"}
+	Set  = Type{"list", "Set", "Set", "s"}
+	Int  = Type{"int", "int", "Set", "n"}
+	Ints = Type{"ints", "[]int", "Add", "ns"}
 )
 
 type Property struct {
 	Filename     string
 	FunctionName string
 	Type         Type
+	Var          string
+	ReadOnly     bool
 	Doc          []string
+}
+
+func (p Property) WriteFunc() string {
+	return p.Type.WriteVerb + p.FunctionName
+}
+
+func (p Property) Variable() string {
+	if p.Var != "" {
+		return p.Var
+	}
+	return p.Type.DefaultVar
 }
 
 var Properties = []Property{
@@ -35,6 +50,7 @@ var Properties = []Property{
 		Filename:     "tasks",
 		FunctionName: "Tasks",
 		Type:         Ints,
+		Var:          "tasks",
 		Doc: []string{
 			`Tasks returns the list of process IDs (PIDs) of the processes in the cpuset.`,
 		},
@@ -126,6 +142,7 @@ var Properties = []Property{
 		Filename:     "cpuset.memory_pressure",
 		FunctionName: "MemoryPressure",
 		Type:         Int,
+		ReadOnly:     true,
 		Doc: []string{
 			`MemoryPressure reports a measure of how much memory pressure the processes in`,
 			`this cpuset are causing. If MemoryPressureEnabled() is false this will always`,
@@ -181,6 +198,7 @@ var Properties = []Property{
 		Filename:     "cpuset.sched_relax_domain_level",
 		FunctionName: "SchedRelaxDomainLevel",
 		Type:         Int,
+		Var:          "level",
 		Doc: []string{
 			`SchedRelaxDomainLevel controls the width of the range of CPUs over which the`,
 			`kernel scheduler performs immediate rebalancing of runnable tasks across`,
@@ -207,7 +225,7 @@ func mainerr() error {
 	flag.Parse()
 
 	// Generate.
-	g := NewGenerator("cpuset", "CPUSet", "s")
+	g := NewGenerator("cpuset", "CPUSet", "c")
 	g.Methods(Properties)
 	src, err := g.Format()
 	if err != nil {
@@ -257,7 +275,8 @@ func (g *Generator) Methods(ps []Property) {
 }
 
 func (g *Generator) Property(p Property) {
-	g.Linef("")
+	// Get method has the main documentation block.
+	g.NL()
 	for _, line := range p.Doc {
 		g.Linef("// %s", line)
 	}
@@ -267,6 +286,17 @@ func (g *Generator) Property(p Property) {
 	g.Linef("func (%s *%s) %s() (%s, error) {", g.receiver, g.name, p.FunctionName, p.Type.Go)
 	g.Linef("\treturn %sfile(%s.path(%q))", p.Type.Name, g.receiver, p.Filename)
 	g.Linef("}")
+
+	// Write method.
+	if !p.ReadOnly {
+		g.NL()
+		g.Linef("// %s writes to the %q file of the cpuset.", p.WriteFunc(), p.Filename)
+		g.Linef("//")
+		g.Linef("// See %s() for the meaning of this field.", p.FunctionName)
+		g.Linef("func (%s *%s) %s(%s %s) error {", g.receiver, g.name, p.WriteFunc(), p.Variable(), p.Type.Go)
+		g.Linef("\treturn write%sfile(%s.path(%q), %s)", p.Type.Name, g.receiver, p.Filename, p.Variable())
+		g.Linef("}")
+	}
 }
 
 func (g *Generator) Printf(format string, a ...interface{}) {
@@ -276,3 +306,5 @@ func (g *Generator) Printf(format string, a ...interface{}) {
 func (g *Generator) Linef(format string, a ...interface{}) {
 	g.Printf(format+"\n", a...)
 }
+
+func (g *Generator) NL() { g.Linef("") }

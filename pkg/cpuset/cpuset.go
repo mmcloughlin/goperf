@@ -29,8 +29,8 @@ func NewCPUSetPath(path string) *CPUSet {
 }
 
 // path returns the full path to name within the cpuset directory.
-func (s *CPUSet) path(name string) string {
-	return filepath.Join(s.root, name)
+func (c *CPUSet) path(name string) string {
+	return filepath.Join(c.root, name)
 }
 
 //go:generate go run make_cpuset.go -output zcpuset.go

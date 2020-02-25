@@ -3,8 +3,15 @@ package cpuset
 // Tasks returns the list of process IDs (PIDs) of the processes in the cpuset.
 //
 // Corresponds to the "tasks" file in the cpuset directory.
-func (s *CPUSet) Tasks() ([]int, error) {
-	return intsfile(s.path("tasks"))
+func (c *CPUSet) Tasks() ([]int, error) {
+	return intsfile(c.path("tasks"))
+}
+
+// AddTasks writes to the "tasks" file of the cpuset.
+//
+// See Tasks() for the meaning of this field.
+func (c *CPUSet) AddTasks(tasks []int) error {
+	return writeintsfile(c.path("tasks"), tasks)
 }
 
 // NotifyOnRelease reports whether the notify_on_release flag is set for this
@@ -14,16 +21,30 @@ func (s *CPUSet) Tasks() ([]int, error) {
 // removed.
 //
 // Corresponds to the "notify_on_release" file in the cpuset directory.
-func (s *CPUSet) NotifyOnRelease() (bool, error) {
-	return flagfile(s.path("notify_on_release"))
+func (c *CPUSet) NotifyOnRelease() (bool, error) {
+	return flagfile(c.path("notify_on_release"))
+}
+
+// SetNotifyOnRelease writes to the "notify_on_release" file of the cpuset.
+//
+// See NotifyOnRelease() for the meaning of this field.
+func (c *CPUSet) SetNotifyOnRelease(enabled bool) error {
+	return writeflagfile(c.path("notify_on_release"), enabled)
 }
 
 // CPUs returns the set of physical numbers of the CPUs on which processes in
 // the cpuset are allowed to execute.
 //
 // Corresponds to the "cpuset.cpus" file in the cpuset directory.
-func (s *CPUSet) CPUs() (Set, error) {
-	return listfile(s.path("cpuset.cpus"))
+func (c *CPUSet) CPUs() (Set, error) {
+	return listfile(c.path("cpuset.cpus"))
+}
+
+// SetCPUs writes to the "cpuset.cpus" file of the cpuset.
+//
+// See CPUs() for the meaning of this field.
+func (c *CPUSet) SetCPUs(s Set) error {
+	return writelistfile(c.path("cpuset.cpus"), s)
 }
 
 // CPUExclusive reports whether the cpuset has exclusive use of its CPUs (no
@@ -38,16 +59,30 @@ func (s *CPUSet) CPUs() (Set, error) {
 // of its parent cpuset.
 //
 // Corresponds to the "cpuset.cpu_exclusive" file in the cpuset directory.
-func (s *CPUSet) CPUExclusive() (bool, error) {
-	return flagfile(s.path("cpuset.cpu_exclusive"))
+func (c *CPUSet) CPUExclusive() (bool, error) {
+	return flagfile(c.path("cpuset.cpu_exclusive"))
+}
+
+// SetCPUExclusive writes to the "cpuset.cpu_exclusive" file of the cpuset.
+//
+// See CPUExclusive() for the meaning of this field.
+func (c *CPUSet) SetCPUExclusive(enabled bool) error {
+	return writeflagfile(c.path("cpuset.cpu_exclusive"), enabled)
 }
 
 // Mems returns the list of memory nodes on which processes in this cpuset are
 // allowed to allocate memory.
 //
 // Corresponds to the "cpuset.mems" file in the cpuset directory.
-func (s *CPUSet) Mems() (Set, error) {
-	return listfile(s.path("cpuset.mems"))
+func (c *CPUSet) Mems() (Set, error) {
+	return listfile(c.path("cpuset.mems"))
+}
+
+// SetMems writes to the "cpuset.mems" file of the cpuset.
+//
+// See Mems() for the meaning of this field.
+func (c *CPUSet) SetMems(s Set) error {
+	return writelistfile(c.path("cpuset.mems"), s)
 }
 
 // MemExclusive reports whether the cpuset has exclusive use of its memory nodes
@@ -61,8 +96,15 @@ func (s *CPUSet) Mems() (Set, error) {
 // cpuset.
 //
 // Corresponds to the "cpuset.mem_exclusive" file in the cpuset directory.
-func (s *CPUSet) MemExclusive() (bool, error) {
-	return flagfile(s.path("cpuset.mem_exclusive"))
+func (c *CPUSet) MemExclusive() (bool, error) {
+	return flagfile(c.path("cpuset.mem_exclusive"))
+}
+
+// SetMemExclusive writes to the "cpuset.mem_exclusive" file of the cpuset.
+//
+// See MemExclusive() for the meaning of this field.
+func (c *CPUSet) SetMemExclusive(enabled bool) error {
+	return writeflagfile(c.path("cpuset.mem_exclusive"), enabled)
 }
 
 // MemHardwall reports whether the cpuset is a Hardwall cpuset (see below).
@@ -72,15 +114,29 @@ func (s *CPUSet) MemExclusive() (bool, error) {
 // default this to off.
 //
 // Corresponds to the "cpuset.mem_hardwall" file in the cpuset directory.
-func (s *CPUSet) MemHardwall() (bool, error) {
-	return flagfile(s.path("cpuset.mem_hardwall"))
+func (c *CPUSet) MemHardwall() (bool, error) {
+	return flagfile(c.path("cpuset.mem_hardwall"))
+}
+
+// SetMemHardwall writes to the "cpuset.mem_hardwall" file of the cpuset.
+//
+// See MemHardwall() for the meaning of this field.
+func (c *CPUSet) SetMemHardwall(enabled bool) error {
+	return writeflagfile(c.path("cpuset.mem_hardwall"), enabled)
 }
 
 // MemoryMigrate reports whether memory migration is enabled.
 //
 // Corresponds to the "cpuset.memory_migrate" file in the cpuset directory.
-func (s *CPUSet) MemoryMigrate() (bool, error) {
-	return flagfile(s.path("cpuset.memory_migrate"))
+func (c *CPUSet) MemoryMigrate() (bool, error) {
+	return flagfile(c.path("cpuset.memory_migrate"))
+}
+
+// SetMemoryMigrate writes to the "cpuset.memory_migrate" file of the cpuset.
+//
+// See MemoryMigrate() for the meaning of this field.
+func (c *CPUSet) SetMemoryMigrate(enabled bool) error {
+	return writeflagfile(c.path("cpuset.memory_migrate"), enabled)
 }
 
 // MemoryPressure reports a measure of how much memory pressure the processes in
@@ -88,8 +144,8 @@ func (s *CPUSet) MemoryMigrate() (bool, error) {
 // be 0.
 //
 // Corresponds to the "cpuset.memory_pressure" file in the cpuset directory.
-func (s *CPUSet) MemoryPressure() (int, error) {
-	return intfile(s.path("cpuset.memory_pressure"))
+func (c *CPUSet) MemoryPressure() (int, error) {
+	return intfile(c.path("cpuset.memory_pressure"))
 }
 
 // MemoryPressureEnabled reports whether memory pressure calculations are
@@ -97,8 +153,15 @@ func (s *CPUSet) MemoryPressure() (int, error) {
 // cpuset. By default, this is off.
 //
 // Corresponds to the "cpuset.memory_pressure_enabled" file in the cpuset directory.
-func (s *CPUSet) MemoryPressureEnabled() (bool, error) {
-	return flagfile(s.path("cpuset.memory_pressure_enabled"))
+func (c *CPUSet) MemoryPressureEnabled() (bool, error) {
+	return flagfile(c.path("cpuset.memory_pressure_enabled"))
+}
+
+// SetMemoryPressureEnabled writes to the "cpuset.memory_pressure_enabled" file of the cpuset.
+//
+// See MemoryPressureEnabled() for the meaning of this field.
+func (c *CPUSet) SetMemoryPressureEnabled(enabled bool) error {
+	return writeflagfile(c.path("cpuset.memory_pressure_enabled"), enabled)
 }
 
 // MemorySpreadPage reports whether pages in the kernel page cache
@@ -107,8 +170,15 @@ func (s *CPUSet) MemoryPressureEnabled() (bool, error) {
 // from the parent cpuset in newly created cpusets.
 //
 // Corresponds to the "cpuset.memory_spread_page" file in the cpuset directory.
-func (s *CPUSet) MemorySpreadPage() (bool, error) {
-	return flagfile(s.path("cpuset.memory_spread_page"))
+func (c *CPUSet) MemorySpreadPage() (bool, error) {
+	return flagfile(c.path("cpuset.memory_spread_page"))
+}
+
+// SetMemorySpreadPage writes to the "cpuset.memory_spread_page" file of the cpuset.
+//
+// See MemorySpreadPage() for the meaning of this field.
+func (c *CPUSet) SetMemorySpreadPage(enabled bool) error {
+	return writeflagfile(c.path("cpuset.memory_spread_page"), enabled)
 }
 
 // MemorySpreadSlab reports whether the kernel slab caches for file I/O
@@ -117,8 +187,15 @@ func (s *CPUSet) MemorySpreadPage() (bool, error) {
 // cpuset in newly created cpusets.
 //
 // Corresponds to the "cpuset.memory_spread_slab" file in the cpuset directory.
-func (s *CPUSet) MemorySpreadSlab() (bool, error) {
-	return flagfile(s.path("cpuset.memory_spread_slab"))
+func (c *CPUSet) MemorySpreadSlab() (bool, error) {
+	return flagfile(c.path("cpuset.memory_spread_slab"))
+}
+
+// SetMemorySpreadSlab writes to the "cpuset.memory_spread_slab" file of the cpuset.
+//
+// See MemorySpreadSlab() for the meaning of this field.
+func (c *CPUSet) SetMemorySpreadSlab(enabled bool) error {
+	return writeflagfile(c.path("cpuset.memory_spread_slab"), enabled)
 }
 
 // SchedLoadBalance reports wether the kernel will
@@ -129,8 +206,15 @@ func (s *CPUSet) MemorySpreadSlab() (bool, error) {
 // flag set.
 //
 // Corresponds to the "cpuset.sched_load_balance" file in the cpuset directory.
-func (s *CPUSet) SchedLoadBalance() (bool, error) {
-	return flagfile(s.path("cpuset.sched_load_balance"))
+func (c *CPUSet) SchedLoadBalance() (bool, error) {
+	return flagfile(c.path("cpuset.sched_load_balance"))
+}
+
+// SetSchedLoadBalance writes to the "cpuset.sched_load_balance" file of the cpuset.
+//
+// See SchedLoadBalance() for the meaning of this field.
+func (c *CPUSet) SetSchedLoadBalance(enabled bool) error {
+	return writeflagfile(c.path("cpuset.sched_load_balance"), enabled)
 }
 
 // SchedRelaxDomainLevel controls the width of the range of CPUs over which the
@@ -142,6 +226,13 @@ func (s *CPUSet) SchedLoadBalance() (bool, error) {
 // load balancing is attempted.
 //
 // Corresponds to the "cpuset.sched_relax_domain_level" file in the cpuset directory.
-func (s *CPUSet) SchedRelaxDomainLevel() (int, error) {
-	return intfile(s.path("cpuset.sched_relax_domain_level"))
+func (c *CPUSet) SchedRelaxDomainLevel() (int, error) {
+	return intfile(c.path("cpuset.sched_relax_domain_level"))
+}
+
+// SetSchedRelaxDomainLevel writes to the "cpuset.sched_relax_domain_level" file of the cpuset.
+//
+// See SchedRelaxDomainLevel() for the meaning of this field.
+func (c *CPUSet) SetSchedRelaxDomainLevel(level int) error {
+	return writeintfile(c.path("cpuset.sched_relax_domain_level"), level)
 }
