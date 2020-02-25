@@ -289,13 +289,37 @@ func (g *Generator) Property(p Property) {
 
 	// Write method.
 	if !p.ReadOnly {
+		g.WriteMethods(p)
+	}
+}
+
+func (g *Generator) WriteMethods(p Property) {
+	// Write method.
+	g.NL()
+	g.Linef("// %s writes to the %q file of the cpuset.", p.WriteFunc(), p.Filename)
+	g.Linef("//")
+	g.Linef("// See %s() for the meaning of this field.", p.FunctionName)
+	g.Linef("func (%s *%s) %s(%s %s) error {", g.receiver, g.name, p.WriteFunc(), p.Variable(), p.Type.Go)
+	g.Linef("\treturn write%sfile(%s.path(%q), %s)", p.Type.Name, g.receiver, p.Filename, p.Variable())
+	g.Linef("}")
+
+	// Special case Enable/Disable methods for flags.
+	if p.Type != Flag {
+		return
+	}
+
+	for _, fn := range []struct {
+		Action string
+		Value  bool
+	}{
+		{"Enable", true},
+		{"Disable", false},
+	} {
 		g.NL()
-		g.Linef("// %s writes to the %q file of the cpuset.", p.WriteFunc(), p.Filename)
+		g.Linef("// %s%s sets the %q file to %v.", fn.Action, p.FunctionName, p.Filename, fn.Value)
 		g.Linef("//")
 		g.Linef("// See %s() for the meaning of this field.", p.FunctionName)
-		g.Linef("func (%s *%s) %s(%s %s) error {", g.receiver, g.name, p.WriteFunc(), p.Variable(), p.Type.Go)
-		g.Linef("\treturn write%sfile(%s.path(%q), %s)", p.Type.Name, g.receiver, p.Filename, p.Variable())
-		g.Linef("}")
+		g.Linef("func (%s *%s) %s%s() error { return %s.%s(%#v) }", g.receiver, g.name, fn.Action, p.FunctionName, g.receiver, p.WriteFunc(), fn.Value)
 	}
 }
 

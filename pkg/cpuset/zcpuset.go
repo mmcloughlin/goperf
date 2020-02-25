@@ -32,6 +32,16 @@ func (c *CPUSet) SetNotifyOnRelease(enabled bool) error {
 	return writeflagfile(c.path("notify_on_release"), enabled)
 }
 
+// EnableNotifyOnRelease sets the "notify_on_release" file to true.
+//
+// See NotifyOnRelease() for the meaning of this field.
+func (c *CPUSet) EnableNotifyOnRelease() error { return c.SetNotifyOnRelease(true) }
+
+// DisableNotifyOnRelease sets the "notify_on_release" file to false.
+//
+// See NotifyOnRelease() for the meaning of this field.
+func (c *CPUSet) DisableNotifyOnRelease() error { return c.SetNotifyOnRelease(false) }
+
 // CPUs returns the set of physical numbers of the CPUs on which processes in
 // the cpuset are allowed to execute.
 //
@@ -70,6 +80,16 @@ func (c *CPUSet) SetCPUExclusive(enabled bool) error {
 	return writeflagfile(c.path("cpuset.cpu_exclusive"), enabled)
 }
 
+// EnableCPUExclusive sets the "cpuset.cpu_exclusive" file to true.
+//
+// See CPUExclusive() for the meaning of this field.
+func (c *CPUSet) EnableCPUExclusive() error { return c.SetCPUExclusive(true) }
+
+// DisableCPUExclusive sets the "cpuset.cpu_exclusive" file to false.
+//
+// See CPUExclusive() for the meaning of this field.
+func (c *CPUSet) DisableCPUExclusive() error { return c.SetCPUExclusive(false) }
+
 // Mems returns the list of memory nodes on which processes in this cpuset are
 // allowed to allocate memory.
 //
@@ -107,6 +127,16 @@ func (c *CPUSet) SetMemExclusive(enabled bool) error {
 	return writeflagfile(c.path("cpuset.mem_exclusive"), enabled)
 }
 
+// EnableMemExclusive sets the "cpuset.mem_exclusive" file to true.
+//
+// See MemExclusive() for the meaning of this field.
+func (c *CPUSet) EnableMemExclusive() error { return c.SetMemExclusive(true) }
+
+// DisableMemExclusive sets the "cpuset.mem_exclusive" file to false.
+//
+// See MemExclusive() for the meaning of this field.
+func (c *CPUSet) DisableMemExclusive() error { return c.SetMemExclusive(false) }
+
 // MemHardwall reports whether the cpuset is a Hardwall cpuset (see below).
 // Unlike mem_exclusive, there is no constraint on whether cpusets marked
 // mem_hardwall may have overlapping memory nodes with sibling or cousin
@@ -125,6 +155,16 @@ func (c *CPUSet) SetMemHardwall(enabled bool) error {
 	return writeflagfile(c.path("cpuset.mem_hardwall"), enabled)
 }
 
+// EnableMemHardwall sets the "cpuset.mem_hardwall" file to true.
+//
+// See MemHardwall() for the meaning of this field.
+func (c *CPUSet) EnableMemHardwall() error { return c.SetMemHardwall(true) }
+
+// DisableMemHardwall sets the "cpuset.mem_hardwall" file to false.
+//
+// See MemHardwall() for the meaning of this field.
+func (c *CPUSet) DisableMemHardwall() error { return c.SetMemHardwall(false) }
+
 // MemoryMigrate reports whether memory migration is enabled.
 //
 // Corresponds to the "cpuset.memory_migrate" file in the cpuset directory.
@@ -138,6 +178,16 @@ func (c *CPUSet) MemoryMigrate() (bool, error) {
 func (c *CPUSet) SetMemoryMigrate(enabled bool) error {
 	return writeflagfile(c.path("cpuset.memory_migrate"), enabled)
 }
+
+// EnableMemoryMigrate sets the "cpuset.memory_migrate" file to true.
+//
+// See MemoryMigrate() for the meaning of this field.
+func (c *CPUSet) EnableMemoryMigrate() error { return c.SetMemoryMigrate(true) }
+
+// DisableMemoryMigrate sets the "cpuset.memory_migrate" file to false.
+//
+// See MemoryMigrate() for the meaning of this field.
+func (c *CPUSet) DisableMemoryMigrate() error { return c.SetMemoryMigrate(false) }
 
 // MemoryPressure reports a measure of how much memory pressure the processes in
 // this cpuset are causing. If MemoryPressureEnabled() is false this will always
@@ -164,6 +214,16 @@ func (c *CPUSet) SetMemoryPressureEnabled(enabled bool) error {
 	return writeflagfile(c.path("cpuset.memory_pressure_enabled"), enabled)
 }
 
+// EnableMemoryPressureEnabled sets the "cpuset.memory_pressure_enabled" file to true.
+//
+// See MemoryPressureEnabled() for the meaning of this field.
+func (c *CPUSet) EnableMemoryPressureEnabled() error { return c.SetMemoryPressureEnabled(true) }
+
+// DisableMemoryPressureEnabled sets the "cpuset.memory_pressure_enabled" file to false.
+//
+// See MemoryPressureEnabled() for the meaning of this field.
+func (c *CPUSet) DisableMemoryPressureEnabled() error { return c.SetMemoryPressureEnabled(false) }
+
 // MemorySpreadPage reports whether pages in the kernel page cache
 // (filesystem buffers) are uniformly spread across the cpuset.
 // By default, this is off (0) in the top cpuset, and inherited
@@ -181,6 +241,16 @@ func (c *CPUSet) SetMemorySpreadPage(enabled bool) error {
 	return writeflagfile(c.path("cpuset.memory_spread_page"), enabled)
 }
 
+// EnableMemorySpreadPage sets the "cpuset.memory_spread_page" file to true.
+//
+// See MemorySpreadPage() for the meaning of this field.
+func (c *CPUSet) EnableMemorySpreadPage() error { return c.SetMemorySpreadPage(true) }
+
+// DisableMemorySpreadPage sets the "cpuset.memory_spread_page" file to false.
+//
+// See MemorySpreadPage() for the meaning of this field.
+func (c *CPUSet) DisableMemorySpreadPage() error { return c.SetMemorySpreadPage(false) }
+
 // MemorySpreadSlab reports whether the kernel slab caches for file I/O
 // (directory and inode structures) are uniformly spread across the cpuset. By
 // default, this is off (0) in the top cpuset, and inherited from the parent
@@ -197,6 +267,16 @@ func (c *CPUSet) MemorySpreadSlab() (bool, error) {
 func (c *CPUSet) SetMemorySpreadSlab(enabled bool) error {
 	return writeflagfile(c.path("cpuset.memory_spread_slab"), enabled)
 }
+
+// EnableMemorySpreadSlab sets the "cpuset.memory_spread_slab" file to true.
+//
+// See MemorySpreadSlab() for the meaning of this field.
+func (c *CPUSet) EnableMemorySpreadSlab() error { return c.SetMemorySpreadSlab(true) }
+
+// DisableMemorySpreadSlab sets the "cpuset.memory_spread_slab" file to false.
+//
+// See MemorySpreadSlab() for the meaning of this field.
+func (c *CPUSet) DisableMemorySpreadSlab() error { return c.SetMemorySpreadSlab(false) }
 
 // SchedLoadBalance reports wether the kernel will
 // automatically load balance processes in that cpuset over the
@@ -216,6 +296,16 @@ func (c *CPUSet) SchedLoadBalance() (bool, error) {
 func (c *CPUSet) SetSchedLoadBalance(enabled bool) error {
 	return writeflagfile(c.path("cpuset.sched_load_balance"), enabled)
 }
+
+// EnableSchedLoadBalance sets the "cpuset.sched_load_balance" file to true.
+//
+// See SchedLoadBalance() for the meaning of this field.
+func (c *CPUSet) EnableSchedLoadBalance() error { return c.SetSchedLoadBalance(true) }
+
+// DisableSchedLoadBalance sets the "cpuset.sched_load_balance" file to false.
+//
+// See SchedLoadBalance() for the meaning of this field.
+func (c *CPUSet) DisableSchedLoadBalance() error { return c.SetSchedLoadBalance(false) }
 
 // SchedRelaxDomainLevel controls the width of the range of CPUs over which the
 // kernel scheduler performs immediate rebalancing of runnable tasks across
