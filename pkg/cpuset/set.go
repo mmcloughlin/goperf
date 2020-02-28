@@ -42,6 +42,22 @@ func (s Set) Contains(other Set) bool {
 	return true
 }
 
+// Members returns the members of s as a slice. No guarantees are made about order.
+func (s Set) Members() []uint {
+	m := make([]uint, 0, len(s))
+	for n := range s {
+		m = append(m, n)
+	}
+	return m
+}
+
+// SortedMembers returns the members of s as a slice in sorted order.
+func (s Set) SortedMembers() []uint {
+	m := s.Members()
+	sort.Slice(m, func(i, j int) bool { return m[i] < m[j] })
+	return m
+}
+
 // Reference: https://github.com/mkerrisk/man-pages/blob/ffea2c14f25042b1904e95da73d165cb25672a08/man7/cpuset.7#L866-L906
 //
 //	.\" ================== Mask Format ==================
@@ -166,11 +182,7 @@ func (s Set) FormatList() string {
 	}
 
 	// Collect members in a sorted list.
-	m := make([]uint, 0, len(s))
-	for i := range s {
-		m = append(m, i)
-	}
-	sort.Slice(m, func(i, j int) bool { return m[i] < m[j] })
+	m := s.SortedMembers()
 
 	// Build list
 	list := ""
