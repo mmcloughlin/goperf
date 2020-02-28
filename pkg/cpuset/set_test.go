@@ -4,6 +4,54 @@ import (
 	"testing"
 )
 
+func TestSetEqualsEqual(t *testing.T) {
+	a := NewSet(1, 2, 4, 8)
+	b := NewSet(1, 2, 4, 8)
+	if !a.Equals(b) {
+		t.Fail()
+	}
+}
+
+func TestSetEqualsDifferentSize(t *testing.T) {
+	a := NewSet(1, 2, 4)
+	b := NewSet(1, 2, 4, 8)
+	if a.Equals(b) {
+		t.Fail()
+	}
+}
+
+func TestSetEqualsDifferentElements(t *testing.T) {
+	a := NewSet(1, 2, 4, 8)
+	b := NewSet(1, 2, 5, 8)
+	if a.Equals(b) {
+		t.Fail()
+	}
+}
+
+func TestSetContainsTrue(t *testing.T) {
+	a := NewSet(1, 4, 8)
+	b := NewSet(1, 2, 4, 8)
+	if !b.Contains(a) {
+		t.Fail()
+	}
+}
+
+func TestSetContainsLarger(t *testing.T) {
+	a := NewSet(1, 2, 4, 8, 16)
+	b := NewSet(1, 2, 4, 8)
+	if b.Contains(a) {
+		t.Fail()
+	}
+}
+
+func TestSetContainsFalse(t *testing.T) {
+	a := NewSet(1, 2, 3)
+	b := NewSet(1, 2, 4, 8)
+	if b.Contains(a) {
+		t.Fail()
+	}
+}
+
 func TestSetMaskFormatBidirectional(t *testing.T) {
 	cases := []struct {
 		Mask    string

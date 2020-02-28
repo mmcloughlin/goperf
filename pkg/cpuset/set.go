@@ -26,8 +26,16 @@ func (s Set) Equals(other Set) bool {
 	if len(s) != len(other) {
 		return false
 	}
-	for n := range s {
-		if _, ok := other[n]; !ok {
+	return s.Contains(other)
+}
+
+// Contains reports whether s contains other.
+func (s Set) Contains(other Set) bool {
+	if len(other) > len(s) {
+		return false
+	}
+	for n := range other {
+		if _, ok := s[n]; !ok {
 			return false
 		}
 	}
