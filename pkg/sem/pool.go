@@ -54,5 +54,3 @@ func (p *Pool) Release(items []interface{}) {
 	// Release weight in the semaphore.
 	p.sem.Release(int64(len(items)))
 }
-
-// func (s *Weighted) TryAcquire(n int64) bool
