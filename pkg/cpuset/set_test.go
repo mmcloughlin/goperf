@@ -52,6 +52,16 @@ func TestSetContainsFalse(t *testing.T) {
 	}
 }
 
+func TestSetDifference(t *testing.T) {
+	a := NewSet(1, 2, 3)
+	b := NewSet(2, 3, 4)
+	d := a.Difference(b)
+	expect := NewSet(1)
+	if !d.Equals(expect) {
+		t.Fail()
+	}
+}
+
 func TestSetMaskFormatBidirectional(t *testing.T) {
 	cases := []struct {
 		Mask    string

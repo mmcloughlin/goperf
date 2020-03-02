@@ -21,20 +21,20 @@ func NewSet(members ...uint) Set {
 	return s
 }
 
-// Equals returns whether s and other are equal.
-func (s Set) Equals(other Set) bool {
-	if len(s) != len(other) {
+// Equals returns whether s and t are equal.
+func (s Set) Equals(t Set) bool {
+	if len(s) != len(t) {
 		return false
 	}
-	return s.Contains(other)
+	return s.Contains(t)
 }
 
-// Contains reports whether s contains other.
-func (s Set) Contains(other Set) bool {
-	if len(other) > len(s) {
+// Contains reports whether s contains t.
+func (s Set) Contains(t Set) bool {
+	if len(t) > len(s) {
 		return false
 	}
-	for n := range other {
+	for n := range t {
 		if _, ok := s[n]; !ok {
 			return false
 		}
@@ -56,6 +56,24 @@ func (s Set) SortedMembers() []uint {
 	m := s.Members()
 	sort.Slice(m, func(i, j int) bool { return m[i] < m[j] })
 	return m
+}
+
+// Clone returns a copy of s.
+func (s Set) Clone() Set {
+	t := NewSet()
+	for n := range s {
+		t[n] = true
+	}
+	return t
+}
+
+// Difference returns a new set with elements in s but not in t.
+func (s Set) Difference(t Set) Set {
+	d := s.Clone()
+	for n := range t {
+		delete(d, n)
+	}
+	return d
 }
 
 // Reference: https://github.com/mkerrisk/man-pages/blob/ffea2c14f25042b1904e95da73d165cb25672a08/man7/cpuset.7#L866-L906
