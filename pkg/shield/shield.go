@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/mmcloughlin/cb/internal/errutil"
-
 	"github.com/mmcloughlin/cb/pkg/cpuset"
 )
 
