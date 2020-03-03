@@ -56,6 +56,15 @@ func WithSystemNumCPU(n int) Option {
 	return func(s *Shield) { s.sysn = n }
 }
 
+// Available reports whether the shield mechanism can be applied. Note this is a
+// rudimentary check that the environment supports cpusets at all, it is still
+// possible that applying the shield would error.
+func (s *Shield) Available() bool {
+	root := cpuset.NewCPUSet(s.root)
+	allcpu, err := root.CPUs()
+	return err == nil && len(allcpu) > s.sysn
+}
+
 // Apply the configured shielding.
 func (s *Shield) Apply() error {
 	err := s.apply()

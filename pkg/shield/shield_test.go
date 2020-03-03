@@ -4,7 +4,12 @@ import (
 	"testing"
 
 	"github.com/mmcloughlin/cb/pkg/cpuset"
+	"github.com/mmcloughlin/cb/pkg/runner"
 )
+
+func TestShieldImplementsTuner(t *testing.T) {
+	var _ runner.Tuner = new(Shield)
+}
 
 func TestPick(t *testing.T) {
 	s := cpuset.NewSet(1, 2, 3, 4, 5, 6, 7, 8)
