@@ -56,6 +56,11 @@ func WithSystemNumCPU(n int) Option {
 	return func(s *Shield) { s.sysn = n }
 }
 
+// ShieldName returns the name of the shield cpuset.
+func (s *Shield) ShieldName() string {
+	return s.shield
+}
+
 // Available reports whether the shield mechanism can be applied. Note this is a
 // rudimentary check that the environment supports cpusets at all, it is still
 // possible that applying the shield would error.
@@ -116,11 +121,12 @@ func (s *Shield) apply() error {
 	}
 
 	// Move all tasks from root to system.
-	if err := cpuset.MoveTasks(root, sys); err != nil {
+	if _, err := cpuset.MoveTasks(root, sys); err != nil {
 		return err
 	}
 	s.cleanup(func() error {
-		return cpuset.MoveTasks(sys, root)
+		_, err := cpuset.MoveTasks(sys, root)
+		return err
 	})
 
 	// Create shield cpuset.

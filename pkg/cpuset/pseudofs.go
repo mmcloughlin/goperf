@@ -2,10 +2,13 @@ package cpuset
 
 import (
 	"bufio"
+	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
+
+	"golang.org/x/sys/unix"
 
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
@@ -22,7 +25,7 @@ func intfile(path string) (int, error) {
 
 func writeintfile(path string, n int) error {
 	data := strconv.Itoa(n) + "\n"
-	return ioutil.WriteFile(path, []byte(data), 0644)
+	return writefile(path, []byte(data), 0644)
 }
 
 func flagfile(path string) (bool, error) {
@@ -46,7 +49,7 @@ func writeflagfile(path string, enabled bool) error {
 	if enabled {
 		data = "1\n"
 	}
-	return ioutil.WriteFile(path, []byte(data), 0644)
+	return writefile(path, []byte(data), 0644)
 }
 
 func intsfile(path string) ([]int, error) {
@@ -96,5 +99,30 @@ func listfile(path string) (Set, error) {
 
 func writelistfile(path string, s Set) error {
 	data := s.FormatList() + "\n"
-	return ioutil.WriteFile(path, []byte(data), 0644)
+	return writefile(path, []byte(data), 0644)
+}
+
+func writefile(path string, data []byte, perm uint32) error {
+	// Open.
+	mode := unix.O_WRONLY | unix.O_CREAT | unix.O_TRUNC
+	fd, err := unix.Open(path, mode, perm)
+	if err != nil {
+		return err
+	}
+
+	// Write.
+	n, err := unix.Write(fd, data)
+	if err != nil {
+		return err
+	}
+	if n != len(data) {
+		return io.ErrShortWrite
+	}
+
+	// Close.
+	if err := unix.Close(fd); err != nil {
+		return err
+	}
+
+	return nil
 }
