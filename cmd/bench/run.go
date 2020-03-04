@@ -22,17 +22,17 @@ const (
 
 type Run struct {
 	command.Base
-
-	wrappers []runner.Wrapper
+	*Platform
 
 	toolchainconfig flags.TypeParams
 	output          string
 	preserve        bool
 }
 
-func NewRun(b command.Base) *Run {
+func NewRun(b command.Base, p *Platform) *Run {
 	return &Run{
-		Base: b,
+		Base:     b,
+		Platform: p,
 
 		toolchainconfig: flags.TypeParams{
 			Type: "release",
@@ -41,11 +41,6 @@ func NewRun(b command.Base) *Run {
 			},
 		},
 	}
-}
-
-// AddWrapper configures a wrapper around benchmark runs.
-func (r *Run) AddWrapper(w runner.Wrapper) {
-	r.wrappers = append(r.wrappers, w)
 }
 
 func (*Run) Name() string { return "run" }
@@ -60,6 +55,8 @@ func (cmd *Run) SetFlags(f *flag.FlagSet) {
 	f.Var(&cmd.toolchainconfig, "toolchain", "toolchain configuration")
 	f.StringVar(&cmd.output, "output", "", "output path")
 	f.BoolVar(&cmd.preserve, "preserve", false, "preserve working directory")
+
+	cmd.Platform.SetFlags(f)
 }
 
 func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
@@ -81,7 +78,10 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
-	r.Wrap(cmd.wrappers...)
+
+	if err := cmd.ConfigureRunner(r); err != nil {
+		return cmd.Error(err)
+	}
 
 	r.Init(ctx)
 

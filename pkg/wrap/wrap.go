@@ -58,10 +58,12 @@ func (cmd *wrapper) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}
 
 // RunUnder builds a wrapper that runs under the given subcommand, assuming that
 // subcommand is registered on this executable.
-func RunUnder(cmd subcommands.Command) (runner.Wrapper, error) {
+func RunUnder(cmd subcommands.Command, arg ...string) (runner.Wrapper, error) {
 	self, err := os.Executable()
 	if err != nil {
 		return nil, err
 	}
-	return runner.RunUnder(self, cmd.Name()), nil
+	args := []string{cmd.Name()}
+	args = append(args, arg...)
+	return runner.RunUnder(self, args...), nil
 }
