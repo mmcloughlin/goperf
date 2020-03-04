@@ -15,7 +15,7 @@ import (
 // BackgroundContext returns a context suitable for a command-line tool or service.
 func BackgroundContext(l lg.Logger) context.Context {
 	return sig.ContextWithSignal(context.Background(), func(s os.Signal) {
-		l.Printf("received %s: cancelling")
+		l.Printf("received %s: cancelling", s)
 	}, syscall.SIGINT, syscall.SIGTERM)
 }
 
