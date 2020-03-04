@@ -49,6 +49,11 @@ func (c *CPUSet) Remove() error {
 	return unix.Rmdir(c.root)
 }
 
+// AddTask adds a single task to the cpuset.
+func (c *CPUSet) AddTask(task int) error {
+	return c.AddTasks([]int{task})
+}
+
 // path returns the full path to name within the cpuset directory.
 func (c *CPUSet) path(name string) string {
 	return filepath.Join(c.root, name)
