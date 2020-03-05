@@ -8,6 +8,7 @@ import (
 
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/cb/pkg/platform"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 	base := command.NewBase(logger)
 
 	// Platform provides OS specific functionality.
-	p := &Platform{}
+	p := &platform.Platform{}
 
 	// Runner.
 	r := NewRun(base, p)

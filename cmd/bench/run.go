@@ -11,6 +11,7 @@ import (
 	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/platform"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
@@ -22,14 +23,14 @@ const (
 
 type Run struct {
 	command.Base
-	*Platform
+	*platform.Platform
 
 	toolchainconfig flags.TypeParams
 	output          string
 	preserve        bool
 }
 
-func NewRun(b command.Base, p *Platform) *Run {
+func NewRun(b command.Base, p *platform.Platform) *Run {
 	return &Run{
 		Base:     b,
 		Platform: p,
