@@ -64,3 +64,20 @@ resource "google_cloud_scheduler_job" "watch_schedule" {
     uri         = google_cloudfunctions_function.http_function["watch"].https_trigger_url
   }
 }
+
+resource "google_cloudfunctions_function" "result_function" {
+  for_each = toset([for f in var.functions : f.name if f.trigger_type == "result"])
+
+  name                  = each.key
+  available_memory_mb   = 128
+  source_archive_bucket = google_storage_bucket.functions_bucket.name
+  source_archive_object = google_storage_bucket_object.function_zip[each.key].name
+  entry_point           = "Handle"
+  runtime               = var.functions_runtime
+  environment_variables = local.environment_variables
+
+  event_trigger {
+    event_type = "google.storage.object.finalize"
+    resource   = google_storage_bucket.results_bucket.name
+  }
+}

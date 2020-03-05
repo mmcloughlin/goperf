@@ -6,6 +6,7 @@ functions = [
   { name = "env", trigger_type = "http" },
   { name = "watch", trigger_type = "http" },
   { name = "enqueue", trigger_type = "firestore" },
+  { name = "perfdataupload", trigger_type = "result" },
 ]
 
 worker_machine_type     = "n1-standard-2"
