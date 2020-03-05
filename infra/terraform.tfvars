@@ -8,5 +8,5 @@ functions = [
   { name = "enqueue", trigger_type = "firestore" },
 ]
 
-worker_machine_type     = "n1-standard-1"
+worker_machine_type     = "n1-standard-2"
 worker_min_cpu_platform = "Intel Skylake"

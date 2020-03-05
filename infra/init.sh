@@ -28,7 +28,7 @@ tar xzf $archive_path --strip-components=1 -C ${deploy_dir}
 mkdir -p ${log_dir}
 cat > /etc/supervisor/conf.d/${project_name}.conf <<EOF
 [program:${project_name}-worker]
-command=${deploy_dir}/bin/worker
+command=${deploy_dir}/bin/worker run
 process_name=${project_name}-worker
 autostart=true
 autorestart=true

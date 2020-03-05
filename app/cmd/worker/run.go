@@ -2,14 +2,16 @@ package main
 
 import (
 	"context"
-	"log"
-	"os"
+	"flag"
+
+	"github.com/google/subcommands"
 
 	"github.com/mmcloughlin/cb/app/consumer"
 	"github.com/mmcloughlin/cb/app/gcs"
 	"github.com/mmcloughlin/cb/app/job"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/cb/pkg/platform"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
@@ -20,28 +22,42 @@ var (
 	bucket = "contbench_results"
 )
 
-func main() {
-	os.Exit(main1())
+type Run struct {
+	command.Base
+	*platform.Platform
 }
 
-func main1() int {
-	if err := mainerr(); err != nil {
-		log.Print(err)
-		return 1
+func NewRun(b command.Base, p *platform.Platform) *Run {
+	return &Run{
+		Base:     b,
+		Platform: p,
 	}
-	return 0
 }
 
-func mainerr() error {
-	l := lg.Default()
-	ctx := command.BackgroundContext(l)
-	h := &Handler{Logger: l}
-	c, err := consumer.New(ctx, subscription, h, consumer.WithLogger(l))
+func (*Run) Name() string { return "run" }
+
+func (*Run) Synopsis() string {
+	return "run benchmark job subscriber and executor"
+}
+
+func (*Run) Usage() string {
+	return ""
+}
+
+func (cmd *Run) SetFlags(f *flag.FlagSet) {
+	cmd.Platform.SetFlags(f)
+}
+
+func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+	h := &Handler{
+		Logger: cmd.Log,
+	}
+	c, err := consumer.New(ctx, subscription, h, consumer.WithLogger(cmd.Log))
 	if err != nil {
-		return err
+		return cmd.Error(err)
 	}
 	defer c.Close()
-	return c.Receive(ctx)
+	return cmd.Status(c.Receive(ctx))
 }
 
 type Handler struct {
