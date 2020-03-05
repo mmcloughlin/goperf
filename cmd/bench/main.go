@@ -16,14 +16,14 @@ func main() {
 	base := command.NewBase(logger)
 
 	// Platform provides OS specific functionality.
-	p := &platform.Platform{}
+	p := platform.New(base)
 
 	// Runner.
 	r := NewRun(base, p)
 	subcommands.Register(r, "benchmark execution")
 
 	// Wrappers.
-	for _, wrapper := range p.Wrappers(base) {
+	for _, wrapper := range p.Wrappers() {
 		subcommands.Register(wrapper, "process wrapping")
 	}
 

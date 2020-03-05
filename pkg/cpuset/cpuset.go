@@ -43,6 +43,11 @@ func CreatePath(path string) (*CPUSet, error) {
 	return NewCPUSetPath(path), nil
 }
 
+// Path returns the path to the cpuset directory.
+func (c *CPUSet) Path() string {
+	return c.path("")
+}
+
 // Remove the cpuset. Note the cpuset must have no children or attached
 // processes.
 func (c *CPUSet) Remove() error {

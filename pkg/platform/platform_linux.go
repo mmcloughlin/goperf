@@ -16,15 +16,20 @@ type Platform struct {
 	sysname    string
 	sysn       int
 
+	base   command.Base
 	cfg    subcommands.Command
 	pri    subcommands.Command
 	cpuset subcommands.Command
 }
 
-func (p *Platform) Wrappers(b command.Base) []subcommands.Command {
-	p.cfg = wrap.NewConfigDefault(b)
-	p.pri = wrap.NewPrioritize(b)
-	p.cpuset = wrap.NewCPUSet(b)
+func New(b command.Base) *Platform {
+	return &Platform{base: b}
+}
+
+func (p *Platform) Wrappers() []subcommands.Command {
+	p.cfg = wrap.NewConfigDefault(p.base)
+	p.pri = wrap.NewPrioritize(p.base)
+	p.cpuset = wrap.NewCPUSet(p.base)
 	return []subcommands.Command{p.cfg, p.pri, p.cpuset}
 }
 
@@ -50,6 +55,7 @@ func (p *Platform) ConfigureRunner(r *runner.Runner) error {
 		shield.WithShieldName(p.shieldname),
 		shield.WithSystemName(p.sysname),
 		shield.WithSystemNumCPU(p.sysn),
+		shield.WithLogger(p.base.Log),
 	)
 	r.Tune(s)
 

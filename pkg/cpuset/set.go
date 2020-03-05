@@ -21,6 +21,10 @@ func NewSet(members ...uint) Set {
 	return s
 }
 
+func (s Set) String() string {
+	return s.FormatList()
+}
+
 // Equals returns whether s and t are equal.
 func (s Set) Equals(t Set) bool {
 	if len(s) != len(t) {

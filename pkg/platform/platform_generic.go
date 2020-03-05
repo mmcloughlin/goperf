@@ -13,13 +13,18 @@ import (
 )
 
 type Platform struct {
+	base     command.Base
 	wrappers []subcommands.Command
 }
 
-func (p *Platform) Wrappers(b command.Base) []subcommands.Command {
+func New(b command.Base) *Platform {
+	return &Platform{base: b}
+}
+
+func (p *Platform) Wrappers() []subcommands.Command {
 	p.wrappers = []subcommands.Command{
-		wrap.NewConfigDefault(b),
-		wrap.NewPrioritize(b),
+		wrap.NewConfigDefault(p.base),
+		wrap.NewPrioritize(p.base),
 	}
 	return p.wrappers
 }

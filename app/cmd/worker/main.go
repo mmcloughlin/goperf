@@ -16,14 +16,14 @@ func main() {
 	base := command.NewBase(logger)
 
 	// Platform provides OS specific functionality.
-	p := &platform.Platform{}
+	p := platform.New(base)
 
 	// Run worker loop command.
 	r := NewRun(base, p)
 	subcommands.Register(r, "job processing")
 
 	// Wrappers.
-	for _, wrapper := range p.Wrappers(base) {
+	for _, wrapper := range p.Wrappers() {
 		subcommands.Register(wrapper, "internal use")
 	}
 

@@ -6,14 +6,16 @@ import (
 
 	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/cpuset"
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 // Shield uses cpusets to setup exclusive access to some CPUs.
 type Shield struct {
-	root   string // root cpuset
-	shield string // shield cpuset (relative to root)
-	sys    string // system cpuset name (relative to root)
-	sysn   int    // number of cpus in system cpuset
+	root   string    // root cpuset
+	shield string    // shield cpuset (relative to root)
+	sys    string    // system cpuset name (relative to root)
+	sysn   int       // number of cpus in system cpuset
+	l      lg.Logger // logger
 
 	deferred []func() error
 }
@@ -28,6 +30,7 @@ func NewShield(opts ...Option) *Shield {
 		shield: "shield",
 		sys:    "sys",
 		sysn:   1,
+		l:      lg.Noop(),
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -56,6 +59,11 @@ func WithSystemNumCPU(n int) Option {
 	return func(s *Shield) { s.sysn = n }
 }
 
+// WithLogger configures the logger for CPU shield operations.
+func WithLogger(l lg.Logger) Option {
+	return func(s *Shield) { s.l = l }
+}
+
 // ShieldName returns the name of the shield cpuset.
 func (s *Shield) ShieldName() string {
 	return s.shield
@@ -75,6 +83,8 @@ func (s *Shield) Apply() error {
 	err := s.apply()
 	// On error, attempt to cleanup.
 	if err != nil {
+		s.l.Printf("shield application failed: %s", err)
+		s.l.Printf("attempting reset")
 		_ = s.Reset()
 	}
 	return err
@@ -87,6 +97,8 @@ func (s *Shield) apply() error {
 	if err != nil {
 		return err
 	}
+	lg.Param(s.l, "root_cpuset", root.Path())
+	lg.Param(s.l, "allcpu", allcpu)
 
 	if len(allcpu) <= s.sysn {
 		return fmt.Errorf("not enough cpus: require %d for system but root has %d", s.sysn, len(allcpu))
@@ -97,6 +109,7 @@ func (s *Shield) apply() error {
 	if err != nil {
 		return fmt.Errorf("could not pick system cpus: %w", err)
 	}
+	lg.Param(s.l, "syscpu", syscpu)
 
 	// Create system cpuset.
 	sys, err := cpuset.Create(s.sys)
@@ -121,12 +134,11 @@ func (s *Shield) apply() error {
 	}
 
 	// Move all tasks from root to system.
-	if _, err := cpuset.MoveTasks(root, sys); err != nil {
+	if err := s.movetasks(root, sys); err != nil {
 		return err
 	}
 	s.cleanup(func() error {
-		_, err := cpuset.MoveTasks(sys, root)
-		return err
+		return s.movetasks(sys, root)
 	})
 
 	// Create shield cpuset.
@@ -141,6 +153,7 @@ func (s *Shield) apply() error {
 	if err := shield.SetCPUs(shieldcpu); err != nil {
 		return err
 	}
+	lg.Param(s.l, "shieldcpu", shieldcpu)
 
 	// Memory nodes.
 	if err := shield.SetMems(mems); err != nil {
@@ -165,6 +178,19 @@ func (s *Shield) Reset() error {
 		}
 	}
 	return errs.Err()
+}
+
+// movetasks moves all tasks form src to dst, with additional logging.
+func (s *Shield) movetasks(src, dst *cpuset.CPUSet) error {
+	s.l.Printf("move tasks from %s to %s", src.Path(), dst.Path())
+	m, err := cpuset.MoveTasks(src, dst)
+	if err != nil {
+		return err
+	}
+	lg.Param(s.l, "num_moved", len(m.Moved))
+	lg.Param(s.l, "num_nonexistent", len(m.Nonexistent))
+	lg.Param(s.l, "num_invalid", len(m.Invalid))
+	return nil
 }
 
 // pick an n-element subset of s.
