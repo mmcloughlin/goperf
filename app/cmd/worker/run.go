@@ -50,7 +50,8 @@ func (cmd *Run) SetFlags(f *flag.FlagSet) {
 
 func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	h := &Handler{
-		Logger: cmd.Log,
+		Logger:   cmd.Log,
+		Platform: cmd.Platform,
 	}
 	c, err := consumer.New(ctx, subscription, h, consumer.WithLogger(cmd.Log))
 	if err != nil {
@@ -62,6 +63,7 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 
 type Handler struct {
 	lg.Logger
+	*platform.Platform
 }
 
 func (h *Handler) Handle(ctx context.Context, data []byte) error {
@@ -98,6 +100,11 @@ func (h *Handler) Handle(ctx context.Context, data []byte) error {
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
+
+	if err := h.ConfigureRunner(r); err != nil {
+		return err
+	}
+
 	r.Init(ctx)
 
 	// Run benchmarks.
