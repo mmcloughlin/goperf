@@ -14,8 +14,14 @@ func Default() Logger {
 	return log.New(os.Stderr, "", log.LstdFlags)
 }
 
+type noop struct{}
+
+func (noop) Printf(format string, v ...interface{}) {}
+
+func Noop() Logger { return noop{} }
+
 func Param(l Logger, key string, value interface{}) {
-	l.Printf("%s = %s\n", key, value)
+	l.Printf("%s = %v\n", key, value)
 }
 
 func Scope(l Logger, name string) func() {
