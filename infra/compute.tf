@@ -26,11 +26,10 @@ resource "google_storage_bucket_object" "dist_archive" {
   source = local.dist_archive_path
 }
 
-resource "google_compute_instance" "worker" {
-  name                      = "worker"
-  machine_type              = var.worker_machine_type
-  min_cpu_platform          = var.worker_min_cpu_platform
-  allow_stopping_for_update = true
+resource "google_compute_instance_template" "worker" {
+  name             = "worker"
+  machine_type     = var.worker_machine_type
+  min_cpu_platform = var.worker_min_cpu_platform
 
   metadata_startup_script = templatefile("${path.root}/init.sh", {
     project_name        = var.project_name,
@@ -44,16 +43,49 @@ resource "google_compute_instance" "worker" {
     scopes = ["pubsub", "storage-rw"]
   }
 
-  boot_disk {
-    initialize_params {
-      image = data.google_compute_image.ubuntu.self_link
-    }
+  disk {
+    source_image = data.google_compute_image.ubuntu.self_link
   }
 
   network_interface {
     network = "default"
     access_config {
       network_tier = var.network_tier
+    }
+  }
+}
+
+resource "google_compute_target_pool" "workers" {
+  name = "workers"
+}
+
+resource "google_compute_instance_group_manager" "workers" {
+  name = "workers"
+
+  version {
+    instance_template = google_compute_instance_template.worker.self_link
+    name              = "primary"
+  }
+
+  target_pools       = [google_compute_target_pool.workers.self_link]
+  base_instance_name = "worker"
+}
+
+resource "google_compute_autoscaler" "workers" {
+  provider = google-beta
+
+  name   = "workers"
+  target = google_compute_instance_group_manager.workers.self_link
+
+  autoscaling_policy {
+    max_replicas    = 5
+    min_replicas    = 0
+    cooldown_period = 60
+
+    metric {
+      name                       = "pubsub.googleapis.com/subscription/num_undelivered_messages"
+      filter                     = "resource.type = \"pubsub_subscription\" AND resource.label.subscription_id = \"${google_pubsub_subscription.worker_jobs_subscription.name}\""
+      single_instance_assignment = 65535
     }
   }
 }

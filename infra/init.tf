@@ -5,6 +5,13 @@ provider "google" {
   zone        = var.zone
 }
 
+provider "google-beta" {
+  credentials = file("account.json")
+  project     = var.project_id
+  region      = var.region
+  zone        = var.zone
+}
+
 terraform {
   backend "gcs" {
     bucket = "contbench_terraform_state"
