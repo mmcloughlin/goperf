@@ -22,6 +22,7 @@ locals {
   environment_variables = {
     CB_PROJECT_ID         = var.project_id
     CB_COMMITS_COLLECTION = var.commits_collection
+    CB_JOBS_TOPIC         = google_pubsub_topic.jobs.id
   }
 }
 
