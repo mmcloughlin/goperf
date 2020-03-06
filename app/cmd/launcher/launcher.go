@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/mmcloughlin/cb/app/launch"
 	"github.com/mmcloughlin/cb/pkg/command"
@@ -54,6 +55,8 @@ func mainerr() error {
 					Path:    "github.com/klauspost/compress",
 					Version: "b949da471e55fbe4393e6eb595602d936f5c312e",
 				},
+				Short:     true,
+				BenchTime: 5 * time.Millisecond,
 			},
 		},
 	}
