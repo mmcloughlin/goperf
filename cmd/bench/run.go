@@ -5,6 +5,7 @@ import (
 	"flag"
 	"path"
 	"runtime"
+	"time"
 
 	"github.com/google/subcommands"
 
@@ -93,7 +94,9 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 		Version: rev,
 	}
 	suite := job.Suite{
-		Module: mod,
+		Module:    mod,
+		Short:     true,
+		BenchTime: 10 * time.Millisecond,
 	}
 	r.Benchmark(ctx, suite)
 

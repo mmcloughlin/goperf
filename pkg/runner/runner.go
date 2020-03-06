@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -106,14 +107,8 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	r.GoExec(ctx, "get", "-t", s.Module.String())
 
 	// Run the benchmark.
-	cmd := r.Go(
-		ctx,
-		"test",
-		"-run", "none^", // no tests
-		"-bench", ".", // all benchmarks
-		"-benchtime", "10ms", // 10ms each
-		s.Module.Path+"/...",
-	)
+	args := testargs(s)
+	cmd := r.Go(ctx, args...)
 
 	for _, w := range r.wrappers {
 		w(cmd)
@@ -135,4 +130,34 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	filename := fmt.Sprintf("%s.out", uuid.New())
 	path := filepath.Join(r.tc.String(), s.Module.String(), filename)
 	r.w.Artifact(outputfile, path)
+}
+
+// testargs builds "go test" arguments for the given suite.
+func testargs(s job.Suite) []string {
+	args := []string{"test"}
+	args = append(args, "-run", stringdefault(s.Tests, "."))
+	if s.Short {
+		args = append(args, "-short")
+	}
+	args = append(args, "-bench", stringdefault(s.Benchmarks, "."))
+	args = append(args, "-benchtime", durationdefault(s.BenchTime, "1s"))
+	args = append(args, "-timeout", durationdefault(s.Timeout, "0"))
+	args = append(args, s.Module.Path+"/...")
+	return args
+}
+
+// stringdefault returns s if non-empty, otherwise defaults to dflt.
+func stringdefault(s, dflt string) string {
+	if s != "" {
+		return s
+	}
+	return dflt
+}
+
+// duration converts duration d to a string, using dflt if duration is 0.
+func durationdefault(d time.Duration, dflt string) string {
+	if d != 0 {
+		return d.String()
+	}
+	return dflt
 }

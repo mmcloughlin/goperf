@@ -1,6 +1,9 @@
 package job
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Job struct {
 	Toolchain Toolchain `json:"toolchain"`
@@ -13,7 +16,12 @@ type Toolchain struct {
 }
 
 type Suite struct {
-	Module Module `json:"module`
+	Module     Module        `json:"module`
+	Tests      string        `json:"tests"`
+	Short      bool          `json:"short"`
+	Benchmarks string        `json:"benchmarks"`
+	BenchTime  time.Duration `json:"benchtime_ns"`
+	Timeout    time.Duration `json:"timeout_ns"`
 }
 
 type Module struct {
