@@ -27,7 +27,7 @@ resource "google_storage_bucket_object" "dist_archive" {
 }
 
 resource "google_compute_instance_template" "worker" {
-  name             = "worker"
+  name_prefix      = "worker-"
   machine_type     = var.worker_machine_type
   min_cpu_platform = var.worker_min_cpu_platform
 
@@ -37,6 +37,11 @@ resource "google_compute_instance_template" "worker" {
     log_dir             = "/var/log/${var.project_name}",
     dist_archive_gs_uri = "${google_storage_bucket.artifacts_bucket.url}/${google_storage_bucket_object.dist_archive.name}",
   })
+
+  scheduling {
+    preemptible       = true
+    automatic_restart = false
+  }
 
   service_account {
     email  = data.google_service_account.bot.email
@@ -52,6 +57,10 @@ resource "google_compute_instance_template" "worker" {
     access_config {
       network_tier = var.network_tier
     }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
