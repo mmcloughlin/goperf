@@ -8,8 +8,8 @@ import (
 
 	"github.com/mmcloughlin/cb/app/consumer"
 	"github.com/mmcloughlin/cb/app/gcs"
-	"github.com/mmcloughlin/cb/app/job"
 	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/platform"
 	"github.com/mmcloughlin/cb/pkg/runner"

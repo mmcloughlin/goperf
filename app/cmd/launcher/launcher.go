@@ -4,8 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/mmcloughlin/cb/app/job"
+	"github.com/mmcloughlin/cb/app/launch"
 	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
@@ -31,7 +32,7 @@ func mainerr() error {
 	ctx := command.BackgroundContext(logger)
 
 	// Create launcher.
-	l, err := job.NewLauncher(ctx, topic)
+	l, err := launch.NewLauncher(ctx, topic)
 	if err != nil {
 		return err
 	}

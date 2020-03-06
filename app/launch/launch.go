@@ -1,4 +1,4 @@
-package job
+package launch
 
 import (
 	"context"
@@ -6,10 +6,12 @@ import (
 
 	pubsub "cloud.google.com/go/pubsub/apiv1"
 	pubsubpb "google.golang.org/genproto/googleapis/pubsub/v1"
+
+	"github.com/mmcloughlin/cb/pkg/job"
 )
 
 type Submission struct {
-	Job *Job
+	Job *job.Job
 	ID  string
 }
 
@@ -34,8 +36,8 @@ func (l *Launcher) Close() error {
 	return l.client.Close()
 }
 
-func (l *Launcher) Launch(ctx context.Context, j *Job) (*Submission, error) {
-	submissions, err := l.Batch(ctx, []*Job{j})
+func (l *Launcher) Launch(ctx context.Context, j *job.Job) (*Submission, error) {
+	submissions, err := l.Batch(ctx, []*job.Job{j})
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +47,7 @@ func (l *Launcher) Launch(ctx context.Context, j *Job) (*Submission, error) {
 	return submissions[0], nil
 }
 
-func (l *Launcher) Batch(ctx context.Context, jobs []*Job) ([]*Submission, error) {
+func (l *Launcher) Batch(ctx context.Context, jobs []*job.Job) ([]*Submission, error) {
 	if len(jobs) == 0 {
 		return nil, nil
 	}
@@ -53,7 +55,7 @@ func (l *Launcher) Batch(ctx context.Context, jobs []*Job) ([]*Submission, error
 	// Build messages.
 	msgs := make([]*pubsubpb.PubsubMessage, 0, len(jobs))
 	for _, j := range jobs {
-		data, err := Marshal(j)
+		data, err := job.Marshal(j)
 		if err != nil {
 			return nil, fmt.Errorf("marshal job: %w", err)
 		}
