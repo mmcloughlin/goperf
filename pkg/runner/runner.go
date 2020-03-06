@@ -9,25 +9,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
-
-type Module struct {
-	Path    string
-	Version string
-}
-
-func (m Module) String() string {
-	s := m.Path
-	if m.Version != "" {
-		s += "@" + m.Version
-	}
-	return s
-}
-
-type Job struct {
-	Module Module
-}
 
 type Runner struct {
 	w      *Workspace
@@ -98,8 +82,8 @@ func (r *Runner) Wrap(w ...Wrapper) {
 	r.wrappers = append(r.wrappers, w...)
 }
 
-// Benchmark runs the benchmark job.
-func (r *Runner) Benchmark(ctx context.Context, j Job) {
+// Benchmark runs the benchmark suite.
+func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	defer lg.Scope(r.w, "benchmark")()
 
 	// Apply tuners.
@@ -119,7 +103,7 @@ func (r *Runner) Benchmark(ctx context.Context, j Job) {
 	// Setup.
 	dir := r.w.Sandbox("bench")
 	r.GoExec(ctx, "mod", "init", "bench")
-	r.GoExec(ctx, "get", "-t", j.Module.String())
+	r.GoExec(ctx, "get", "-t", s.Module.String())
 
 	// Run the benchmark.
 	cmd := r.Go(
@@ -128,7 +112,7 @@ func (r *Runner) Benchmark(ctx context.Context, j Job) {
 		"-run", "none^", // no tests
 		"-bench", ".", // all benchmarks
 		"-benchtime", "10ms", // 10ms each
-		j.Module.Path+"/...",
+		s.Module.Path+"/...",
 	)
 
 	for _, w := range r.wrappers {
@@ -149,6 +133,6 @@ func (r *Runner) Benchmark(ctx context.Context, j Job) {
 
 	// Save the result.
 	filename := fmt.Sprintf("%s.out", uuid.New())
-	path := filepath.Join(r.tc.String(), j.Module.String(), filename)
+	path := filepath.Join(r.tc.String(), s.Module.String(), filename)
 	r.w.Artifact(outputfile, path)
 }

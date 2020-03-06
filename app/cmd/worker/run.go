@@ -109,11 +109,7 @@ func (h *Handler) Handle(ctx context.Context, data []byte) error {
 
 	// Run benchmarks.
 	for _, s := range j.Suites {
-		mod := runner.Module{
-			Path:    s.Module.Path,
-			Version: s.Module.Version,
-		}
-		r.Benchmark(ctx, runner.Job{Module: mod})
+		r.Benchmark(ctx, s)
 	}
 
 	// Cleanup.

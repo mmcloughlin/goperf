@@ -21,6 +21,14 @@ type Module struct {
 	Version string `json:"version"`
 }
 
+func (m Module) String() string {
+	s := m.Path
+	if m.Version != "" {
+		s += "@" + m.Version
+	}
+	return s
+}
+
 func Marshal(j *Job) ([]byte, error) {
 	return json.Marshal(j)
 }

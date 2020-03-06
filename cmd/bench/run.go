@@ -11,6 +11,7 @@ import (
 	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/platform"
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
@@ -87,14 +88,14 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 	r.Init(ctx)
 
 	// Run benchmark.
-	mod := runner.Module{
+	mod := job.Module{
 		Path:    path.Join("github.com", owner, repo),
 		Version: rev,
 	}
-	job := runner.Job{
+	suite := job.Suite{
 		Module: mod,
 	}
-	r.Benchmark(ctx, job)
+	r.Benchmark(ctx, suite)
 
 	// Clean.
 	if !cmd.preserve {
