@@ -245,11 +245,24 @@ func (s SectionEntry) Validate() error {
 	return s.Sub.Validate()
 }
 
+// Generator generates Configuration.
+type Generator interface {
+	Configuration() (Configuration, error)
+}
+
+// GeneratorFunc adapts a function to the Generator interface.
+type GeneratorFunc func() (Configuration, error)
+
+// Configuration calls g.
+func (g GeneratorFunc) Configuration() (Configuration, error) {
+	return g()
+}
+
 // Provider is a source of configuration.
 type Provider interface {
 	Labeled
+	Generator
 	Available() bool
-	Configuration() (Configuration, error)
 }
 
 // Available returns true (satisfies the Provider interface).
@@ -260,19 +273,23 @@ func (s SectionEntry) Configuration() (Configuration, error) { return s.Sub, nil
 
 type provider struct {
 	Labeled
-	f func() (Configuration, error)
+	Generator
 }
 
-// NewProvider builds a Provider from a function.
-func NewProvider(k Key, doc string, f func() (Configuration, error)) Provider {
+// NewProvider builds a Provider from a Generator.
+func NewProvider(k Key, doc string, g Generator) Provider {
 	return provider{
-		Labeled: Label(k, doc),
-		f:       f,
+		Labeled:   Label(k, doc),
+		Generator: g,
 	}
 }
 
-func (p provider) Available() bool                       { return true }
-func (p provider) Configuration() (Configuration, error) { return p.f() }
+// NewProviderFunc builds a Provider from a function.
+func NewProviderFunc(k Key, doc string, f func() (Configuration, error)) Provider {
+	return NewProvider(k, doc, GeneratorFunc(f))
+}
+
+func (p provider) Available() bool { return true }
 
 // Providers is a list of providers.
 type Providers []Provider

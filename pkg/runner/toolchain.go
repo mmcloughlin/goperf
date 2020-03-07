@@ -10,12 +10,20 @@ import (
 
 	"golang.org/x/build/buildenv"
 
+	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Toolchain interface {
-	// TODO(mbm): Toolchain returns configuration lines rather than a string
+	// Type identifier.
+	Type() string
+	// String gives a concise identifier for the toolchain.
 	String() string
+	// Ref is a git reference to the Go repository version (sha or tag).
+	Ref() string
+	// Configuration returns configuration lines for the
+	Configuration() (cfg.Configuration, error)
+	// Install the toolchain to the given location in the workspace.
 	Install(w *Workspace, root string)
 }
 
@@ -104,6 +112,18 @@ func plural(collection []string) string {
 	return ""
 }
 
+// ToolchainConfigurationProvider provides benchmark configuration lines about the given toolchain.
+func ToolchainConfigurationProvider(tc Toolchain) cfg.Provider {
+	return cfg.NewProviderFunc("toolchain", "go toolchain properties", func() (cfg.Configuration, error) {
+		c, err := tc.Configuration()
+		if err != nil {
+			return nil, err
+		}
+		c = append(c, cfg.Property("type", "toolchain type", cfg.StringValue(tc.Type())))
+		return c, nil
+	})
+}
+
 type snapshot struct {
 	buildertype string
 	rev         string
@@ -116,8 +136,21 @@ func NewSnapshot(buildertype, rev string) Toolchain {
 	}
 }
 
+func (s *snapshot) Type() string { return "snapshot" }
+
 func (s *snapshot) String() string {
-	return path.Join("snapshot", s.buildertype, s.rev)
+	return path.Join(s.Type(), s.buildertype, s.rev)
+}
+
+func (s *snapshot) Ref() string {
+	return s.rev
+}
+
+func (s *snapshot) Configuration() (cfg.Configuration, error) {
+	return cfg.Configuration{
+		cfg.Property("buildertype", "snapshot builder type", cfg.StringValue(s.buildertype)),
+		cfg.Property("revision", "snapshot revision", cfg.StringValue(s.rev)),
+	}, nil
 }
 
 func (s *snapshot) Install(w *Workspace, root string) {
@@ -146,6 +179,8 @@ type release struct {
 	version string
 }
 
+// NewRelease constructs a release toolchain for the given version, os and
+// architecture. Version is expected to begin with "go", for example "go1.13.4".
 func NewRelease(version, os, arch string) Toolchain {
 	return &release{
 		version: version,
@@ -154,8 +189,22 @@ func NewRelease(version, os, arch string) Toolchain {
 	}
 }
 
+func (r *release) Type() string { return "release" }
+
 func (r *release) String() string {
-	return path.Join("release", r.version, r.os, r.arch)
+	return path.Join(r.Type(), r.version, r.os, r.arch)
+}
+
+func (r *release) Ref() string {
+	return r.version
+}
+
+func (r *release) Configuration() (cfg.Configuration, error) {
+	return cfg.Configuration{
+		cfg.Property("os", "release operating system", cfg.StringValue(r.os)),
+		cfg.Property("arch", "release architecture", cfg.StringValue(r.arch)),
+		cfg.Property("version", "release version", cfg.StringValue(r.version)),
+	}, nil
 }
 
 func (r *release) Install(w *Workspace, root string) {

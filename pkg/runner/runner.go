@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
@@ -106,14 +107,7 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	r.GoExec(ctx, "mod", "init", "bench")
 	r.GoExec(ctx, "get", "-t", s.Module.String())
 
-	// Run the benchmark.
-	args := testargs(s)
-	cmd := r.Go(ctx, args...)
-
-	for _, w := range r.wrappers {
-		w(cmd)
-	}
-
+	// Open the output.
 	outputfile := filepath.Join(dir, "bench.out")
 	f, err := os.Create(outputfile)
 	if err != nil {
@@ -122,6 +116,30 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 		return
 	}
 	defer f.Close()
+
+	// Write static configuration.
+	providers := cfg.Providers{
+		ToolchainConfigurationProvider(r.tc),
+	}
+
+	c, err := providers.Configuration()
+	if err != nil {
+		r.w.seterr(err)
+		return
+	}
+
+	if err := cfg.Write(f, c); err != nil {
+		r.w.seterr(err)
+		return
+	}
+
+	// Prepare the benchmark.
+	args := testargs(s)
+	cmd := r.Go(ctx, args...)
+
+	for _, w := range r.wrappers {
+		w(cmd)
+	}
 
 	cmd.Stdout = f
 	r.w.Exec(cmd)

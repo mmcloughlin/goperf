@@ -14,10 +14,10 @@ import (
 )
 
 var (
-	Host          = cfg.NewProvider("host", "Host statistics.", host)
-	VirtualMemory = cfg.NewProvider("mem", "Virtual memory usage statistics.", virtualmemory)
-	CPU           = cfg.NewProvider("cpu", "CPU information", cpu)
-	LoadAverage   = cfg.NewProvider("load", "Load averages", load)
+	Host          = cfg.NewProviderFunc("host", "Host statistics.", host)
+	VirtualMemory = cfg.NewProviderFunc("mem", "Virtual memory usage statistics.", virtualmemory)
+	CPU           = cfg.NewProviderFunc("cpu", "CPU information", cpu)
+	LoadAverage   = cfg.NewProviderFunc("load", "Load averages", load)
 )
 
 func host() (cfg.Configuration, error) {
