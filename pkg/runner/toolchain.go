@@ -119,7 +119,10 @@ func ToolchainConfigurationProvider(tc Toolchain) cfg.Provider {
 		if err != nil {
 			return nil, err
 		}
-		c = append(c, cfg.Property("type", "toolchain type", cfg.StringValue(tc.Type())))
+		c = append(c,
+			cfg.Property("type", "toolchain type", cfg.StringValue(tc.Type())),
+			cfg.Property("ref", "git reference", cfg.StringValue(tc.Ref())),
+		)
 		return c, nil
 	})
 }
