@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"flag"
+	"net/http"
 
 	"github.com/google/subcommands"
 
 	"github.com/mmcloughlin/cb/app/consumer"
+	"github.com/mmcloughlin/cb/app/gce"
 	"github.com/mmcloughlin/cb/app/gcs"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/job"
@@ -100,6 +102,7 @@ func (h *Handler) Handle(ctx context.Context, data []byte) error {
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
+	r.AddConfigurationProvider(gce.NewMetadata(http.DefaultClient))
 
 	if err := h.ConfigureRunner(r); err != nil {
 		return err

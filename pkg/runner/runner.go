@@ -16,9 +16,10 @@ import (
 )
 
 type Runner struct {
-	w      *Workspace
-	tc     Toolchain
-	tuners []Tuner
+	w         *Workspace
+	tc        Toolchain
+	tuners    []Tuner
+	providers cfg.Providers
 
 	gobin    string
 	wrappers []Wrapper
@@ -74,6 +75,12 @@ func (r *Runner) GoExec(ctx context.Context, arg ...string) {
 	r.w.Exec(r.Go(ctx, arg...))
 }
 
+// AddConfigurationProvider adds a configuration provider that will be applied
+// to every benchmark run.
+func (r *Runner) AddConfigurationProvider(p cfg.Provider) {
+	r.providers = append(r.providers, p)
+}
+
 // Tune applies the given tuning method to benchmark executions.
 func (r *Runner) Tune(t Tuner) {
 	r.tuners = append(r.tuners, t)
@@ -122,6 +129,7 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 		ToolchainConfigurationProvider(r.tc),
 		suiteconfig(s),
 	}
+	providers = append(providers, r.providers...)
 
 	c, err := providers.Configuration()
 	if err != nil {
