@@ -120,6 +120,7 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	// Write static configuration.
 	providers := cfg.Providers{
 		ToolchainConfigurationProvider(r.tc),
+		suiteconfig(s),
 	}
 
 	c, err := providers.Configuration()
@@ -150,26 +151,33 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	r.w.Artifact(outputfile, path)
 }
 
+func suiteconfig(s job.Suite) cfg.Provider {
+	return cfg.Section(
+		"suite",
+		"benchmark suite metadata",
+		cfg.Property("mod", "benchmark suite module", s.Module),
+		cfg.Property("modpath", "module path for the benchmark suite", cfg.StringValue(s.Module.Path)),
+		cfg.Property("modversion", "module version for the benchmark suite", cfg.StringValue(s.Module.Version)),
+		cfg.Property("benchmarks", "benchmarks regular expression", cfg.StringValue(s.BenchmarkRegex())),
+		cfg.Property("benchtime", "minimum benchmark time", s.BenchmarkTime()),
+		cfg.Property("tests", "tests regular expression", cfg.StringValue(s.TestRegex())),
+		cfg.Property("short", "short test mode enabled", cfg.BoolValue(s.Short)),
+		cfg.Property("timeout", "timeout for total test binary execution time", s.Timeout),
+	)
+}
+
 // testargs builds "go test" arguments for the given suite.
 func testargs(s job.Suite) []string {
 	args := []string{"test"}
-	args = append(args, "-run", stringdefault(s.Tests, "."))
+	args = append(args, "-run", s.TestRegex())
 	if s.Short {
 		args = append(args, "-short")
 	}
-	args = append(args, "-bench", stringdefault(s.Benchmarks, "."))
-	args = append(args, "-benchtime", durationdefault(s.BenchTime, "1s"))
+	args = append(args, "-bench", s.BenchmarkRegex())
+	args = append(args, "-benchtime", s.BenchmarkTime().String())
 	args = append(args, "-timeout", durationdefault(s.Timeout, "0"))
 	args = append(args, s.Module.Path+"/...")
 	return args
-}
-
-// stringdefault returns s if non-empty, otherwise defaults to dflt.
-func stringdefault(s, dflt string) string {
-	if s != "" {
-		return s
-	}
-	return dflt
 }
 
 // duration converts duration d to a string, using dflt if duration is 0.

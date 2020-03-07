@@ -24,6 +24,30 @@ type Suite struct {
 	Timeout    time.Duration `json:"timeout_ns"`
 }
 
+// TestRegex returns the regular expression controlling which tests are run.
+func (s *Suite) TestRegex() string {
+	if s.Tests == "" {
+		return "."
+	}
+	return s.Tests
+}
+
+// BenchmarkRegex returns the regular expression controlling which benchmarks are run.
+func (s *Suite) BenchmarkRegex() string {
+	if s.Benchmarks == "" {
+		return "."
+	}
+	return s.Benchmarks
+}
+
+// BenchmarkTime returns the minimum amount of time each benchmark is run for.
+func (s *Suite) BenchmarkTime() time.Duration {
+	if s.BenchTime == 0 {
+		return time.Second
+	}
+	return s.BenchTime
+}
+
 type Module struct {
 	Path    string `json:"path"`
 	Version string `json:"version"`
