@@ -2,13 +2,13 @@ package repo
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"cloud.google.com/go/firestore"
 )
 
 type Store interface {
+	FindBySHA(ctx context.Context, sha string) (*Commit, error)
 	Upsert(ctx context.Context, c *Commit) error
 }
 
@@ -24,6 +24,22 @@ func NewFirestoreStore(c *firestore.Client, collection string) Store {
 	}
 }
 
+func (s *fsstore) FindBySHA(ctx context.Context, sha string) (*Commit, error) {
+	// Fetch document from Firestore.
+	docsnap, err := s.ref.Doc(sha).Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal.
+	var obj fscommit
+	if err := docsnap.DataTo(&obj); err != nil {
+		return nil, err
+	}
+
+	return obj.Commit(), nil
+}
+
 func (s *fsstore) Upsert(ctx context.Context, c *Commit) error {
 	// Map to Firestore object.
 	obj := tofscommit(c)
@@ -31,7 +47,7 @@ func (s *fsstore) Upsert(ctx context.Context, c *Commit) error {
 	// Write to Firestore.
 	_, err := s.ref.Doc(obj.SHA).Set(ctx, obj)
 	if err != nil {
-		return fmt.Errorf("firestore set: %w", err)
+		return err
 	}
 
 	return nil
@@ -62,5 +78,24 @@ func tofscommit(c *Commit) *fscommit {
 		CommitterEmail: c.Committer.Email,
 		CommitTime:     c.CommitTime,
 		Message:        c.Message,
+	}
+}
+
+func (c *fscommit) Commit() *Commit {
+	return &Commit{
+		SHA:     c.SHA,
+		Tree:    c.Tree,
+		Parents: c.Parents,
+		Author: Person{
+			Name:  c.AuthorName,
+			Email: c.AuthorEmail,
+		},
+		AuthorTime: c.AuthorTime,
+		Committer: Person{
+			Name:  c.CommitterName,
+			Email: c.CommitterEmail,
+		},
+		CommitTime: c.CommitTime,
+		Message:    c.Message,
 	}
 }
