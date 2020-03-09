@@ -58,12 +58,16 @@ func convert(res *benchfmt.Result) ([]*Result, error) {
 		return nil, err
 	}
 
+	params := res.NameLabels.Copy()
+	name := params["name"]
+	delete(params, "name")
+
 	var rs []*Result
 	for _, m := range line.measurements {
 		rs = append(rs, &Result{
-			FullName: line.name,
-			// Name       string
-			Parameters: res.NameLabels,
+			FullName:   line.name,
+			Name:       name,
+			Parameters: params,
 			Labels:     res.Labels,
 			Value:      m.value,
 			Unit:       m.unit,

@@ -1,11 +1,78 @@
 package parse
 
 import (
+	"bytes"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"testing"
 )
+
+func TestParse(t *testing.T) {
+	lines := []string{
+		"a: a1",
+		"b: b1",
+		"BenchmarkX/k1=v1/v2/k3=v3-8 100 42.42 unita 100 unitb",
+		"b: b2",
+		"c: c1",
+		"BenchmarkY-4 100 37.6 unitc",
+	}
+	expect := []*Result{
+		{
+			FullName:   "BenchmarkX/k1=v1/v2/k3=v3-8",
+			Name:       "X",
+			Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
+			Labels:     map[string]string{"a": "a1", "b": "b1"},
+			Value:      42.42,
+			Unit:       "unita",
+			Line:       3,
+		},
+		{
+			FullName:   "BenchmarkX/k1=v1/v2/k3=v3-8",
+			Name:       "X",
+			Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
+			Labels:     map[string]string{"a": "a1", "b": "b1"},
+			Value:      100,
+			Unit:       "unitb",
+			Line:       3,
+		},
+		{
+			FullName:   "BenchmarkY-4",
+			Name:       "Y",
+			Parameters: map[string]string{"gomaxprocs": "4"},
+			Labels:     map[string]string{"a": "a1", "b": "b2", "c": "c1"},
+			Value:      37.6,
+			Unit:       "unitc",
+			Line:       6,
+		},
+	}
+
+	// Prepare input.
+	buf := bytes.NewBuffer(nil)
+	for _, line := range lines {
+		fmt.Fprintln(buf, line)
+	}
+
+	// Parse.
+	got, err := Reader(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(expect) != len(got) {
+		t.Fatalf("got %d results; expect %d", len(got), len(expect))
+	}
+
+	for i := range expect {
+		if !reflect.DeepEqual(expect[i], got[i]) {
+			t.Logf("index  = %d", i)
+			t.Logf("got    = %#v", got[i])
+			t.Logf("expect = %#v", expect[i])
+			t.FailNow()
+		}
+	}
+}
 
 func TestParseTestdata(t *testing.T) {
 	filenames, err := filepath.Glob("testdata/*.txt")
