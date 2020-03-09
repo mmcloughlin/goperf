@@ -15,7 +15,7 @@ import (
 type Result struct {
 	// FullName is the complete name of the benchmark, including parameters.
 	FullName string
-	// Name of the benchmark, excluding parameters.
+	// Name of the benchmark, excluding parameters and the "Benchmark" prefix.
 	Name string
 	// Parameters of the benchmark, extracted from the name.
 	Parameters map[string]string
