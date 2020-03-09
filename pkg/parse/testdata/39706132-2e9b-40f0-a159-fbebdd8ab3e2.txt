@@ -1,0 +1,601 @@
+host-hostname: worker-09ps
+host-uptime: 2m6s
+host-boot-time: 2020-03-06 20:15:11 +0000 UTC
+host-num-procs: 110
+host-os: linux
+host-platform: ubuntu
+host-platform-family: debian
+host-platform-version: 18.04
+host-kernel-version: 5.0.0-1031-gcp
+host-kernel-arch: x86_64
+host-virt-system:
+host-virt-role: guest
+load-avg1: 0.89
+load-avg5: 0.31
+load-avg15: 0.11
+mem-total: 7.29 GiB
+mem-available: 6.81 GiB
+mem-used: 244.3 MiB
+mem-used-percent: 3.3%
+mem-free: 5.56 GiB
+cpu-cpu0-vendorid: GenuineIntel
+cpu-cpu0-family: 6
+cpu-cpu0-model: 85
+cpu-cpu0-stepping: 3
+cpu-cpu0-model-name: Intel(R) Xeon(R) CPU @ 2.00GHz
+cpu-cpu0-physical-id: 0
+cpu-cpu0-core-id: 0
+cpu-cpu0-cores: 1
+cpu-cpu0-frequency: 2 GHz
+cpu-cpu0-cache-size: 37.6 MiB
+cpu-cpu0-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,mmx,fxsr,sse,sse2,ss,ht,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,rep_good,nopl,xtopology,nonstop_tsc,cpuid,tsc_known_freq,pni,pclmulqdq,ssse3,fma,cx16,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,aes,xsave,avx,f16c,rdrand,hypervisor,lahf_lm,abm,3dnowprefetch,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,fsgsbase,tsc_adjust,bmi1,hle,avx2,smep,bmi2,erms,invpcid,rtm,mpx,avx512f,avx512dq,rdseed,adx,smap,clflushopt,clwb,avx512cd,avx512bw,avx512vl,xsaveopt,xsavec,xgetbv1,xsaves,arat,md_clear,arch_capabilities
+cpu-cpu1-vendorid: GenuineIntel
+cpu-cpu1-family: 6
+cpu-cpu1-model: 85
+cpu-cpu1-stepping: 3
+cpu-cpu1-model-name: Intel(R) Xeon(R) CPU @ 2.00GHz
+cpu-cpu1-physical-id: 0
+cpu-cpu1-core-id: 0
+cpu-cpu1-cores: 1
+cpu-cpu1-frequency: 2 GHz
+cpu-cpu1-cache-size: 37.6 MiB
+cpu-cpu1-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,mmx,fxsr,sse,sse2,ss,ht,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,rep_good,nopl,xtopology,nonstop_tsc,cpuid,tsc_known_freq,pni,pclmulqdq,ssse3,fma,cx16,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,aes,xsave,avx,f16c,rdrand,hypervisor,lahf_lm,abm,3dnowprefetch,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,fsgsbase,tsc_adjust,bmi1,hle,avx2,smep,bmi2,erms,invpcid,rtm,mpx,avx512f,avx512dq,rdseed,adx,smap,clflushopt,clwb,avx512cd,avx512bw,avx512vl,xsaveopt,xsavec,xgetbv1,xsaves,arat,md_clear,arch_capabilities
+cache-cpu0-index0-type: Data
+cache-cpu0-index0-level: 1
+cache-cpu0-index0-size: 32 KiB
+cache-cpu0-index0-coherencylinesize: 64
+cache-cpu0-index0-waysofassociativity: 8
+cache-cpu0-index0-numberofsets: 64
+cache-cpu0-index0-sharedcpulist: 0-1
+cache-cpu0-index0-numsharing: 2
+cache-cpu0-index0-physicallinepartition: 1
+cache-cpu0-index1-type: Instruction
+cache-cpu0-index1-level: 1
+cache-cpu0-index1-size: 32 KiB
+cache-cpu0-index1-coherencylinesize: 64
+cache-cpu0-index1-waysofassociativity: 8
+cache-cpu0-index1-numberofsets: 64
+cache-cpu0-index1-sharedcpulist: 0-1
+cache-cpu0-index1-numsharing: 2
+cache-cpu0-index1-physicallinepartition: 1
+cache-cpu0-index2-type: Unified
+cache-cpu0-index2-level: 2
+cache-cpu0-index2-size: 1 MiB
+cache-cpu0-index2-coherencylinesize: 64
+cache-cpu0-index2-waysofassociativity: 16
+cache-cpu0-index2-numberofsets: 1024
+cache-cpu0-index2-sharedcpulist: 0-1
+cache-cpu0-index2-numsharing: 2
+cache-cpu0-index2-physicallinepartition: 1
+cache-cpu0-index3-type: Unified
+cache-cpu0-index3-level: 3
+cache-cpu0-index3-size: 38.5 MiB
+cache-cpu0-index3-coherencylinesize: 64
+cache-cpu0-index3-waysofassociativity: 11
+cache-cpu0-index3-numberofsets: 57344
+cache-cpu0-index3-sharedcpulist: 0-1
+cache-cpu0-index3-numsharing: 2
+cache-cpu0-index3-physicallinepartition: 1
+cache-cpu1-index0-type: Data
+cache-cpu1-index0-level: 1
+cache-cpu1-index0-size: 32 KiB
+cache-cpu1-index0-coherencylinesize: 64
+cache-cpu1-index0-waysofassociativity: 8
+cache-cpu1-index0-numberofsets: 64
+cache-cpu1-index0-sharedcpulist: 0-1
+cache-cpu1-index0-numsharing: 2
+cache-cpu1-index0-physicallinepartition: 1
+cache-cpu1-index1-type: Instruction
+cache-cpu1-index1-level: 1
+cache-cpu1-index1-size: 32 KiB
+cache-cpu1-index1-coherencylinesize: 64
+cache-cpu1-index1-waysofassociativity: 8
+cache-cpu1-index1-numberofsets: 64
+cache-cpu1-index1-sharedcpulist: 0-1
+cache-cpu1-index1-numsharing: 2
+cache-cpu1-index1-physicallinepartition: 1
+cache-cpu1-index2-type: Unified
+cache-cpu1-index2-level: 2
+cache-cpu1-index2-size: 1 MiB
+cache-cpu1-index2-coherencylinesize: 64
+cache-cpu1-index2-waysofassociativity: 16
+cache-cpu1-index2-numberofsets: 1024
+cache-cpu1-index2-sharedcpulist: 0-1
+cache-cpu1-index2-numsharing: 2
+cache-cpu1-index2-physicallinepartition: 1
+cache-cpu1-index3-type: Unified
+cache-cpu1-index3-level: 3
+cache-cpu1-index3-size: 38.5 MiB
+cache-cpu1-index3-coherencylinesize: 64
+cache-cpu1-index3-waysofassociativity: 11
+cache-cpu1-index3-numberofsets: 57344
+cache-cpu1-index3-sharedcpulist: 0-1
+cache-cpu1-index3-numsharing: 2
+cache-cpu1-index3-physicallinepartition: 1
+cpufreq-available: false
+intelpstate-available: false
+procstat-priority: -100
+procstat-nice: -20
+procstat-rtpriority: 99
+procstat-policy: SCHED_RR
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress
+BenchmarkEstimate/zeroes-5k  	    1092	     10574 ns/op	 472.85 MB/s
+--- BENCH: BenchmarkEstimate/zeroes-5k
+    compressible_test.go:25: 0.9995528459639241
+    compressible_test.go:25: 0.9995528459639241
+    compressible_test.go:25: 0.9995528459639241
+BenchmarkEstimate/predictable-5k         	    1131	      9530 ns/op	 524.68 MB/s
+--- BENCH: BenchmarkEstimate/predictable-5k
+    compressible_test.go:39: 0.48986302785055547
+    compressible_test.go:39: 0.48986302785055547
+    compressible_test.go:39: 0.48986302785055547
+BenchmarkEstimate/random-500b            	   10146	      1185 ns/op	 421.89 MB/s
+--- BENCH: BenchmarkEstimate/random-500b
+    compressible_test.go:51: 0
+    compressible_test.go:51: 0.04721910391135259
+    compressible_test.go:51: 0
+    compressible_test.go:51: 0
+BenchmarkEstimate/random-5k              	    1436	      7379 ns/op	 677.63 MB/s
+--- BENCH: BenchmarkEstimate/random-5k
+    compressible_test.go:63: 0
+    compressible_test.go:63: 0.023447008871324945
+    compressible_test.go:63: 0
+BenchmarkEstimate/random-50k             	     174	     69439 ns/op	 720.06 MB/s
+--- BENCH: BenchmarkEstimate/random-50k
+    compressible_test.go:75: 0.02538961112782709
+    compressible_test.go:75: 0
+    compressible_test.go:75: 0.02497853227088426
+BenchmarkEstimate/random-500k            	      14	    743000 ns/op	 672.95 MB/s
+--- BENCH: BenchmarkEstimate/random-500k
+    compressible_test.go:87: 0.0011798610839284238
+    compressible_test.go:87: 0.011875500533441052
+    compressible_test.go:87: 0.015296632574913534
+BenchmarkEstimate/base-32-5k             	    1383	      8628 ns/op	 579.52 MB/s
+--- BENCH: BenchmarkEstimate/base-32-5k
+    compressible_test.go:102: 0.28219588980575255
+    compressible_test.go:102: 0.2793296991598996
+    compressible_test.go:102: 0.2792747125625517
+BenchmarkEstimate/text                   	    1011	     11994 ns/op	 598.31 MB/s
+--- BENCH: BenchmarkEstimate/text
+    compressible_test.go:125: 0.37622538270568057
+    compressible_test.go:125: 0.37622538270568057
+    compressible_test.go:125: 0.37622538270568057
+BenchmarkSnannonEntropyBits/zeroes-5k    	    1113	     10782 ns/op	 463.75 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/zeroes-5k
+    compressible_test.go:139: 0
+    compressible_test.go:139: 0
+    compressible_test.go:139: 0
+BenchmarkSnannonEntropyBits/predictable-5k         	     782	     14779 ns/op	 338.32 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/predictable-5k
+    compressible_test.go:153: 40120
+    compressible_test.go:153: 40120
+    compressible_test.go:153: 40120
+BenchmarkSnannonEntropyBits/random-500b            	    1491	      7885 ns/op	  63.42 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/random-500b
+    compressible_test.go:165: 3866
+    compressible_test.go:165: 3847
+    compressible_test.go:165: 3834
+BenchmarkSnannonEntropyBits/random-5k              	     943	     12390 ns/op	 403.56 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/random-5k
+    compressible_test.go:177: 39937
+    compressible_test.go:177: 39920
+    compressible_test.go:177: 39929
+BenchmarkSnannonEntropyBits/random-50k             	     243	     49385 ns/op	1012.45 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/random-50k
+    compressible_test.go:189: 399966
+    compressible_test.go:189: 399974
+    compressible_test.go:189: 399958
+BenchmarkSnannonEntropyBits/random-500k            	      27	    408693 ns/op	1223.41 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/random-500k
+    compressible_test.go:201: 3999971
+    compressible_test.go:201: 3999920
+    compressible_test.go:201: 3999979
+BenchmarkSnannonEntropyBits/base-32-5k             	    2269	      5238 ns/op	 954.52 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/base-32-5k
+    compressible_test.go:216: 25001
+    compressible_test.go:216: 24987
+    compressible_test.go:216: 24992
+BenchmarkSnannonEntropyBits/text                   	    1548	      7669 ns/op	 935.66 MB/s
+--- BENCH: BenchmarkSnannonEntropyBits/text
+    compressible_test.go:239: 31984
+    compressible_test.go:239: 31984
+    compressible_test.go:239: 31984
+BenchmarkCompressAllocations/level(-2)/flate       	     189	     59450 ns/op	  342272 B/op	      11 allocs/op
+BenchmarkCompressAllocations/level(-2)/gzip        	     212	     61487 ns/op	  342448 B/op	      12 allocs/op
+BenchmarkCompressAllocations/level(-1)/flate       	      48	    499796 ns/op	 3235200 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(-1)/gzip        	      42	    472318 ns/op	 3235376 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(0)/flate        	     229	     51096 ns/op	  339968 B/op	       9 allocs/op
+BenchmarkCompressAllocations/level(0)/gzip         	     219	     53334 ns/op	  340144 B/op	      10 allocs/op
+BenchmarkCompressAllocations/level(1)/flate        	      62	    330806 ns/op	 2186624 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(1)/gzip         	      64	    328710 ns/op	 2186800 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(2)/flate        	      34	    548198 ns/op	 3759488 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(2)/gzip         	      37	    537824 ns/op	 3759664 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(3)/flate        	      51	    440615 ns/op	 2710912 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(3)/gzip         	      57	    444399 ns/op	 2711088 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(4)/flate        	      37	    467874 ns/op	 2710912 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(4)/gzip         	      57	    447001 ns/op	 2711088 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(5)/flate        	      49	    497718 ns/op	 3235200 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(5)/gzip         	      44	    515087 ns/op	 3235376 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(6)/flate        	      42	    500644 ns/op	 3235200 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(6)/gzip         	      51	    495961 ns/op	 3235376 B/op	      15 allocs/op
+BenchmarkCompressAllocations/level(7)/flate        	      98	    146909 ns/op	 1006976 B/op	      13 allocs/op
+BenchmarkCompressAllocations/level(7)/gzip         	     100	    141788 ns/op	 1007152 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(8)/flate        	     100	    143299 ns/op	 1006976 B/op	      13 allocs/op
+BenchmarkCompressAllocations/level(8)/gzip         	     100	    146834 ns/op	 1007152 B/op	      14 allocs/op
+BenchmarkCompressAllocations/level(9)/flate        	     100	    138287 ns/op	 1006976 B/op	      13 allocs/op
+BenchmarkCompressAllocations/level(9)/gzip         	     100	    159290 ns/op	 1007152 B/op	      14 allocs/op
+PASS
+ok  	github.com/klauspost/compress	0.769s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/flate
+BenchmarkDecodeDigitsSpeed1e4    	      70	    145822 ns/op	  68.58 MB/s	     592 B/op	       1 allocs/op
+BenchmarkDecodeDigitsSpeed1e5    	       7	   2160559 ns/op	  46.28 MB/s	    5657 B/op	       4 allocs/op
+BenchmarkDecodeDigitsSpeed1e6    	       1	  14216762 ns/op	  70.34 MB/s	   39312 B/op	      24 allocs/op
+BenchmarkDecodeDigitsDefault1e4  	      76	    147759 ns/op	  67.68 MB/s	     549 B/op	       1 allocs/op
+BenchmarkDecodeDigitsDefault1e5  	       8	   1348135 ns/op	  74.18 MB/s	    4950 B/op	       3 allocs/op
+BenchmarkDecodeDigitsDefault1e6  	       1	  13393178 ns/op	  74.66 MB/s	   41904 B/op	      64 allocs/op
+BenchmarkDecodeDigitsCompress1e4 	      73	    147643 ns/op	  67.73 MB/s	     569 B/op	       1 allocs/op
+BenchmarkDecodeDigitsCompress1e5 	       7	   1572000 ns/op	  63.61 MB/s	    5492 B/op	       2 allocs/op
+BenchmarkDecodeDigitsCompress1e6 	       1	  15767445 ns/op	  63.42 MB/s	   38336 B/op	      15 allocs/op
+BenchmarkDecodeTwainSpeed1e4     	      69	    155178 ns/op	  64.44 MB/s	     605 B/op	       1 allocs/op
+BenchmarkDecodeTwainSpeed1e5     	       7	   1436943 ns/op	  69.59 MB/s	    5794 B/op	       4 allocs/op
+BenchmarkDecodeTwainSpeed1e6     	       1	  16033823 ns/op	  62.37 MB/s	   40272 B/op	      25 allocs/op
+BenchmarkDecodeTwainDefault1e4   	      46	    227114 ns/op	  44.03 MB/s	     886 B/op	       1 allocs/op
+BenchmarkDecodeTwainDefault1e5   	       8	   1329022 ns/op	  75.24 MB/s	    4998 B/op	       4 allocs/op
+BenchmarkDecodeTwainDefault1e6   	       1	  12714694 ns/op	  78.65 MB/s	   39648 B/op	      28 allocs/op
+BenchmarkDecodeTwainCompress1e4  	      68	    147530 ns/op	  67.78 MB/s	     614 B/op	       1 allocs/op
+BenchmarkDecodeTwainCompress1e5  	       9	   1230246 ns/op	  81.28 MB/s	    4368 B/op	       3 allocs/op
+BenchmarkDecodeTwainCompress1e6  	       1	  12312771 ns/op	  81.22 MB/s	   41024 B/op	      41 allocs/op
+BenchmarkDecodeRandomSpeed1e4    	   26449	       458 ns/op	21815.48 MB/s	      49 B/op	       1 allocs/op
+BenchmarkDecodeRandomSpeed1e5    	    3336	      3333 ns/op	30006.40 MB/s	      58 B/op	       1 allocs/op
+BenchmarkDecodeRandomSpeed1e6    	     298	     39375 ns/op	25396.59 MB/s	     168 B/op	       1 allocs/op
+Benchmark_tokens_EstimatedBits   	   10000	      1012 ns/op	   0.99 MB/s
+BenchmarkEncodeDigitsConstant1e4 	     259	     45480 ns/op	 219.87 MB/s	       8 B/op	       0 allocs/op
+BenchmarkEncodeDigitsConstant1e5 	      21	    491397 ns/op	 203.50 MB/s	     109 B/op	       0 allocs/op
+BenchmarkEncodeDigitsConstant1e6 	       3	   4297305 ns/op	 232.70 MB/s	     768 B/op	       0 allocs/op
+BenchmarkEncodeDigitsSpeed1e4    	      92	    133248 ns/op	  75.05 MB/s	   14284 B/op	       0 allocs/op
+BenchmarkEncodeDigitsSpeed1e5    	       7	   1503283 ns/op	  66.52 MB/s	  187739 B/op	       0 allocs/op
+BenchmarkEncodeDigitsSpeed1e6    	       1	  13535489 ns/op	  73.88 MB/s	 1314176 B/op	       4 allocs/op
+BenchmarkEncodeDigitsDefault1e4  	      51	    230803 ns/op	  43.33 MB/s	   25768 B/op	       0 allocs/op
+BenchmarkEncodeDigitsDefault1e5  	       5	   2775816 ns/op	  36.03 MB/s	  262835 B/op	       0 allocs/op
+BenchmarkEncodeDigitsDefault1e6  	       1	  28099969 ns/op	  35.59 MB/s	 1314176 B/op	       4 allocs/op
+BenchmarkEncodeDigitsCompress1e4 	      32	    340137 ns/op	  29.40 MB/s	     108 B/op	       0 allocs/op
+BenchmarkEncodeDigitsCompress1e5 	       2	   5451696 ns/op	  18.34 MB/s	    1728 B/op	       1 allocs/op
+BenchmarkEncodeDigitsCompress1e6 	       1	  63037338 ns/op	  15.86 MB/s	    3456 B/op	       3 allocs/op
+BenchmarkEncodeDigitsSL1e4       	      94	    130340 ns/op	  76.72 MB/s	     113 B/op	       1 allocs/op
+BenchmarkEncodeDigitsSL1e5       	       7	   1566202 ns/op	  63.85 MB/s	   93930 B/op	       5 allocs/op
+BenchmarkEncodeDigitsSL1e6       	       1	  15516166 ns/op	  64.45 MB/s	 1304104 B/op	      53 allocs/op
+BenchmarkEncodeTwainConstant1e4  	     195	     60529 ns/op	 165.21 MB/s	      11 B/op	       0 allocs/op
+BenchmarkEncodeTwainConstant1e5  	      20	    544396 ns/op	 183.69 MB/s	     115 B/op	       0 allocs/op
+BenchmarkEncodeTwainConstant1e6  	       3	   4728977 ns/op	 211.46 MB/s	     768 B/op	       0 allocs/op
+BenchmarkEncodeTwainSpeed1e4     	      72	    166682 ns/op	  59.99 MB/s	   18252 B/op	       0 allocs/op
+BenchmarkEncodeTwainSpeed1e5     	       7	   1528417 ns/op	  65.43 MB/s	  187739 B/op	       0 allocs/op
+BenchmarkEncodeTwainSpeed1e6     	       1	  14922207 ns/op	  67.01 MB/s	 1314176 B/op	       4 allocs/op
+BenchmarkEncodeTwainDefault1e4   	      38	    264621 ns/op	  37.79 MB/s	   34583 B/op	       0 allocs/op
+BenchmarkEncodeTwainDefault1e5   	       5	   2372771 ns/op	  42.14 MB/s	  262835 B/op	       0 allocs/op
+BenchmarkEncodeTwainDefault1e6   	       1	  23162622 ns/op	  43.17 MB/s	 1314176 B/op	       4 allocs/op
+BenchmarkEncodeTwainCompress1e4  	      27	    446344 ns/op	  22.40 MB/s	     128 B/op	       0 allocs/op
+BenchmarkEncodeTwainCompress1e5  	       2	   7591030 ns/op	  13.17 MB/s	    1728 B/op	       1 allocs/op
+BenchmarkEncodeTwainCompress1e6  	       1	  86186281 ns/op	  11.60 MB/s	    3456 B/op	       3 allocs/op
+BenchmarkEncodeTwainSL1e4        	      68	    184474 ns/op	  54.21 MB/s	     145 B/op	       1 allocs/op
+BenchmarkEncodeTwainSL1e5        	       7	   1491405 ns/op	  67.05 MB/s	   93930 B/op	       5 allocs/op
+BenchmarkEncodeTwainSL1e6        	       1	  14032408 ns/op	  71.26 MB/s	 1304104 B/op	      53 allocs/op
+PASS
+ok  	github.com/klauspost/compress/flate	4.471s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/fse
+BenchmarkCompress/gettysburg         	    1036	     11335 ns/op	 136.57 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/digits             	      21	    539146 ns/op	 185.48 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/twain              	       5	   2472826 ns/op	 156.89 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/low-ent            	      54	    224102 ns/op	 178.49 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/superlow-ent       	     172	     69612 ns/op	 150.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/endzerobits        	   18469	       649 ns/op	   7.70 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/pngdata.001        	      32	    356547 ns/op	 143.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress/normcount2         	    3398	      3329 ns/op	  26.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/gettysburg       	    1573	      7800 ns/op	 198.46 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/digits           	      31	    371937 ns/op	 268.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/twain            	       6	   1868740 ns/op	 207.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/low-ent          	      80	    152584 ns/op	 262.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/superlow-ent     	     325	     35889 ns/op	 292.57 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/endzerobits      	   45243	       264 ns/op	  18.94 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/pngdata.001      	      63	    177768 ns/op	 288.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress/normcount2       	    6536	      1805 ns/op	  48.19 MB/s	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/klauspost/compress/fse	0.296s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/gzip
+BenchmarkGunzipCopy      	       1	  37768001 ns/op	 126.37 MB/s
+BenchmarkGunzipNoWriteTo 	       1	  37679671 ns/op	 126.67 MB/s
+BenchmarkGunzipStdlib    	       1	  37635313 ns/op	 126.82 MB/s
+BenchmarkGzipLM3         	       1	  38609255 ns/op	 123.62 MB/s
+BenchmarkGzipLM2         	       1	  23067089 ns/op	 206.92 MB/s
+BenchmarkGzipL1          	       1	  38729484 ns/op	 123.24 MB/s
+BenchmarkGzipL2          	       1	  44302879 ns/op	 107.73 MB/s
+BenchmarkGzipL3          	       1	  45849562 ns/op	 104.10 MB/s
+BenchmarkGzipL4          	       1	  51840864 ns/op	  92.07 MB/s
+BenchmarkGzipL5          	       1	  60206191 ns/op	  79.28 MB/s
+BenchmarkGzipL6          	       1	  66408478 ns/op	  71.87 MB/s
+BenchmarkGzipL7          	       1	  96262869 ns/op	  49.58 MB/s
+BenchmarkGzipL8          	       1	 125199161 ns/op	  38.12 MB/s
+BenchmarkGzipL9          	       1	 429594809 ns/op	  11.11 MB/s
+BenchmarkOldGzipL1       	       1	  54473130 ns/op	  87.62 MB/s
+BenchmarkOldGzipL2       	       1	  69435577 ns/op	  68.74 MB/s
+BenchmarkOldGzipL3       	       1	  79484882 ns/op	  60.05 MB/s
+BenchmarkOldGzipL4       	       1	  97467916 ns/op	  48.97 MB/s
+BenchmarkOldGzipL5       	       1	 133868443 ns/op	  35.65 MB/s
+BenchmarkOldGzipL6       	       1	 147286029 ns/op	  32.41 MB/s
+BenchmarkOldGzipL7       	       1	 201040868 ns/op	  23.74 MB/s
+BenchmarkOldGzipL8       	       1	 402378922 ns/op	  11.86 MB/s
+BenchmarkOldGzipL9       	       1	 444780153 ns/op	  10.73 MB/s
+PASS
+ok  	github.com/klauspost/compress/gzip	3.204s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/huff0
+BenchmarkDeflate/digits        	      25	    459838 ns/op	 217.47 MB/s	      92 B/op	       0 allocs/op
+BenchmarkDeflate/gettysburg    	     726	     15554 ns/op	  99.53 MB/s	       3 B/op	       0 allocs/op
+BenchmarkDeflate/twain         	       9	   1199659 ns/op	 218.51 MB/s	     256 B/op	       0 allocs/op
+BenchmarkDeflate/low-ent.10k   	      73	    153548 ns/op	 260.51 MB/s	      31 B/op	       0 allocs/op
+BenchmarkDeflate/superlow-ent-10k         	     226	     54950 ns/op	 191.08 MB/s	      10 B/op	       0 allocs/op
+BenchmarkDeflate/crash2                   	   14538	       847 ns/op	  17.72 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDeflate/endzerobits              	   15002	       812 ns/op	   6.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDeflate/endnonzero               	   15148	       817 ns/op	   8.57 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDeflate/case1                    	   13615	       869 ns/op	  63.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDeflate/case2                    	   13200	       900 ns/op	  50.01 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDeflate/case3                    	   13806	       865 ns/op	  55.49 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDeflate/pngdata.001              	      32	    320524 ns/op	 159.74 MB/s	      72 B/op	       0 allocs/op
+BenchmarkDeflate/normcount2               	   12657	       930 ns/op	  93.59 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/digits       	      38	    290587 ns/op	 344.14 MB/s	      26 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/gettysburg   	    1490	      8090 ns/op	 191.34 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/twain        	      12	    966464 ns/op	 271.24 MB/s	      85 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/low-ent.10k  	     100	    108767 ns/op	 367.76 MB/s	      10 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/superlow-ent-10k         	     316	     38767 ns/op	 270.85 MB/s	       3 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/crash2                   	    6669	      1813 ns/op	   8.27 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/endzerobits              	   23146	       497 ns/op	  10.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/endnonzero               	    8839	      1314 ns/op	   5.33 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/case1                    	    1946	      5211 ns/op	  10.55 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/case2                    	    2392	      5153 ns/op	   8.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/case3                    	    2347	      5122 ns/op	   9.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/pngdata.001              	      46	    263365 ns/op	 194.41 MB/s	      22 B/op	       0 allocs/op
+BenchmarkCompress1XReuseNone/normcount2               	    3525	      3384 ns/op	  25.71 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/digits                  	      39	    286249 ns/op	 349.36 MB/s	      26 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/gettysburg              	    1778	      6944 ns/op	 222.94 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/twain                   	      12	    980339 ns/op	 267.40 MB/s	      85 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/low-ent.10k             	     100	    108371 ns/op	 369.10 MB/s	      10 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/superlow-ent-10k        	     307	     38708 ns/op	 271.26 MB/s	       3 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/crash2                  	   10000	      1182 ns/op	  12.69 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/endzerobits             	   23762	       481 ns/op	  10.39 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/endnonzero              	   14198	       845 ns/op	   8.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/case1                   	    3232	      3807 ns/op	  14.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/case2                   	    3280	      3664 ns/op	  12.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/case3                   	    3286	      3695 ns/op	  12.99 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/pngdata.001             	      49	    241933 ns/op	 211.63 MB/s	      20 B/op	       0 allocs/op
+BenchmarkCompress1XReuseAllow/normcount2              	    5162	      2393 ns/op	  36.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/digits                 	      42	    287694 ns/op	 347.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/gettysburg             	    2240	      4691 ns/op	 330.02 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/twain                  	      12	    949267 ns/op	 276.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/low-ent.10k            	     100	    108315 ns/op	 369.29 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/superlow-ent-10k       	     321	     37220 ns/op	 282.10 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/crash2                 	   29004	       414 ns/op	  36.20 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/endzerobits            	   31948	       376 ns/op	  13.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/endnonzero             	   31088	       393 ns/op	  17.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/case1                  	   22422	       530 ns/op	 103.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/case2                  	   23577	       494 ns/op	  91.12 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/case3                  	   24024	       497 ns/op	  96.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/pngdata.001            	      50	    228659 ns/op	 223.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XReusePrefer/normcount2             	   19459	       616 ns/op	 141.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/digits                   	      40	    291839 ns/op	 342.66 MB/s	      25 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/gettysburg               	    1473	      8241 ns/op	 187.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/twain                    	      12	    981474 ns/op	 267.09 MB/s	      85 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/low-ent.10k              	     100	    109012 ns/op	 366.93 MB/s	      10 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/superlow-ent-10k         	     312	     38333 ns/op	 273.91 MB/s	       3 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/case1                    	    2341	      5303 ns/op	  10.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/case2                    	    2332	      5229 ns/op	   8.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/case3                    	    2337	      5254 ns/op	   9.14 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/pngdata.001              	      49	    241365 ns/op	 212.13 MB/s	      20 B/op	       0 allocs/op
+BenchmarkCompress4XReuseNone/normcount2               	    3418	      3563 ns/op	  24.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/digits                  	      42	    292505 ns/op	 341.88 MB/s	      24 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/gettysburg              	    1747	      7126 ns/op	 217.23 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/twain                   	      12	    950588 ns/op	 275.77 MB/s	      85 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/low-ent.10k             	     100	    107427 ns/op	 372.34 MB/s	      10 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/superlow-ent-10k        	     313	     38114 ns/op	 275.49 MB/s	       3 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/case1                   	    3110	      3952 ns/op	  13.92 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/case2                   	    3237	      3816 ns/op	  11.79 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/case3                   	    2806	      3855 ns/op	  12.45 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/pngdata.001             	      48	    238760 ns/op	 214.44 MB/s	      21 B/op	       0 allocs/op
+BenchmarkCompress4XReuseAllow/normcount2              	    4611	      2573 ns/op	  33.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/digits                 	      42	    291979 ns/op	 342.50 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/gettysburg             	    2545	      4761 ns/op	 325.12 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/twain                  	      12	    951297 ns/op	 275.56 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/low-ent.10k            	     100	    107320 ns/op	 372.72 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/superlow-ent-10k       	     313	     36930 ns/op	 284.32 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/case1                  	   18720	       645 ns/op	  85.30 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/case2                  	   20313	       602 ns/op	  74.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/case3                  	   19777	       610 ns/op	  78.73 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/pngdata.001            	      51	    233683 ns/op	 219.10 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XReusePrefer/normcount2             	   16455	       738 ns/op	 117.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-100                   	    5191	      2189 ns/op	  45.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-200                   	    4868	      2463 ns/op	  81.22 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-500                   	    3765	      3225 ns/op	 155.05 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-1000                  	    2758	      4442 ns/op	 225.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-5000                  	     842	     14661 ns/op	 341.04 MB/s	       1 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-10000                 	     423	     27000 ns/op	 370.37 MB/s	       2 B/op	       0 allocs/op
+BenchmarkCompress1XSizes/digits-50000                 	      81	    145116 ns/op	 344.55 MB/s	      12 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-100                   	    5125	      2264 ns/op	  44.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-200                   	    4620	      2556 ns/op	  78.25 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-500                   	    3528	      3304 ns/op	 151.31 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-1000                  	    2689	      4650 ns/op	 215.04 MB/s	       0 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-5000                  	     817	     14485 ns/op	 345.19 MB/s	       1 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-10000                 	     404	     28225 ns/op	 354.29 MB/s	       2 B/op	       0 allocs/op
+BenchmarkCompress4XSizes/digits-50000                 	      82	    144988 ns/op	 344.86 MB/s	      12 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/digits                     	      19	    580198 ns/op	 172.36 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/gettysburg                 	    1214	      9866 ns/op	 156.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/twain                      	       7	   1652252 ns/op	 158.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/low-ent.10k                	      57	    200125 ns/op	 199.87 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/superlow-ent-10k           	     222	     53254 ns/op	 197.17 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/crash2                     	   13180	       928 ns/op	  16.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/endzerobits                	  115662	        98.4 ns/op	  50.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/endnonzero                 	   18903	       646 ns/op	  10.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/case1                      	    4282	      2832 ns/op	  19.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/case2                      	    4233	      2765 ns/op	  16.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/case3                      	    4282	      2854 ns/op	  16.82 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/pngdata.001                	      43	    272885 ns/op	 187.62 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XTable/normcount2                 	    6337	      1963 ns/op	  44.32 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/digits                   	      20	    564588 ns/op	 177.13 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/gettysburg               	    1486	      8226 ns/op	 188.18 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/twain                    	       7	   1641649 ns/op	 159.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/low-ent.10k              	      61	    199667 ns/op	 200.33 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/superlow-ent-10k         	     222	     55038 ns/op	 190.78 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/crash2                   	  102894	       120 ns/op	 124.85 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/endzerobits              	  224780	        53.3 ns/op	  93.75 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/endnonzero               	  184683	        66.6 ns/op	 105.16 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/case1                    	   37264	       326 ns/op	 168.68 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/case2                    	   42018	       278 ns/op	 161.85 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/case3                    	   39314	       301 ns/op	 159.41 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/pngdata.001              	      44	    261993 ns/op	 195.42 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress1XNoTable/normcount2               	   23962	       487 ns/op	 178.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/digits                   	      27	    428917 ns/op	 233.15 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/gettysburg               	    2218	      5399 ns/op	 286.74 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/twain                    	       9	   1298730 ns/op	 201.85 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/low-ent.10k              	     100	    119644 ns/op	 334.33 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/superlow-ent-10k         	     378	     32665 ns/op	 321.44 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/case1                    	   25310	       471 ns/op	 116.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/case2                    	   29787	       400 ns/op	 112.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/case3                    	   29445	       413 ns/op	 116.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/pngdata.001              	      70	    170128 ns/op	 300.95 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XNoTable/normcount2               	   19182	       651 ns/op	 133.70 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/digits                     	      25	    435182 ns/op	 229.80 MB/s	    6425 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/gettysburg                 	    1630	      7337 ns/op	 211.00 MB/s	       4 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/twain                      	       8	   1293840 ns/op	 202.61 MB/s	   52848 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/low-ent.10k                	      91	    121200 ns/op	 330.03 MB/s	     564 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/superlow-ent-10k           	     368	     33762 ns/op	 311.00 MB/s	      46 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/case1                      	    4160	      2946 ns/op	  18.67 MB/s	       1 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/case2                      	    4071	      2879 ns/op	  15.63 MB/s	       1 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/case3                      	    4173	      2923 ns/op	  16.42 MB/s	       1 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/pngdata.001                	      61	    177542 ns/op	 288.38 MB/s	    1177 B/op	       0 allocs/op
+BenchmarkDecompress4XTable/normcount2                 	    5626	      2085 ns/op	  41.72 MB/s	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/klauspost/compress/huff0	2.369s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/s2
+BenchmarkRandomEncode       	     129	     90970 ns/op	11526.63 MB/s
+BenchmarkRandomEncodeBetter 	      99	    120755 ns/op	8683.50 MB/s
+PASS
+ok  	github.com/klauspost/compress/s2	1.602s
+?   	github.com/klauspost/compress/s2/cmd/internal/readahead	[no test files]
+?   	github.com/klauspost/compress/s2/cmd/s2c	[no test files]
+?   	github.com/klauspost/compress/s2/cmd/s2d	[no test files]
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/snappy
+BenchmarkRandomEncode   	     105	    108695 ns/op	9646.91 MB/s
+BenchmarkExtendMatch    	    1269	      9175 ns/op
+PASS
+ok  	github.com/klauspost/compress/snappy	0.280s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/zip
+BenchmarkCompressedZipGarbage 	       5	   2099825 ns/op	    8926 B/op	      44 allocs/op
+BenchmarkZip64Test            	       1	  15125659 ns/op
+BenchmarkZip64TestSizes/4096  	     643	     18698 ns/op
+BenchmarkZip64TestSizes/1048576         	      42	    263932 ns/op
+BenchmarkZip64TestSizes/67108864        	       1	  15752314 ns/op
+PASS
+ok  	github.com/klauspost/compress/zip	0.109s
+PASS
+ok  	github.com/klauspost/compress/zlib	0.374s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/zstd
+BenchmarkDecoder_DecoderSmall/kppkn.gtb.zst         	       2	   9967911 ns/op	 147.93 MB/s	 2474428 B/op	       8 allocs/op
+BenchmarkDecoder_DecoderSmall/geo.protodata.zst     	       3	   4162449 ns/op	 227.92 MB/s	 2343165 B/op	       5 allocs/op
+BenchmarkDecoder_DecoderSmall/plrabn12.txt.zst      	       1	  33399125 ns/op	 115.42 MB/s	     336 B/op	       5 allocs/op
+BenchmarkDecoder_DecoderSmall/lcet10.txt.zst        	       1	  24881391 ns/op	 137.21 MB/s	     336 B/op	       5 allocs/op
+BenchmarkDecoder_DecoderSmall/asyoulik.txt.zst      	       1	  15064218 ns/op	  66.48 MB/s	 2359960 B/op	      11 allocs/op
+BenchmarkDecoder_DecoderSmall/alice29.txt.zst       	       1	  20178630 ns/op	  60.30 MB/s	 2409288 B/op	      13 allocs/op
+BenchmarkDecoder_DecoderSmall/html_x_4.zst          	       2	   6028896 ns/op	 543.52 MB/s	 7815752 B/op	      11 allocs/op
+BenchmarkDecoder_DecoderSmall/paper-100k.pdf.zst    	      15	    973069 ns/op	 841.87 MB/s	 2310222 B/op	       3 allocs/op
+BenchmarkDecoder_DecoderSmall/fireworks.jpeg.zst    	      16	    868925 ns/op	1133.29 MB/s	 4350008 B/op	       8 allocs/op
+BenchmarkDecoder_DecoderSmall/urls.10K.zst          	       1	  27835598 ns/op	 201.78 MB/s	     336 B/op	       5 allocs/op
+BenchmarkDecoder_DecoderSmall/html.zst              	       3	   4053683 ns/op	 202.09 MB/s	 2310397 B/op	       5 allocs/op
+BenchmarkDecoder_DecoderSmall/comp-data.bin.zst     	      40	    345198 ns/op	  94.46 MB/s	 1048650 B/op	       2 allocs/op
+BenchmarkDecoder_DecodeAll/kppkn.gtb.zst            	       9	   1159100 ns/op	 159.02 MB/s	      19 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/geo.protodata.zst        	      43	    266337 ns/op	 445.26 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/plrabn12.txt.zst         	       3	   3810954 ns/op	 126.44 MB/s	      58 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/lcet10.txt.zst           	       4	   2831416 ns/op	 150.72 MB/s	      44 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/asyoulik.txt.zst         	      12	    978845 ns/op	 127.88 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/alice29.txt.zst          	       8	   1283574 ns/op	 118.49 MB/s	      22 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/html_x_4.zst             	      24	    468080 ns/op	 875.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/paper-100k.pdf.zst       	     259	     44753 ns/op	2288.11 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/fireworks.jpeg.zst       	     781	     15490 ns/op	7946.77 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/urls.10K.zst             	       4	   3271947 ns/op	 214.58 MB/s	      44 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/html.zst                 	      39	    299673 ns/op	 341.71 MB/s	       0 B/op	       0 allocs/op
+BenchmarkDecoder_DecodeAll/comp-data.bin.zst        	     634	     19424 ns/op	 209.84 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllXML                       	       1	  33111096 ns/op	 161.43 MB/s	       0 B/op	       0 allocs/op
+--- BENCH: BenchmarkEncoder_EncodeAllXML
+    encoder_test.go:781: Output size: 646427
+BenchmarkEncoder_EncodeAllSimple/fastest            	      21	    550174 ns/op	  72.35 MB/s	     451 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllSimple/default            	      14	    778540 ns/op	  51.13 MB/s	     676 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllSimple4K/fastest          	     276	     43283 ns/op	  94.63 MB/s	      19 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllSimple4K/default          	     178	     69218 ns/op	  59.18 MB/s	      30 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllHTML                      	      22	    538063 ns/op	  82.66 MB/s	     430 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllTwain                     	       2	   7477739 ns/op	  51.88 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEncoder_EncodeAllPi                        	       4	   2504501 ns/op	  39.93 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRandomEncodeAllFastest                     	       2	   8405281 ns/op	1247.52 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRandomEncodeAllDefault                     	       1	  10111074 ns/op	1037.06 MB/s	       0 B/op	       0 allocs/op
+BenchmarkRandomEncoderFastest                       	       2	   7731590 ns/op	1356.22 MB/s	      72 B/op	       2 allocs/op
+BenchmarkRandomEncoderDefault                       	       2	   9261236 ns/op	1132.22 MB/s	      72 B/op	       2 allocs/op
+BenchmarkSnappy_ConvertXML                          	       1	  21821904 ns/op	 244.95 MB/s	      48 B/op	       1 allocs/op
+PASS
+ok  	github.com/klauspost/compress/zstd	4.174s
+goos: linux
+goarch: amd64
+pkg: github.com/klauspost/compress/zstd/internal/xxhash
+BenchmarkHashes/xxhash,direct,bytes,n=5B         	 1691355	         7.03 ns/op	 711.69 MB/s
+BenchmarkHashes/xxhash,direct,string,n=5B        	  470755	        25.9 ns/op	 192.99 MB/s
+BenchmarkHashes/xxhash,digest,bytes,n=5B         	  408243	        29.5 ns/op	 169.57 MB/s
+BenchmarkHashes/xxhash,digest,string,n=5B        	  339643	        36.1 ns/op	 138.59 MB/s
+BenchmarkHashes/xxhash,direct,bytes,n=100B       	  546201	        22.5 ns/op	4436.75 MB/s
+BenchmarkHashes/xxhash,direct,string,n=100B      	   98737	       102 ns/op	 983.64 MB/s
+BenchmarkHashes/xxhash,digest,bytes,n=100B       	  299433	        40.7 ns/op	2460.02 MB/s
+BenchmarkHashes/xxhash,digest,string,n=100B      	  123276	        96.1 ns/op	1040.34 MB/s
+BenchmarkHashes/xxhash,direct,bytes,n=4KB        	   30640	       394 ns/op	10158.46 MB/s
+BenchmarkHashes/xxhash,direct,string,n=4KB       	   11005	       961 ns/op	4161.82 MB/s
+BenchmarkHashes/xxhash,digest,bytes,n=4KB        	   29005	       422 ns/op	9482.33 MB/s
+BenchmarkHashes/xxhash,digest,string,n=4KB       	    9352	      1095 ns/op	3652.70 MB/s
+BenchmarkHashes/xxhash,direct,bytes,n=10MB       	      12	   1003452 ns/op	9965.60 MB/s
+BenchmarkHashes/xxhash,direct,string,n=10MB      	       2	   5646604 ns/op	1770.98 MB/s
+BenchmarkHashes/xxhash,digest,bytes,n=10MB       	      10	   1018409 ns/op	9819.23 MB/s
+BenchmarkHashes/xxhash,digest,string,n=10MB      	       3	   4189530 ns/op	2386.90 MB/s
+BenchmarkHashes/CRC-32,direct,bytes,n=5B         	  526428	        23.6 ns/op	 211.80 MB/s
+BenchmarkHashes/CRC-32,direct,string,n=5B        	  230119	        52.4 ns/op	  95.34 MB/s
+BenchmarkHashes/CRC-32,digest,bytes,n=5B         	  184497	        62.1 ns/op	  80.48 MB/s
+BenchmarkHashes/CRC-32,digest,string,n=5B        	  131400	        94.2 ns/op	  53.09 MB/s
+BenchmarkHashes/CRC-32,direct,bytes,n=100B       	  259386	        47.4 ns/op	2109.42 MB/s
+BenchmarkHashes/CRC-32,direct,string,n=100B      	  108160	       110 ns/op	 907.66 MB/s
+BenchmarkHashes/CRC-32,digest,bytes,n=100B       	  123261	        94.8 ns/op	1054.84 MB/s
+BenchmarkHashes/CRC-32,digest,string,n=100B      	   77626	       159 ns/op	 630.66 MB/s
+BenchmarkHashes/CRC-32,direct,bytes,n=4KB        	   42793	       285 ns/op	14042.86 MB/s
+BenchmarkHashes/CRC-32,direct,string,n=4KB       	   12093	       933 ns/op	4288.10 MB/s
+BenchmarkHashes/CRC-32,digest,bytes,n=4KB        	   34968	       340 ns/op	11775.51 MB/s
+BenchmarkHashes/CRC-32,digest,string,n=4KB       	   12090	       999 ns/op	4003.49 MB/s
+BenchmarkHashes/CRC-32,direct,bytes,n=10MB       	      14	    716619 ns/op	13954.42 MB/s
+BenchmarkHashes/CRC-32,direct,string,n=10MB      	       3	   4132984 ns/op	2419.56 MB/s
+BenchmarkHashes/CRC-32,digest,bytes,n=10MB       	      14	    718832 ns/op	13911.45 MB/s
+BenchmarkHashes/CRC-32,digest,string,n=10MB      	       3	   4057655 ns/op	2464.48 MB/s
+BenchmarkHashes/FNV-1a,digest,bytes,n=5B         	  378318	        29.7 ns/op	 168.51 MB/s
+BenchmarkHashes/FNV-1a,digest,string,n=5B        	  200067	        60.9 ns/op	  82.16 MB/s
+BenchmarkHashes/FNV-1a,digest,bytes,n=100B       	   69386	       175 ns/op	 570.50 MB/s
+BenchmarkHashes/FNV-1a,digest,string,n=100B      	   50568	       237 ns/op	 421.99 MB/s
+BenchmarkHashes/FNV-1a,digest,bytes,n=4KB        	    1926	      6088 ns/op	 657.03 MB/s
+BenchmarkHashes/FNV-1a,digest,string,n=4KB       	    1768	      7099 ns/op	 563.49 MB/s
+BenchmarkHashes/FNV-1a,digest,bytes,n=10MB       	       1	  15403677 ns/op	 649.20 MB/s
+BenchmarkHashes/FNV-1a,digest,string,n=10MB      	       1	  18514543 ns/op	 540.12 MB/s
+PASS
+ok  	github.com/klauspost/compress/zstd/internal/xxhash	0.713s

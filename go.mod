@@ -21,6 +21,7 @@ require (
 	github.com/shirou/gopsutil v2.20.1+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/build v0.0.0-20200207163221-ab7b028cb90c
+	golang.org/x/perf v0.0.0-20180704124530-6e6d33e29852
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f
