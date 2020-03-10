@@ -13,6 +13,7 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
+	github.com/google/go-cmp v0.3.2-0.20191028172631-481baca67f93
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
 	github.com/mholt/archiver v3.1.1+incompatible

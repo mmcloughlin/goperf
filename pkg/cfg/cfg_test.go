@@ -1,6 +1,11 @@
 package cfg
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+
+	"github.com/google/go-cmp/cmp"
+)
 
 func TestBytesValue(t *testing.T) {
 	cases := []struct {
@@ -61,23 +66,23 @@ func TestEntryValidateErrors(t *testing.T) {
 	}{
 		{
 			Entry:        KeyValue("", StringValue("value")),
-			ErrorMessage: "empty key",
+			ErrorMessage: "empty",
 		},
 		{
 			Entry:        KeyValue("Key", StringValue("value")),
-			ErrorMessage: "key starts with non lower case",
+			ErrorMessage: "starts with non lower case",
 		},
 		{
 			Entry:        KeyValue("cpu model", StringValue("value")),
-			ErrorMessage: "key contains space character",
+			ErrorMessage: "contains space character",
 		},
 		{
 			Entry:        KeyValue("cpuModel", StringValue("value")),
-			ErrorMessage: "key contains upper case character",
+			ErrorMessage: "contains upper case character",
 		},
 		{
 			Entry:        KeyValue("cpu:model", StringValue("value")),
-			ErrorMessage: "key contains colon character",
+			ErrorMessage: "contains colon character",
 		},
 		{
 			Entry:        KeyValue("cpu-model", StringValue("Brand: Intel\nFreq: 2.80GHz\n")),
@@ -87,6 +92,22 @@ func TestEntryValidateErrors(t *testing.T) {
 			Entry:        KeyValue("used-percent", PercentageValue(120)),
 			ErrorMessage: "percentage must be between 0 and 100",
 		},
+		{
+			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "PerfCritical"),
+			ErrorMessage: `tag "PerfCritical": starts with non lower case`,
+		},
+		{
+			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "left[bracket"),
+			ErrorMessage: `tag "left[bracket": contains left square bracket character`,
+		},
+		{
+			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "right]bracket"),
+			ErrorMessage: `tag "right]bracket": contains right square bracket character`,
+		},
+		{
+			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "comma,separated"),
+			ErrorMessage: `tag "comma,separated": contains comma character`,
+		},
 	}
 	for _, c := range cases {
 		err := c.Entry.Validate()
@@ -95,6 +116,47 @@ func TestEntryValidateErrors(t *testing.T) {
 		}
 		if err.Error() != c.ErrorMessage {
 			t.Errorf("got error %q; expect %q", err.Error(), c.ErrorMessage)
+		}
+	}
+}
+
+func TestWrite(t *testing.T) {
+	cases := []struct {
+		Configuration Configuration
+		Expect        string
+	}{
+		{
+			Configuration: Configuration{KeyValue("key", StringValue(""))},
+			Expect:        "key:\n",
+		},
+		{
+			Configuration: Configuration{KeyValue("key", StringValue("value"))},
+			Expect:        "key: value\n",
+		},
+		{
+			Configuration: Configuration{
+				KeyValue("key", StringValue("value"), "tag"),
+			},
+			Expect: "key: value [tag]\n",
+		},
+		{
+			Configuration: Configuration{
+				KeyValue("key", StringValue("value"), "tag1", "tag2", "tag3"),
+			},
+			Expect: "key: value [tag1,tag2,tag3]\n",
+		},
+	}
+	for _, c := range cases {
+		buf := bytes.NewBuffer(nil)
+		if err := Write(buf, c.Configuration); err != nil {
+			t.Fatal(err)
+		}
+		got := buf.String()
+		if diff := cmp.Diff(c.Expect, got); diff != "" {
+			t.Logf("expect\n%s", c.Expect)
+			t.Logf("got\n%s", got)
+			t.Logf("diff\n%s", diff)
+			t.Fail()
 		}
 	}
 }

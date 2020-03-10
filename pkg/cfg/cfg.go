@@ -126,23 +126,28 @@ func Label(k Key, doc string) Labeled {
 func (l label) Key() Key    { return l.key }
 func (l label) Doc() string { return l.doc }
 
+// Tag for a configuration property.
+type Tag string
+
 type PropertyEntry struct {
 	Labeled
 	Value Value
+	Tags  []Tag
 }
 
 func (PropertyEntry) entry() {}
 
-func Property(k Key, doc string, v Value) PropertyEntry {
+func Property(k Key, doc string, v Value, tags ...Tag) PropertyEntry {
 	return PropertyEntry{
 		Labeled: Label(k, doc),
 		Value:   v,
+		Tags:    tags,
 	}
 }
 
 // KeyValue builds an undocumented property.
-func KeyValue(k Key, v Value) PropertyEntry {
-	return Property(k, "", v)
+func KeyValue(k Key, v Value, tags ...Tag) PropertyEntry {
+	return Property(k, "", v, tags...)
 }
 
 // SectionEntry is a nested configuration.
@@ -188,19 +193,42 @@ func (c Configuration) Validate() error {
 //
 func (k Key) Validate() error {
 	if k == "" {
-		return errors.New("empty key")
+		return errors.New("empty")
 	}
 
 	for i, r := range k {
 		switch {
 		case i == 0 && !unicode.IsLower(r):
-			return errors.New("key starts with non lower case")
+			return errors.New("starts with non lower case")
 		case unicode.IsSpace(r):
-			return errors.New("key contains space character")
+			return errors.New("contains space character")
 		case unicode.IsUpper(r):
-			return errors.New("key contains upper case character")
+			return errors.New("contains upper case character")
 		case r == ':':
-			return errors.New("key contains colon character")
+			return errors.New("contains colon character")
+		}
+	}
+
+	return nil
+}
+
+// Validate that tag has the allowed form. Must meet the same requirements as a
+// key, and in addition may not contain square brackets or commas.
+func (t Tag) Validate() error {
+	// Validate as a key.
+	if err := Key(t).Validate(); err != nil {
+		return err
+	}
+
+	// Check additional disallowed characters.
+	disallowed := map[rune]string{
+		'[': "left square bracket",
+		']': "right square bracket",
+		',': "comma",
+	}
+	for _, r := range t {
+		if _, ok := disallowed[r]; ok {
+			return fmt.Errorf("contains %s character", disallowed[r])
 		}
 	}
 
@@ -229,6 +257,13 @@ func (p PropertyEntry) Validate() error {
 
 	if v, ok := p.Value.(Validatable); ok {
 		return v.Validate()
+	}
+
+	// Validate tags.
+	for _, t := range p.Tags {
+		if err := t.Validate(); err != nil {
+			return fmt.Errorf("tag %q: %w", t, err)
+		}
 	}
 
 	return nil
@@ -397,7 +432,7 @@ func (w *writer) configuration(c Configuration) {
 func (w *writer) entry(e Entry) {
 	switch en := e.(type) {
 	case PropertyEntry:
-		w.line(en.Key(), en.Value.String())
+		w.property(en)
 	case SectionEntry:
 		save := w.prefix
 		w.prefix = w.prefix + en.Key() + "-"
@@ -408,13 +443,23 @@ func (w *writer) entry(e Entry) {
 	}
 }
 
-func (w *writer) line(k Key, v string) {
-	k = w.prefix + k
-	if v == "" {
-		w.printf("%s:\n", k)
-	} else {
-		w.printf("%s: %s\n", k, v)
+func (w *writer) property(p PropertyEntry) {
+	w.printf("%s:", w.prefix+p.Key())
+
+	if v := p.Value.String(); v != "" {
+		w.printf(" %s", v)
 	}
+
+	if len(p.Tags) > 0 {
+		sep := " ["
+		for _, t := range p.Tags {
+			w.printf("%s%s", sep, t)
+			sep = ","
+		}
+		w.printf("]")
+	}
+
+	w.printf("\n")
 }
 
 func (w *writer) printf(format string, a ...interface{}) {
