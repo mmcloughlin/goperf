@@ -129,6 +129,12 @@ func (l label) Doc() string { return l.doc }
 // Tag for a configuration property.
 type Tag string
 
+// Standard tag defintions.
+const (
+	TagNone         Tag = ""
+	TagPerfCritical Tag = "perf"
+)
+
 type PropertyEntry struct {
 	Labeled
 	Value Value
@@ -143,6 +149,11 @@ func Property(k Key, doc string, v Value, tags ...Tag) PropertyEntry {
 		Value:   v,
 		Tags:    tags,
 	}
+}
+
+// PerfProperty builds a property tagged as performance critical.
+func PerfProperty(k Key, doc string, v Value, tags ...Tag) PropertyEntry {
+	return Property(k, doc, v, append([]Tag{TagPerfCritical}, tags...)...)
 }
 
 // KeyValue builds an undocumented property.
