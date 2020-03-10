@@ -9,7 +9,7 @@ import (
 
 // Interface is a filesystem abstraction.
 type Interface interface {
-	Open(ctx context.Context, name string) (io.WriteCloser, error)
+	Create(ctx context.Context, name string) (io.WriteCloser, error)
 }
 
 type local struct {
@@ -22,7 +22,7 @@ func NewLocal(root string) Interface {
 	return &local{root: root}
 }
 
-func (l *local) Open(ctx context.Context, name string) (io.WriteCloser, error) {
+func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error) {
 	path := filepath.Join(l.root, name)
 	if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ var Discard Interface = discard{}
 
 type discard struct{}
 
-func (discard) Open(context.Context, string) (io.WriteCloser, error) {
+func (discard) Create(context.Context, string) (io.WriteCloser, error) {
 	return devnull{}, nil
 }
 

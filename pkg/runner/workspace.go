@@ -346,8 +346,8 @@ func (w *Workspace) Artifact(path, name string) {
 	}
 	defer w.close(src)
 
-	// Open destination.
-	dst, err := w.artifacts.Open(context.TODO(), name)
+	// Create destination.
+	dst, err := w.artifacts.Create(context.TODO(), name)
 	if err != nil {
 		w.seterr(err)
 		return
