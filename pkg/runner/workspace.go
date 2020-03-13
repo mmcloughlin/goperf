@@ -22,7 +22,7 @@ type Workspace struct {
 	lg.Logger
 
 	client    *http.Client
-	artifacts fs.Interface
+	artifacts fs.Writable
 
 	root string
 	cwd  string
@@ -52,7 +52,7 @@ func InheritEnviron() Option {
 	return WithEnviron(os.Environ())
 }
 
-func WithArtifactStore(fs fs.Interface) Option {
+func WithArtifactStore(fs fs.Writable) Option {
 	return func(w *Workspace) { w.artifacts = fs }
 }
 

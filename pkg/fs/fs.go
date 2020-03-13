@@ -7,9 +7,20 @@ import (
 	"path/filepath"
 )
 
+// Writable can create named files.
+type Writable interface {
+	Create(ctx context.Context, name string) (io.WriteCloser, error)
+}
+
+// Readable can read from named files.
+type Readable interface {
+	Open(ctx context.Context, name string) (io.ReadCloser, error)
+}
+
 // Interface is a filesystem abstraction.
 type Interface interface {
-	Create(ctx context.Context, name string) (io.WriteCloser, error)
+	Writable
+	Readable
 }
 
 type local struct {
@@ -30,8 +41,13 @@ func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error)
 	return os.Create(path)
 }
 
+func (l *local) Open(ctx context.Context, name string) (io.ReadCloser, error) {
+	path := filepath.Join(l.root, name)
+	return os.Open(path)
+}
+
 // Discard stores nothing.
-var Discard Interface = discard{}
+var Discard Writable = discard{}
 
 type discard struct{}
 

@@ -30,3 +30,8 @@ func New(ctx context.Context, bucket string) (fs.Interface, error) {
 func (g *gcs) Create(ctx context.Context, name string) (io.WriteCloser, error) {
 	return g.bucket.Object(name).NewWriter(ctx), nil
 }
+
+// Open named object for reading.
+func (g *gcs) Open(ctx context.Context, name string) (io.ReadCloser, error) {
+	return g.bucket.Object(name).NewReader(ctx)
+}
