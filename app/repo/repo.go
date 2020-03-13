@@ -8,24 +8,25 @@ import (
 	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
-// Log provides access to a git repository commit log.
-type Log interface {
+// Repository provides access to git repository properties.
+type Repository interface {
 	RecentCommits(ctx context.Context) ([]*Commit, error)
+	Revision(ctx context.Context, ref string) (*Commit, error)
 }
 
-type gitileslog struct {
+type gitilesrepo struct {
 	client *gitiles.Client
 	repo   string
 }
 
-func NewGitilesLog(c *gitiles.Client, repo string) Log {
-	return &gitileslog{
+func NewGitiles(c *gitiles.Client, repo string) Repository {
+	return &gitilesrepo{
 		client: c,
 		repo:   repo,
 	}
 }
 
-func (g *gitileslog) RecentCommits(ctx context.Context) ([]*Commit, error) {
+func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
 	// Fetch repository log.
 	res, err := g.client.Log(ctx, g.repo)
 	if err != nil {
@@ -43,6 +44,22 @@ func (g *gitileslog) RecentCommits(ctx context.Context) ([]*Commit, error) {
 	}
 
 	return commits, nil
+}
+
+func (g *gitilesrepo) Revision(ctx context.Context, ref string) (*Commit, error) {
+	// Make revision API call.
+	res, err := g.client.Revision(ctx, g.repo, ref)
+	if err != nil {
+		return nil, fmt.Errorf("fetching gitiles revision: %w", err)
+	}
+
+	// Map commit to model type.
+	c, err := mapgitilescommit(res.Commit)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func mapgitilescommit(c gitiles.Commit) (*Commit, error) {
