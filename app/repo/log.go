@@ -59,7 +59,7 @@ func mapgitilescommit(c gitiles.Commit) (*Commit, error) {
 
 	// Convert into model type.
 	return &Commit{
-		SHA:     c.Commit,
+		SHA:     c.SHA,
 		Tree:    c.Tree,
 		Parents: c.Parents,
 		Author: Person{

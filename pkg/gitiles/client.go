@@ -24,27 +24,45 @@ func NewClient(c *http.Client, base string) *Client {
 }
 
 func (c *Client) Log(ctx context.Context, repo string) (*LogResponse, error) {
+	path := repo + "/+log?format=JSON"
+	payload := &LogResponse{}
+	if err := c.get(ctx, path, payload); err != nil {
+		return nil, err
+	}
+	return payload, nil
+}
+
+func (c *Client) Revision(ctx context.Context, repo, ref string) (*RevisionResponse, error) {
+	path := repo + "/+/" + ref + "?format=JSON"
+	payload := &RevisionResponse{}
+	if err := c.get(ctx, path, payload); err != nil {
+		return nil, err
+	}
+	return payload, nil
+}
+
+func (c *Client) get(ctx context.Context, path string, payload interface{}) error {
 	// Build request.
-	u := c.base + "/" + repo + "/+log?format=JSON"
+	u := c.base + "/" + path
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Execute the request.
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
 
 	// Parse response body.
-	payload := &LogResponse{}
 	if err := decodejson(res.Body, payload); err != nil {
-		return nil, err
+		return err
 	}
 
-	return payload, nil
+	return nil
+
 }
 
 func decodejson(rd io.Reader, v interface{}) error {
