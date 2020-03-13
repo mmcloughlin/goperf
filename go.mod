@@ -12,12 +12,14 @@ require (
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.2-0.20191028172631-481baca67f93
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-github/v29 v29.0.3 // indirect
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
+	github.com/hashicorp/golang-lru v0.5.1
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
