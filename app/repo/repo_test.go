@@ -2,29 +2,36 @@ package repo
 
 import (
 	"context"
+	"math/rand"
 	"net/http"
 	"testing"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/mmcloughlin/cb/internal/test"
-	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
-func TestGitiles(t *testing.T) {
+var repos = []struct {
+	Name string
+	Repo Repository
+}{
+	{
+		Name: "gittiles",
+		Repo: NewGitilesGo(http.DefaultClient),
+	},
+	{
+		Name: "github",
+		Repo: NewGithubGo(http.DefaultClient),
+	},
+}
+
+func TestRepositoryImplementations(t *testing.T) {
 	test.RequiresNetwork(t)
 
-	c := gitiles.NewClient(http.DefaultClient, "https://go.googlesource.com")
-
-	repos := map[string]Repository{
-		"gitiles": NewGitiles(c, "go"),
-		"github":  NewGithub(github.NewClient(nil), "golang", "go"),
-	}
-
-	for name, r := range repos {
-		t.Run(name, func(t *testing.T) {
+	for _, r := range repos {
+		t.Run(r.Name, func(t *testing.T) {
 			// Recent commits.
-			commits, err := r.RecentCommits(context.Background())
+			commits, err := r.Repo.RecentCommits(context.Background())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -34,12 +41,49 @@ func TestGitiles(t *testing.T) {
 			}
 
 			// Lookup a commit by reference.
-			commit, err := r.Revision(context.Background(), "go1.13.3")
+			commit, err := r.Repo.Revision(context.Background(), "go1.13.3")
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			t.Log(commit.SHA, commit.Author.Name)
 		})
+	}
+}
+
+func TestRepositoryImplementationsSameRevisions(t *testing.T) {
+	test.RequiresNetwork(t)
+
+	ctx := context.Background()
+	commits, err := repos[0].Repo.RecentCommits(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rand.Shuffle(len(commits), func(i, j int) {
+		commits[i], commits[j] = commits[j], commits[i]
+	})
+
+	if len(commits) > 5 {
+		commits = commits[:5]
+	}
+
+	for _, commit := range commits {
+		t.Logf("commit = %s", commit.SHA)
+		expect, err := repos[0].Repo.Revision(ctx, commit.SHA)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, r := range repos[1:] {
+			got, err := r.Repo.Revision(ctx, commit.SHA)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(expect, got); diff != "" {
+				t.Fatalf("mismatch on commit %s\n%s", commit.SHA, diff)
+			}
+		}
 	}
 }

@@ -3,10 +3,12 @@ package repo
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang/groupcache/lru"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v29/github"
 
 	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
@@ -66,6 +68,47 @@ type Repository interface {
 	RecentCommits(ctx context.Context) ([]*Commit, error)
 }
 
+type composite []Repository
+
+// NewCompositeRepository builds a Repository backed by one or more Repository
+// implementations. Each method is implemented by calling each sub-Repository in
+// turn and returning the first successful result. Panics if no Repositories are
+// provided.
+func NewCompositeRepository(rs ...Repository) Repository {
+	if len(rs) == 0 {
+		panic("no repositories provided")
+	}
+	return composite(rs)
+}
+
+func (c composite) RecentCommits(ctx context.Context) (commits []*Commit, err error) {
+	for _, r := range c {
+		commits, err = r.RecentCommits(ctx)
+		if err == nil {
+			return
+		}
+	}
+	return
+}
+
+func (c composite) Revision(ctx context.Context, ref string) (commit *Commit, err error) {
+	for _, r := range c {
+		commit, err = r.Revision(ctx, ref)
+		if err == nil {
+			return
+		}
+	}
+	return
+}
+
+// Go builds a Repository implementation for the go git repository. API calls
+// are made with the provided HTTP client.
+func Go(c *http.Client) Repository {
+	canonical := NewGitilesGo(c)
+	fallback := NewGithubGo(c)
+	return NewCompositeRepository(canonical, fallback)
+}
+
 type gitilesrepo struct {
 	client *gitiles.Client
 	repo   string
@@ -76,6 +119,13 @@ func NewGitiles(c *gitiles.Client, repo string) Repository {
 		client: c,
 		repo:   repo,
 	}
+}
+
+// NewGitilesGo builds a Respository implementation for the canonical Go git
+// repository at https://go.googlesource.com/go/.
+func NewGitilesGo(c *http.Client) Repository {
+	gitilesclient := gitiles.NewClient(c, "https://go.googlesource.com")
+	return NewGitiles(gitilesclient, "go")
 }
 
 func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
@@ -126,6 +176,10 @@ func mapgitilescommit(c gitiles.Commit) (*Commit, error) {
 		return nil, fmt.Errorf("commit time: %w", err)
 	}
 
+	// It appears that github does not return trailing whitespace in commit
+	// messages. Trim here to match.
+	message := strings.TrimSpace(c.Message)
+
 	// Convert into model type.
 	return &Commit{
 		SHA:     c.SHA,
@@ -141,7 +195,7 @@ func mapgitilescommit(c gitiles.Commit) (*Commit, error) {
 			Email: c.Committer.Email,
 		},
 		CommitTime: committime,
-		Message:    c.Message,
+		Message:    message,
 	}, nil
 }
 
@@ -157,6 +211,13 @@ func NewGithub(c *github.Client, owner, repo string) Repository {
 		owner:  owner,
 		repo:   repo,
 	}
+}
+
+// NewGithubGo builds a Respository implementation for the github mirror of the
+// Go git repository at https://github.com/golang/go.
+func NewGithubGo(c *http.Client) Repository {
+	githubclient := github.NewClient(c)
+	return NewGithub(githubclient, "golang", "go")
 }
 
 func (g *githubrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
@@ -188,7 +249,7 @@ func (g *githubrepo) Revision(ctx context.Context, ref string) (*Commit, error) 
 
 func mapgithubcommit(c *github.RepositoryCommit) *Commit {
 	var parents []string
-	for _, parent := range c.GetCommit().Parents {
+	for _, parent := range c.Parents {
 		parents = append(parents, parent.GetSHA())
 	}
 
