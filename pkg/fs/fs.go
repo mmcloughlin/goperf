@@ -1,10 +1,14 @@
 package fs
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // Writable can create named files.
@@ -59,3 +63,52 @@ type devnull struct{}
 
 func (devnull) Write(p []byte) (int, error) { return len(p), nil }
 func (devnull) Close() error                { return nil }
+
+type mem struct {
+	files map[string]io.ReadCloser
+	mu    sync.RWMutex
+}
+
+// NewMem builds an in-memory filesystem.
+func NewMem() Interface {
+	return &mem{
+		files: map[string]io.ReadCloser{},
+	}
+}
+
+func (m *mem) Create(_ context.Context, name string) (io.WriteCloser, error) {
+	return &memfile{
+		Buffer: bytes.NewBuffer(nil),
+		name:   name,
+		fs:     m,
+	}, nil
+}
+
+func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	f, ok := m.files[name]
+	if !ok {
+		return nil, os.ErrNotExist
+	}
+
+	return f, nil
+}
+
+type memfile struct {
+	*bytes.Buffer
+	name string
+	fs   *mem
+}
+
+func (f *memfile) Close() error {
+	if f.fs == nil {
+		return errors.New("already closed")
+	}
+	f.fs.mu.Lock()
+	defer f.fs.mu.Unlock()
+	f.fs.files[f.name] = ioutil.NopCloser(f.Buffer)
+	f.fs = nil
+	return nil
+}
