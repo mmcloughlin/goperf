@@ -43,6 +43,23 @@ func (c revisionscache) Revision(ctx context.Context, ref string) (*Commit, erro
 	return commit, nil
 }
 
+type storerevisions struct {
+	s Store
+}
+
+// NewRevisionsFromStore adapts a commit Store to the Revisions interface,
+// delegating to the commit lookup by SHA. Only supports full SHA git refs.
+func NewRevisionsFromStore(s Store) Revisions {
+	return storerevisions{s: s}
+}
+
+func (s storerevisions) Revision(ctx context.Context, ref string) (*Commit, error) {
+	if !isgitsha(ref) {
+		return nil, fmt.Errorf("cannot fetch revision information for %q: only supports full git sha refs", ref)
+	}
+	return s.s.FindBySHA(ctx, ref)
+}
+
 // Repository provides access to git repository properties.
 type Repository interface {
 	Revisions
