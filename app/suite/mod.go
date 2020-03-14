@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/groupcache/lru"
 	"golang.org/x/mod/module"
 )
 
@@ -36,6 +37,38 @@ type RevInfo struct {
 
 type ModuleDatabase interface {
 	Stat(ctx context.Context, path, rev string) (*RevInfo, error)
+}
+
+type modcache struct {
+	cache *lru.Cache
+	mod   ModuleDatabase
+}
+
+// NewModuleCache provides an in-memory cache in front of a ModuleDatabase.
+func NewModuleCache(mod ModuleDatabase, maxentries int) ModuleDatabase {
+	return &modcache{
+		cache: lru.New(maxentries),
+		mod:   mod,
+	}
+}
+
+func (c *modcache) Stat(ctx context.Context, path, rev string) (*RevInfo, error) {
+	type key struct {
+		path, rev string
+	}
+	k := key{path, rev}
+
+	if info, ok := c.cache.Get(k); ok {
+		return info.(*RevInfo), nil
+	}
+
+	info, err := c.mod.Stat(ctx, path, rev)
+	if err != nil {
+		return nil, err
+	}
+
+	c.cache.Add(k, info)
+	return info, nil
 }
 
 type modproxy struct {
