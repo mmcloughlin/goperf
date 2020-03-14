@@ -25,13 +25,13 @@ type revisionscache struct {
 
 // NewRevisionsCache provides an in-memory cache in front of another Revisions fetcher.
 func NewRevisionsCache(r Revisions, maxentries int) Revisions {
-	return revisionscache{
+	return &revisionscache{
 		cache: lru.New(maxentries),
 		r:     r,
 	}
 }
 
-func (c revisionscache) Revision(ctx context.Context, ref string) (*Commit, error) {
+func (c *revisionscache) Revision(ctx context.Context, ref string) (*Commit, error) {
 	if commit, ok := c.cache.Get(ref); ok {
 		return commit.(*Commit), nil
 	}
