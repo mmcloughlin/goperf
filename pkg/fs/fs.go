@@ -65,14 +65,14 @@ func (devnull) Write(p []byte) (int, error) { return len(p), nil }
 func (devnull) Close() error                { return nil }
 
 type mem struct {
-	files map[string]io.ReadCloser
+	files map[string][]byte
 	mu    sync.RWMutex
 }
 
 // NewMem builds an in-memory filesystem.
 func NewMem() Interface {
 	return &mem{
-		files: map[string]io.ReadCloser{},
+		files: map[string][]byte{},
 	}
 }
 
@@ -88,12 +88,12 @@ func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	f, ok := m.files[name]
+	b, ok := m.files[name]
 	if !ok {
 		return nil, os.ErrNotExist
 	}
 
-	return f, nil
+	return ioutil.NopCloser(bytes.NewBuffer(b)), nil
 }
 
 type memfile struct {
@@ -108,7 +108,7 @@ func (f *memfile) Close() error {
 	}
 	f.fs.mu.Lock()
 	defer f.fs.mu.Unlock()
-	f.fs.files[f.name] = ioutil.NopCloser(f.Buffer)
+	f.fs.files[f.name] = f.Buffer.Bytes()
 	f.fs = nil
 	return nil
 }

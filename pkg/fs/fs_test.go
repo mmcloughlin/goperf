@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -56,5 +57,25 @@ func TestMem(t *testing.T) {
 	// Close it.
 	if err := r.Close(); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestMemMultiRead(t *testing.T) {
+	ctx := context.Background()
+	expect := []byte("Hello, World!\n")
+	m := NewMem()
+
+	if err := WriteFile(ctx, m, "greeting.txt", expect); err != nil {
+		t.Fatal(err)
+	}
+
+	for i := 0; i < 5; i++ {
+		got, err := ReadFile(ctx, m, "greeting.txt")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(expect, got) {
+			t.Fatalf("read #%d: mismatch", i+1)
+		}
 	}
 }
