@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
@@ -485,4 +486,29 @@ func (w *writer) seterr(err error) {
 	if w.err == nil {
 		w.err = err
 	}
+}
+
+var valuetagsregexp = regexp.MustCompile(`^(.+?)\s+\[([a-z0-9,]+)\]$`)
+
+// ParseValueTags parses tags from a configuration line value.
+func ParseValueTags(s string) (string, []Tag) {
+	match := valuetagsregexp.FindStringSubmatch(s)
+	if match == nil {
+		return s, nil
+	}
+
+	v := match[1]
+	tagscsv := match[2]
+
+	parts := strings.Split(tagscsv, ",")
+	var tags []Tag
+	for _, part := range parts {
+		tag := Tag(part)
+		if err := tag.Validate(); err != nil {
+			return s, nil
+		}
+		tags = append(tags, tag)
+	}
+
+	return v, tags
 }

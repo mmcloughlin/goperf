@@ -2,9 +2,13 @@ package cfg
 
 import (
 	"bytes"
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/mmcloughlin/cb/pkg/parse"
 )
 
 func TestBytesValue(t *testing.T) {
@@ -158,5 +162,88 @@ func TestWrite(t *testing.T) {
 			t.Logf("diff\n%s", diff)
 			t.Fail()
 		}
+	}
+}
+
+func TestParseValueTags(t *testing.T) {
+	cases := []struct {
+		Input string
+		Value string
+		Tags  []Tag
+	}{
+		{
+			Input: "hello world",
+			Value: "hello world",
+			Tags:  nil,
+		},
+		{
+			Input: "hello world [perf]",
+			Value: "hello world",
+			Tags:  []Tag{TagPerfCritical},
+		},
+		{
+			Input: "hello world [a,b,c]",
+			Value: "hello world",
+			Tags:  []Tag{"a", "b", "c"},
+		},
+		{
+			Input: "hello world\t  \t  [a,b,c]",
+			Value: "hello world",
+			Tags:  []Tag{"a", "b", "c"},
+		},
+		{
+			Input: "hello world [these are not tags]",
+			Value: "hello world [these are not tags]",
+			Tags:  nil,
+		},
+		{
+			Input: "hello world [this,has,an,invalid,,empty,tag]",
+			Value: "hello world [this,has,an,invalid,,empty,tag]",
+			Tags:  nil,
+		},
+	}
+	for _, c := range cases {
+		v, tags := ParseValueTags(c.Input)
+		if v != c.Value || !reflect.DeepEqual(tags, c.Tags) {
+			t.Errorf("ParseValueTags(%s) = %v, %v; expect %v, %v", c.Input, v, tags, c.Value, c.Tags)
+		}
+	}
+}
+
+func TestWriteParseTagsRoundtrip(t *testing.T) {
+	// Write configuration lines.
+	expect := []Tag{"a", "b", "c"}
+	c := Configuration{
+		KeyValue("key", StringValue("value"), expect...),
+	}
+	buf := bytes.NewBuffer(nil)
+	err := Write(buf, c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Write a fake benchmark line, so we can use the parser.
+	fmt.Fprintln(buf, "BenchmarkEncodeDigitsSpeed1e4-8   	      30	    482808 ns/op")
+
+	// Parse out.
+	results, err := parse.Reader(buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Extract label.
+	if len(results) != 1 {
+		t.Fatal("expected one result")
+	}
+	s := results[0].Labels["key"]
+
+	// Parse out value and tags.
+	v, tags := ParseValueTags(s)
+	if v != "value" {
+		t.Errorf(`expected "value" got %q`, v)
+	}
+
+	if !reflect.DeepEqual(expect, tags) {
+		t.Errorf(`expected tags %v got %v`, expect, tags)
 	}
 }
