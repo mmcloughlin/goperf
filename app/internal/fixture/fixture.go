@@ -12,9 +12,16 @@ import (
 
 // Sample model objects for testing purposes.
 var (
+	ModuleSHA = "788b7f06fee85b7e1d2aa4a3a86f8dbbbcc771ae"
+
+	RevInfo = &suite.RevInfo{
+		Version: "v1.10.3",
+		Time:    time.Date(2020, 3, 11, 11, 43, 27, 0, time.UTC), // "2020-03-11T11:43:27Z"
+	}
+
 	Module = &suite.Module{
 		Path:    "github.com/klauspost/compress",
-		Version: "v1.10.3",
+		Version: RevInfo.Version,
 	}
 
 	Package = &suite.Package{
@@ -23,8 +30,9 @@ var (
 	}
 
 	Benchmark = &suite.Benchmark{
-		Package: Package,
-		Name:    "Compress1X",
+		Package:  Package,
+		FullName: "BenchmarkCompress1X/reuse=none/corpus=pngdata.001",
+		Name:     "Compress1X",
 		Parameters: map[string]string{
 			"reuse":  "none",
 			"corpus": "pngdata.001",
@@ -67,7 +75,8 @@ var (
 			"c": "3",
 			"d": "4",
 		},
-		Value: 123.45,
+		Iterations: 4096,
+		Value:      123.45,
 	}
 )
 

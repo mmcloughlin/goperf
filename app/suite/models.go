@@ -1,6 +1,8 @@
 package suite
 
 import (
+	"path"
+
 	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/app/id"
@@ -31,8 +33,13 @@ func (p *Package) UUID() uuid.UUID {
 	})
 }
 
+func (p *Package) ImportPath() string {
+	return path.Join(p.Module.Path, p.RelativePath)
+}
+
 type Benchmark struct {
 	Package    *Package
+	FullName   string
 	Name       string
 	Parameters map[string]string
 	Unit       string

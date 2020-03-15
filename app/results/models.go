@@ -29,6 +29,7 @@ type Result struct {
 	Commit      *repo.Commit
 	Environment Properties
 	Metadata    Properties
+	Iterations  uint64
 	Value       float64
 }
 

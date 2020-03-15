@@ -11,7 +11,7 @@ import (
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
-func TestLoader(t *testing.T) {
+func TestLoaderTestdata(t *testing.T) {
 	test.RequiresNetwork(t)
 
 	loader, err := NewLoader(WithFilesystem(fs.NewLocal(".")))

@@ -170,6 +170,7 @@ func (l *Loader) convert(ctx context.Context, r *parse.Result) (*Result, error) 
 		Commit:      commit,
 		Environment: env,
 		Metadata:    meta,
+		Iterations:  r.Iterations,
 		Value:       r.Value,
 	}, nil
 }
@@ -226,6 +227,7 @@ func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*suite.Benchma
 
 	bench := &suite.Benchmark{
 		Package:    pkg,
+		FullName:   r.FullName,
 		Name:       r.Name,
 		Parameters: r.Parameters,
 		Unit:       r.Unit,
