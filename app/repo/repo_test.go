@@ -29,6 +29,7 @@ func TestRepositoryImplementations(t *testing.T) {
 	test.RequiresNetwork(t)
 
 	for _, r := range repos {
+		r := r // scopelint
 		t.Run(r.Name, func(t *testing.T) {
 			// Recent commits.
 			commits, err := r.Repo.RecentCommits(context.Background())

@@ -16,7 +16,7 @@ type Toolchain struct {
 }
 
 type Suite struct {
-	Module     Module        `json:"module`
+	Module     Module        `json:"module"`
 	Tests      string        `json:"tests"`
 	Short      bool          `json:"short"`
 	Benchmarks string        `json:"benchmarks"`

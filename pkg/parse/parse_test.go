@@ -84,6 +84,7 @@ func TestParseTestdata(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, filename := range filenames {
+		filename := filename // scopelint
 		t.Run(filepath.Base(filename), func(t *testing.T) {
 			b, err := ioutil.ReadFile(filename)
 			if err != nil {

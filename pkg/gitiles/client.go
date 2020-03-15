@@ -62,7 +62,6 @@ func (c *Client) get(ctx context.Context, path string, payload interface{}) erro
 	}
 
 	return nil
-
 }
 
 func decodejson(rd io.Reader, v interface{}) error {
@@ -77,7 +76,9 @@ func decodejson(rd io.Reader, v interface{}) error {
 	if !bytes.Equal(magic, prefix) {
 		return fmt.Errorf("expected response body to start with magic %q; got %q", magic, prefix)
 	}
-	r.Discard(len(magic))
+	if _, err := r.Discard(len(magic)); err != nil {
+		return err
+	}
 
 	// Decode as JSON.
 	d := json.NewDecoder(r)

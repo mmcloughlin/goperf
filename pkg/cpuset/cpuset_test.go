@@ -65,7 +65,6 @@ func TestCPUSetLists(t *testing.T) {
 			t.Fail()
 		}
 	}
-
 }
 
 func TestCPUSetInts(t *testing.T) {

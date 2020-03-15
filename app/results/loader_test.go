@@ -25,6 +25,7 @@ func TestLoaderTestdata(t *testing.T) {
 	}
 
 	for _, filename := range filenames {
+		filename := filename // scopelint
 		t.Run(filepath.Base(filename), func(t *testing.T) {
 			results, err := loader.Load(context.Background(), filename)
 			if err != nil {

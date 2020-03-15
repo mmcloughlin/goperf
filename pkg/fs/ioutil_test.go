@@ -17,6 +17,7 @@ func TestWriteReadFile(t *testing.T) {
 		"local": NewLocal(d),
 	}
 	for name, fs := range filesystems {
+		fs := fs // scopelint
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 			expect := []byte("Hello, World!\n")

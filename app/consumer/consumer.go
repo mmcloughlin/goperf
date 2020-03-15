@@ -105,6 +105,7 @@ func (c *Consumer) receive(ctx context.Context) error {
 
 	// Process the message in a goroutine.
 	hctx, hcancel := context.WithCancel(ctx)
+	defer hcancel()
 	errc := make(chan error)
 	go func() {
 		errc <- c.handler.Handle(hctx, m.Message.Data)
@@ -124,7 +125,6 @@ func (c *Consumer) receive(ctx context.Context) error {
 			return c.ack(ctx, m)
 		case <-time.After(delay):
 			if err := c.extenddeadline(ctx, m, c.extend); err != nil {
-				hcancel()
 				return err
 			}
 			delay = c.extend - c.grace

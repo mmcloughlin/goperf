@@ -121,7 +121,7 @@ func NewGitiles(c *gitiles.Client, repo string) Repository {
 	}
 }
 
-// NewGitilesGo builds a Respository implementation for the canonical Go git
+// NewGitilesGo builds a Repository implementation for the canonical Go git
 // repository at https://go.googlesource.com/go/.
 func NewGitilesGo(c *http.Client) Repository {
 	gitilesclient := gitiles.NewClient(c, "https://go.googlesource.com")
@@ -213,7 +213,7 @@ func NewGithub(c *github.Client, owner, repo string) Repository {
 	}
 }
 
-// NewGithubGo builds a Respository implementation for the github mirror of the
+// NewGithubGo builds a Repository implementation for the github mirror of the
 // Go git repository at https://github.com/golang/go.
 func NewGithubGo(c *http.Client) Repository {
 	githubclient := github.NewClient(c)

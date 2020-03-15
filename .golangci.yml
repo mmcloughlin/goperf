@@ -1,0 +1,19 @@
+linters:
+  enable-all: true
+  disable:
+    - lll
+    - gochecknoglobals
+    - funlen
+    - gomnd
+    - wsl
+    - prealloc
+    - godox
+
+issues:
+  exclude-rules:
+    # Allow the SCHED_* constants in proc package, matching the linux names.
+    - path: pkg/proc/
+      text: ALL_CAPS in Go names
+      linters:
+        - golint
+        - stylecheck
