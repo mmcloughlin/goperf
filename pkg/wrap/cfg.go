@@ -9,21 +9,7 @@ import (
 	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/proc"
-	"github.com/mmcloughlin/cb/pkg/sys"
 )
-
-// DefaultProviders is the default list of config providers.
-var DefaultProviders = cfg.Providers{
-	sys.Host,
-	sys.LoadAverage,
-	sys.VirtualMemory,
-	sys.CPU,
-	sys.Caches{},
-	sys.CPUFreq{},
-	sys.IntelPState{},
-	proc.Stat{},
-}
 
 func NewConfig(b command.Base, providers cfg.Providers) subcommands.Command {
 	a := &configaction{

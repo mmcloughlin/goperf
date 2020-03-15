@@ -78,15 +78,16 @@ func cpu() (cfg.Configuration, error) {
 
 	c := cfg.Configuration{}
 	for _, proc := range procs {
-		c = append(c, processor(proc))
+		c = append(c, processor(proc, int(proc.CPU)))
 	}
 	return c, nil
 }
 
-func processor(proc cpuutil.InfoStat) cfg.Entry {
+func processor(proc cpuutil.InfoStat, idx int) cfg.Entry {
 	return cfg.Section(
-		cfg.Key("cpu"+strconv.Itoa(int(proc.CPU))),
+		cfg.Key("cpu"+strconv.Itoa(idx)),
 		fmt.Sprintf("processor %d information", proc.CPU),
+		cfg.Property("processor", "processor index", cfg.IntValue(proc.CPU)),
 		cfg.Property("vendorid", "vendor id", cfg.StringValue(proc.VendorID)),
 		cfg.Property(
 			"family",
@@ -100,7 +101,7 @@ func processor(proc cpuutil.InfoStat) cfg.Entry {
 		cfg.Property("core-id", "physical core number within the processor", cfg.StringValue(proc.CoreID)),
 		cfg.Property("cores", "number of physical cores", cfg.IntValue(proc.Cores)),
 		cfg.Property("frequency", "nominal frequency", cfg.FrequencyValue(proc.Mhz*1e6)),
-		cfg.Property("cache-size", "cache size (level 2)", cfg.BytesValue(proc.CacheSize*1e3)),
+		cfg.Property("cache-size", "cache size (level 2)", cfg.BytesValue(proc.CacheSize*1024)),
 		cfg.Property("flags", "processor properties and feature sets", cfg.StringsValue(proc.Flags)),
 	)
 }
