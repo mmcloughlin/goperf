@@ -31,3 +31,29 @@ func SetScheduler(pid int, policy Policy, param *SchedParam) error {
 	}
 	return nil
 }
+
+// Affinity returns the CPU affinity of the given process.
+func Affinity(pid int) ([]int, error) {
+	var s unix.CPUSet
+	if err := unix.SchedGetaffinity(pid, &s); err != nil {
+		return nil, err
+	}
+	return cpulist(&s), nil
+}
+
+// AffinitySelf returns the
+func AffinitySelf() ([]int, error) {
+	return Affinity(0)
+}
+
+// cpulist converts the set s to a list.
+func cpulist(s *unix.CPUSet) []int {
+	cpus := []int{}
+	n := s.Count()
+	for cpu := 0; len(cpus) < n; cpu++ {
+		if s.IsSet(cpu) {
+			cpus = append(cpus, cpu)
+		}
+	}
+	return cpus
+}
