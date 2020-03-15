@@ -31,14 +31,14 @@ func host() (cfg.Configuration, error) {
 		cfg.Property("uptime", "total uptime", time.Duration(info.Uptime)*time.Second),
 		cfg.Property("boot-time", "boot timestamp", time.Unix(int64(info.BootTime), 0)),
 		cfg.Property("num-procs", "number of processes", cfg.IntValue(info.Procs)),
-		cfg.Property("os", "operating system", cfg.StringValue(info.OS)),
-		cfg.Property("platform", "example: ubuntu", cfg.StringValue(info.Platform)),
+		cfg.PerfProperty("os", "operating system", cfg.StringValue(info.OS)),
+		cfg.PerfProperty("platform", "example: ubuntu", cfg.StringValue(info.Platform)),
 		cfg.Property("platform-family", "example: debian", cfg.StringValue(info.PlatformFamily)),
-		cfg.Property("platform-version", "version of the complete OS", cfg.StringValue(info.PlatformVersion)),
+		cfg.PerfProperty("platform-version", "version of the complete OS", cfg.StringValue(info.PlatformVersion)),
 		cfg.Property("kernel-version", "version of the OS kernel", cfg.StringValue(info.KernelVersion)),
 		cfg.Property("kernel-arch", "native cpu architecture queried at runtime", cfg.StringValue(info.KernelArch)),
 		cfg.Property("virt-system", "virtualization system", cfg.StringValue(info.VirtualizationSystem)),
-		cfg.Property("virt-role", "virtualization role", cfg.StringValue(info.VirtualizationRole)),
+		cfg.PerfProperty("virt-role", "virtualization role", cfg.StringValue(info.VirtualizationRole)),
 	}, nil
 }
 

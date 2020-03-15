@@ -33,7 +33,7 @@ func (Stat) Configuration() (cfg.Configuration, error) {
 	}
 
 	return cfg.Configuration{
-		cfg.Property(
+		cfg.PerfProperty(
 			"priority",
 			"nice value from 0 (high) to 39 (low) or for real-time the negated scheduling priority minus one",
 			cfg.IntValue(stat.Priority),
@@ -48,9 +48,9 @@ func (Stat) Configuration() (cfg.Configuration, error) {
 			"real-time priority in the range 1 to 99 or 0 for non-real-time",
 			cfg.IntValue(stat.RtPriority),
 		),
-		cfg.Property(
+		cfg.PerfProperty(
 			"policy",
-			"",
+			"scheduling policy",
 			Policy(stat.Policy),
 		),
 	}, nil
