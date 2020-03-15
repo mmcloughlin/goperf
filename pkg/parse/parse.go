@@ -21,6 +21,8 @@ type Result struct {
 	Parameters map[string]string
 	// Labels are the persistent labels that applied to the result.
 	Labels map[string]string
+	// Iterations.
+	Iterations uint64
 	// Value measured by the benchmark.
 	Value float64
 	// Unit of the measured value.
@@ -69,6 +71,7 @@ func convert(res *benchfmt.Result) ([]*Result, error) {
 			Name:       name,
 			Parameters: params,
 			Labels:     res.Labels,
+			Iterations: line.iterations,
 			Value:      m.value,
 			Unit:       m.unit,
 			Line:       res.LineNum,

@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestParse(t *testing.T) {
@@ -24,6 +26,7 @@ func TestParse(t *testing.T) {
 			Name:       "X",
 			Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
 			Labels:     map[string]string{"a": "a1", "b": "b1"},
+			Iterations: 100,
 			Value:      42.42,
 			Unit:       "unita",
 			Line:       3,
@@ -33,6 +36,7 @@ func TestParse(t *testing.T) {
 			Name:       "X",
 			Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
 			Labels:     map[string]string{"a": "a1", "b": "b1"},
+			Iterations: 100,
 			Value:      100,
 			Unit:       "unitb",
 			Line:       3,
@@ -42,6 +46,7 @@ func TestParse(t *testing.T) {
 			Name:       "Y",
 			Parameters: map[string]string{"gomaxprocs": "4"},
 			Labels:     map[string]string{"a": "a1", "b": "b2", "c": "c1"},
+			Iterations: 100,
 			Value:      37.6,
 			Unit:       "unitc",
 			Line:       6,
@@ -65,10 +70,9 @@ func TestParse(t *testing.T) {
 	}
 
 	for i := range expect {
-		if !reflect.DeepEqual(expect[i], got[i]) {
-			t.Logf("index  = %d", i)
-			t.Logf("got    = %#v", got[i])
-			t.Logf("expect = %#v", expect[i])
+		if diff := cmp.Diff(expect[i], got[i]); diff != "" {
+			t.Logf("index = %d", i)
+			t.Logf("diff  =\n%s", diff)
 			t.FailNow()
 		}
 	}
