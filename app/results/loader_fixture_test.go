@@ -2,6 +2,7 @@ package results_test
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"testing"
@@ -120,6 +121,42 @@ func TestLoader(t *testing.T) {
 	}
 }
 
+func TestLoadSHA256Hash(t *testing.T) {
+	// This test purely checks that the loader correctly computes the SHA-256 hash of the file.
+	//
+	//	$ sha256sum testdata/e5a4b8be-c0e5-42c4-a243-2b458ceff483.txt
+	//	a36064ebcadaea9b4b419ef66b487a6bdf1f0d5f90efa513d35f800d4dfceeb1  testdata/e5a4b8be-c0e5-42c4-a243-2b458ceff483.txt
+
+	filename := "e5a4b8be-c0e5-42c4-a243-2b458ceff483.txt"
+	expect := "a36064ebcadaea9b4b419ef66b487a6bdf1f0d5f90efa513d35f800d4dfceeb1"
+
+	fs := fs.NewLocal("testdata")
+	loader, err := results.NewLoader(
+		results.WithFilesystem(fs),
+		results.WithRevisions(&SingleRevision{Commit: fixture.Commit}),
+		results.WithModuleDatabase(&SingleModule{Info: fixture.RevInfo}),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rs, err := loader.Load(context.Background(), filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(rs) == 0 {
+		t.Fatal("no results")
+	}
+
+	for _, r := range rs {
+		got := hex.EncodeToString(r.File.SHA256[:])
+		if got != expect {
+			t.Fatalf("got hash %s; expect %s", got, expect)
+		}
+	}
+}
+
 // Revision is an implementation of repo.Revisions that returns a fixed commit.
 type SingleRevision struct {
 	Ref    string
@@ -127,7 +164,7 @@ type SingleRevision struct {
 }
 
 func (r *SingleRevision) Revision(_ context.Context, ref string) (*repo.Commit, error) {
-	if ref != r.Ref {
+	if r.Ref != "" && ref != r.Ref {
 		return nil, errors.New("unknown")
 	}
 	return r.Commit, nil
@@ -141,7 +178,7 @@ type SingleModule struct {
 }
 
 func (m *SingleModule) Stat(_ context.Context, mod, rev string) (*suite.RevInfo, error) {
-	if mod != m.Mod || rev != m.Rev {
+	if (m.Mod != "" && mod != m.Mod) || (m.Rev != "" && rev != m.Rev) {
 		return nil, errors.New("unknown")
 	}
 	return m.Info, nil
