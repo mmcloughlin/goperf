@@ -27,7 +27,7 @@ func affinecpu() (cfg.Configuration, error) {
 		if int(proc.CPU) != cpu {
 			return nil, errutil.AssertionFailure("unexpected cpu index")
 		}
-		c = append(c, processor(proc, idx))
+		c = append(c, processor(proc, idx, cfg.TagPerfCritical))
 	}
 	return c, nil
 }

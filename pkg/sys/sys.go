@@ -83,12 +83,12 @@ func cpu() (cfg.Configuration, error) {
 	return c, nil
 }
 
-func processor(proc cpuutil.InfoStat, idx int) cfg.Entry {
+func processor(proc cpuutil.InfoStat, idx int, perftags ...cfg.Tag) cfg.Entry {
 	return cfg.Section(
 		cfg.Key("cpu"+strconv.Itoa(idx)),
 		fmt.Sprintf("processor %d information", proc.CPU),
 		cfg.Property("processor", "processor index", cfg.IntValue(proc.CPU)),
-		cfg.Property("vendorid", "vendor id", cfg.StringValue(proc.VendorID)),
+		cfg.Property("vendorid", "vendor id", cfg.StringValue(proc.VendorID), perftags...),
 		cfg.Property(
 			"family",
 			`identifies the type of processor in the system (for intel place the number in front of "86")`,
@@ -96,12 +96,12 @@ func processor(proc cpuutil.InfoStat, idx int) cfg.Entry {
 		),
 		cfg.Property("model", "model number", cfg.StringValue(proc.Model)),
 		cfg.Property("stepping", "version number", cfg.IntValue(proc.Stepping)),
-		cfg.Property("model-name", "common name of the processor", cfg.StringValue(proc.ModelName)),
+		cfg.Property("model-name", "common name of the processor", cfg.StringValue(proc.ModelName), perftags...),
 		cfg.Property("physical-id", "physical processor number", cfg.StringValue(proc.PhysicalID)),
 		cfg.Property("core-id", "physical core number within the processor", cfg.StringValue(proc.CoreID)),
 		cfg.Property("cores", "number of physical cores", cfg.IntValue(proc.Cores)),
-		cfg.Property("frequency", "nominal frequency", cfg.FrequencyValue(proc.Mhz*1e6)),
-		cfg.Property("cache-size", "cache size (level 2)", cfg.BytesValue(proc.CacheSize*1024)),
-		cfg.Property("flags", "processor properties and feature sets", cfg.StringsValue(proc.Flags)),
+		cfg.Property("frequency", "nominal frequency", cfg.FrequencyValue(proc.Mhz*1e6), perftags...),
+		cfg.Property("cache-size", "cache size (level 2)", cfg.BytesValue(proc.CacheSize*1024), perftags...),
+		cfg.Property("flags", "processor properties and feature sets", cfg.StringsValue(proc.Flags), perftags...),
 	)
 }
