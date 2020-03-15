@@ -1,6 +1,7 @@
 package wrap
 
 import (
+	"github.com/mmcloughlin/cb/meta"
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/proc"
 	"github.com/mmcloughlin/cb/pkg/sys"
@@ -8,6 +9,7 @@ import (
 
 // DefaultProviders is the default list of config providers on Linux.
 var DefaultProviders = cfg.Providers{
+	meta.Provider{},
 	sys.Host,
 	sys.LoadAverage,
 	sys.VirtualMemory,

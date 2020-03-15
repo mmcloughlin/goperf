@@ -29,7 +29,7 @@ func host() (cfg.Configuration, error) {
 	return cfg.Configuration{
 		cfg.Property("hostname", "Hostname", cfg.StringValue(info.Hostname)),
 		cfg.Property("uptime", "total uptime", time.Duration(info.Uptime)*time.Second),
-		cfg.Property("boot-time", "boot timestamp", time.Unix(int64(info.BootTime), 0)),
+		cfg.Property("boot-time", "boot timestamp", cfg.TimeValue(time.Unix(int64(info.BootTime), 0))),
 		cfg.Property("num-procs", "number of processes", cfg.IntValue(info.Procs)),
 		cfg.PerfProperty("os", "operating system", cfg.StringValue(info.OS)),
 		cfg.PerfProperty("platform", "example: ubuntu", cfg.StringValue(info.Platform)),

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/mmcloughlin/cb/internal/errutil"
@@ -47,6 +48,11 @@ func (x IntValue) String() string { return strconv.Itoa(int(x)) }
 type BoolValue bool
 
 func (b BoolValue) String() string { return strconv.FormatBool(bool(b)) }
+
+// TimeValue is a time.
+type TimeValue time.Time
+
+func (t TimeValue) String() string { return time.Time(t).Format(time.RFC3339) }
 
 // BytesValue represents bytes.
 type BytesValue uint64
