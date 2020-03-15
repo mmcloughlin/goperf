@@ -29,16 +29,16 @@ func host() (cfg.Configuration, error) {
 	return cfg.Configuration{
 		cfg.Property("hostname", "Hostname", cfg.StringValue(info.Hostname)),
 		cfg.Property("uptime", "total uptime", time.Duration(info.Uptime)*time.Second),
-		cfg.Property("boot-time", "boot timestamp", cfg.TimeValue(time.Unix(int64(info.BootTime), 0))),
-		cfg.Property("num-procs", "number of processes", cfg.IntValue(info.Procs)),
+		cfg.Property("boottime", "boot timestamp", cfg.TimeValue(time.Unix(int64(info.BootTime), 0))),
+		cfg.Property("numprocs", "number of processes", cfg.IntValue(info.Procs)),
 		cfg.PerfProperty("os", "operating system", cfg.StringValue(info.OS)),
 		cfg.PerfProperty("platform", "example: ubuntu", cfg.StringValue(info.Platform)),
-		cfg.Property("platform-family", "example: debian", cfg.StringValue(info.PlatformFamily)),
-		cfg.PerfProperty("platform-version", "version of the complete OS", cfg.StringValue(info.PlatformVersion)),
-		cfg.Property("kernel-version", "version of the OS kernel", cfg.StringValue(info.KernelVersion)),
-		cfg.Property("kernel-arch", "native cpu architecture queried at runtime", cfg.StringValue(info.KernelArch)),
-		cfg.Property("virt-system", "virtualization system", cfg.StringValue(info.VirtualizationSystem)),
-		cfg.PerfProperty("virt-role", "virtualization role", cfg.StringValue(info.VirtualizationRole)),
+		cfg.Property("platformfamily", "example: debian", cfg.StringValue(info.PlatformFamily)),
+		cfg.PerfProperty("platformversion", "version of the complete OS", cfg.StringValue(info.PlatformVersion)),
+		cfg.Property("kernelversion", "version of the OS kernel", cfg.StringValue(info.KernelVersion)),
+		cfg.Property("kernelarch", "native cpu architecture queried at runtime", cfg.StringValue(info.KernelArch)),
+		cfg.Property("virtsystem", "virtualization system", cfg.StringValue(info.VirtualizationSystem)),
+		cfg.PerfProperty("virtrole", "virtualization role", cfg.StringValue(info.VirtualizationRole)),
 	}, nil
 }
 
@@ -65,7 +65,7 @@ func virtualmemory() (cfg.Configuration, error) {
 		cfg.Property("total", "total amount of RAM on this system", cfg.BytesValue(vmem.Total)),
 		cfg.Property("available", "RAM available for programs to allocate", cfg.BytesValue(vmem.Available)),
 		cfg.Property("used", "RAM used by programs", cfg.BytesValue(vmem.Used)),
-		cfg.Property("used-percent", "percentage of RAM used by programs", cfg.PercentageValue(vmem.UsedPercent)),
+		cfg.Property("usedpercent", "percentage of RAM used by programs", cfg.PercentageValue(vmem.UsedPercent)),
 		cfg.Property("free", "kernel's measure of free memory", cfg.BytesValue(vmem.Free)),
 	}, nil
 }
@@ -96,12 +96,12 @@ func processor(proc cpuutil.InfoStat, idx int, perftags ...cfg.Tag) cfg.Entry {
 		),
 		cfg.Property("model", "model number", cfg.StringValue(proc.Model)),
 		cfg.Property("stepping", "version number", cfg.IntValue(proc.Stepping)),
-		cfg.Property("model-name", "common name of the processor", cfg.StringValue(proc.ModelName), perftags...),
-		cfg.Property("physical-id", "physical processor number", cfg.StringValue(proc.PhysicalID)),
-		cfg.Property("core-id", "physical core number within the processor", cfg.StringValue(proc.CoreID)),
+		cfg.Property("modelname", "common name of the processor", cfg.StringValue(proc.ModelName), perftags...),
+		cfg.Property("physicalid", "physical processor number", cfg.StringValue(proc.PhysicalID)),
+		cfg.Property("coreid", "physical core number within the processor", cfg.StringValue(proc.CoreID)),
 		cfg.Property("cores", "number of physical cores", cfg.IntValue(proc.Cores)),
 		cfg.Property("frequency", "nominal frequency", cfg.FrequencyValue(proc.Mhz*1e6), perftags...),
-		cfg.Property("cache-size", "cache size (level 2)", cfg.BytesValue(proc.CacheSize*1024), perftags...),
+		cfg.Property("cachesize", "cache size (level 2)", cfg.BytesValue(proc.CacheSize*1024), perftags...),
 		cfg.Property("flags", "processor properties and feature sets", cfg.StringsValue(proc.Flags), perftags...),
 	)
 }

@@ -14,6 +14,9 @@ import (
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
+// SectionSeparator separates section levels in key names.
+const SectionSeparator = '-'
+
 // Validatable is something that can be validated.
 type Validatable interface {
 	Validate() error
@@ -224,6 +227,8 @@ func (k Key) Validate() error {
 			return errors.New("contains upper case character")
 		case r == ':':
 			return errors.New("contains colon character")
+		case r == SectionSeparator:
+			return fmt.Errorf("contains section separator %q", r)
 		}
 	}
 
@@ -453,7 +458,7 @@ func (w *writer) entry(e Entry) {
 		w.property(en)
 	case SectionEntry:
 		save := w.prefix
-		w.prefix = w.prefix + en.Key() + "-"
+		w.prefix = w.prefix + en.Key() + Key([]rune{SectionSeparator})
 		w.configuration(en.Sub)
 		w.prefix = save
 	default:

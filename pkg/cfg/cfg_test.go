@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -53,8 +54,8 @@ func TestSectionEntryIsProvider(t *testing.T) {
 func TestEntryValidateOK(t *testing.T) {
 	valid := []Entry{
 		KeyValue("k", StringValue("value")),
-		KeyValue("split-words-with-hyphens", StringValue("valid")),
-		KeyValue("empty-values-are-valid", StringValue("")),
+		KeyValue("multiplewords", StringValue("valid")),
+		KeyValue("emptyvaluesarevalid", StringValue("")),
 	}
 	for _, p := range valid {
 		if err := p.Validate(); err != nil {
@@ -89,27 +90,31 @@ func TestEntryValidateErrors(t *testing.T) {
 			ErrorMessage: "contains colon character",
 		},
 		{
-			Entry:        KeyValue("cpu-model", StringValue("Brand: Intel\nFreq: 2.80GHz\n")),
+			Entry:        KeyValue("section-separator", StringValue("value")),
+			ErrorMessage: `contains section separator '-'`,
+		},
+		{
+			Entry:        KeyValue("cpumodel", StringValue("Brand: Intel\nFreq: 2.80GHz\n")),
 			ErrorMessage: "value contains new line",
 		},
 		{
-			Entry:        KeyValue("used-percent", PercentageValue(120)),
+			Entry:        KeyValue("usedpercent", PercentageValue(120)),
 			ErrorMessage: "percentage must be between 0 and 100",
 		},
 		{
-			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "PerfCritical"),
+			Entry:        KeyValue("policy", StringValue("SCHED_RR"), "PerfCritical"),
 			ErrorMessage: `tag "PerfCritical": starts with non lower case`,
 		},
 		{
-			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "left[bracket"),
+			Entry:        KeyValue("policy", StringValue("SCHED_RR"), "left[bracket"),
 			ErrorMessage: `tag "left[bracket": contains left square bracket character`,
 		},
 		{
-			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "right]bracket"),
+			Entry:        KeyValue("policy", StringValue("SCHED_RR"), "right]bracket"),
 			ErrorMessage: `tag "right]bracket": contains right square bracket character`,
 		},
 		{
-			Entry:        KeyValue("procstat-policy", StringValue("SCHED_RR"), "comma,separated"),
+			Entry:        KeyValue("policy", StringValue("SCHED_RR"), "comma,separated"),
 			ErrorMessage: `tag "comma,separated": contains comma character`,
 		},
 	}
@@ -148,6 +153,23 @@ func TestWrite(t *testing.T) {
 				KeyValue("key", StringValue("value"), "tag1", "tag2", "tag3"),
 			},
 			Expect: "key: value [tag1,tag2,tag3]\n",
+		},
+		{
+			Configuration: Configuration{
+				Section(
+					"section",
+					"some configuration section",
+					KeyValue("a", IntValue(1)),
+					KeyValue("b", IntValue(2)),
+					KeyValue("c", IntValue(3)),
+				),
+			},
+			Expect: strings.Join([]string{
+				"section-a: 1",
+				"section-b: 2",
+				"section-c: 3",
+				"",
+			}, "\n"),
 		},
 	}
 	for _, c := range cases {
