@@ -55,8 +55,9 @@ func (g *gcs) List(ctx context.Context) ([]*fs.FileInfo, error) {
 			return nil, err
 		}
 		files = append(files, &fs.FileInfo{
-			Path: attrs.Name,
-			Size: attrs.Size,
+			Path:    attrs.Name,
+			Size:    attrs.Size,
+			ModTime: attrs.Updated,
 		})
 	}
 	return files, nil

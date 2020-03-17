@@ -9,12 +9,17 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 )
+
+// PathSeparator is the separator for file paths in filesystems.
+const PathSeparator = '/'
 
 // FileInfo describes a file.
 type FileInfo struct {
-	Path string // path to the file relative to the filesystem
-	Size int64  // size in bytes
+	Path    string    // path to the file relative to the filesystem
+	Size    int64     // size in bytes
+	ModTime time.Time // modification time
 }
 
 // Writable can create named files.
@@ -77,8 +82,9 @@ func (l *local) List(ctx context.Context) ([]*FileInfo, error) {
 			return err
 		}
 		files = append(files, &FileInfo{
-			Path: rel,
-			Size: info.Size(),
+			Path:    rel,
+			Size:    info.Size(),
+			ModTime: info.ModTime(),
 		})
 		return nil
 	})
@@ -107,19 +113,24 @@ func (devnull) Write(p []byte) (int, error) { return len(p), nil }
 func (devnull) Close() error                { return nil }
 
 type mem struct {
-	files map[string][]byte
+	files map[string]memfile
 	mu    sync.RWMutex
+}
+
+type memfile struct {
+	data    []byte
+	modtime time.Time
 }
 
 // NewMem builds an in-memory filesystem.
 func NewMem() Interface {
 	return &mem{
-		files: map[string][]byte{},
+		files: map[string]memfile{},
 	}
 }
 
 func (m *mem) Create(_ context.Context, name string) (io.WriteCloser, error) {
-	return &memfile{
+	return &memwriter{
 		Buffer: bytes.NewBuffer(nil),
 		name:   name,
 		fs:     m,
@@ -142,12 +153,12 @@ func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	b, ok := m.files[name]
+	f, ok := m.files[name]
 	if !ok {
 		return nil, os.ErrNotExist
 	}
 
-	return ioutil.NopCloser(bytes.NewBuffer(b)), nil
+	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
 }
 
 func (m *mem) List(_ context.Context) ([]*FileInfo, error) {
@@ -155,29 +166,33 @@ func (m *mem) List(_ context.Context) ([]*FileInfo, error) {
 	defer m.mu.RUnlock()
 
 	files := make([]*FileInfo, 0, len(m.files))
-	for path, data := range m.files {
+	for path, file := range m.files {
 		files = append(files, &FileInfo{
-			Path: path,
-			Size: int64(len(data)),
+			Path:    path,
+			Size:    int64(len(file.data)),
+			ModTime: file.modtime,
 		})
 	}
 
 	return files, nil
 }
 
-type memfile struct {
+type memwriter struct {
 	*bytes.Buffer
 	name string
 	fs   *mem
 }
 
-func (f *memfile) Close() error {
-	if f.fs == nil {
+func (w *memwriter) Close() error {
+	if w.fs == nil {
 		return errors.New("already closed")
 	}
-	f.fs.mu.Lock()
-	defer f.fs.mu.Unlock()
-	f.fs.files[f.name] = f.Buffer.Bytes()
-	f.fs = nil
+	w.fs.mu.Lock()
+	defer w.fs.mu.Unlock()
+	w.fs.files[w.name] = memfile{
+		data:    w.Bytes(),
+		modtime: time.Now(),
+	}
+	w.fs = nil
 	return nil
 }
