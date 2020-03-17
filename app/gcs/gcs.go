@@ -32,6 +32,11 @@ func (g *gcs) Create(ctx context.Context, name string) (io.WriteCloser, error) {
 	return g.bucket.Object(name).NewWriter(ctx), nil
 }
 
+// Remove named object.
+func (g *gcs) Remove(ctx context.Context, name string) error {
+	return g.bucket.Object(name).Delete(ctx)
+}
+
 // Open named object for reading.
 func (g *gcs) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 	return g.bucket.Object(name).NewReader(ctx)

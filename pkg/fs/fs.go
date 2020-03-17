@@ -20,6 +20,7 @@ type FileInfo struct {
 // Writable can create named files.
 type Writable interface {
 	Create(ctx context.Context, name string) (io.WriteCloser, error)
+	Remove(ctx context.Context, name string) error
 }
 
 // Readable can read from named files.
@@ -50,6 +51,11 @@ func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error)
 		return nil, err
 	}
 	return os.Create(path)
+}
+
+func (l *local) Remove(ctx context.Context, name string) error {
+	path := filepath.Join(l.root, name)
+	return os.Remove(path)
 }
 
 func (l *local) Open(ctx context.Context, name string) (io.ReadCloser, error) {
@@ -91,6 +97,10 @@ func (discard) Create(context.Context, string) (io.WriteCloser, error) {
 	return devnull{}, nil
 }
 
+func (discard) Remove(ctx context.Context, name string) error {
+	return nil
+}
+
 type devnull struct{}
 
 func (devnull) Write(p []byte) (int, error) { return len(p), nil }
@@ -114,6 +124,18 @@ func (m *mem) Create(_ context.Context, name string) (io.WriteCloser, error) {
 		name:   name,
 		fs:     m,
 	}, nil
+}
+
+func (m *mem) Remove(_ context.Context, name string) error {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	if _, ok := m.files[name]; !ok {
+		return os.ErrNotExist
+	}
+
+	delete(m.files, name)
+	return nil
 }
 
 func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
