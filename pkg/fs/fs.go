@@ -11,6 +11,12 @@ import (
 	"sync"
 )
 
+// FileInfo describes a file.
+type FileInfo struct {
+	Path string // path to the file relative to the filesystem
+	Size int64  // size in bytes
+}
+
 // Writable can create named files.
 type Writable interface {
 	Create(ctx context.Context, name string) (io.WriteCloser, error)
@@ -19,6 +25,7 @@ type Writable interface {
 // Readable can read from named files.
 type Readable interface {
 	Open(ctx context.Context, name string) (io.ReadCloser, error)
+	List(ctx context.Context) ([]*FileInfo, error)
 }
 
 // Interface is a filesystem abstraction.
@@ -48,6 +55,31 @@ func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error)
 func (l *local) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 	path := filepath.Join(l.root, name)
 	return os.Open(path)
+}
+
+func (l *local) List(ctx context.Context) ([]*FileInfo, error) {
+	var files []*FileInfo
+	err := filepath.Walk(l.root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(l.root, path)
+		if err != nil {
+			return err
+		}
+		files = append(files, &FileInfo{
+			Path: rel,
+			Size: info.Size(),
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
 }
 
 // Discard stores nothing.
@@ -94,6 +126,21 @@ func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
 	}
 
 	return ioutil.NopCloser(bytes.NewBuffer(b)), nil
+}
+
+func (m *mem) List(_ context.Context) ([]*FileInfo, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	files := make([]*FileInfo, 0, len(m.files))
+	for path, data := range m.files {
+		files = append(files, &FileInfo{
+			Path: path,
+			Size: int64(len(data)),
+		})
+	}
+
+	return files, nil
 }
 
 type memfile struct {

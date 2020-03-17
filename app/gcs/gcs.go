@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"cloud.google.com/go/storage"
+	"google.golang.org/api/iterator"
 
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
@@ -34,4 +35,24 @@ func (g *gcs) Create(ctx context.Context, name string) (io.WriteCloser, error) {
 // Open named object for reading.
 func (g *gcs) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 	return g.bucket.Object(name).NewReader(ctx)
+}
+
+// List objects in bucket.
+func (g *gcs) List(ctx context.Context) ([]*fs.FileInfo, error) {
+	var files []*fs.FileInfo
+	it := g.bucket.Objects(ctx, nil)
+	for {
+		attrs, err := it.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, &fs.FileInfo{
+			Path: attrs.Name,
+			Size: attrs.Size,
+		})
+	}
+	return files, nil
 }
