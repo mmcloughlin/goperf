@@ -5,9 +5,9 @@ import (
 	"context"
 	"path"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
-
 	"github.com/golang/groupcache/lru"
+
+	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
@@ -23,6 +23,8 @@ type entry struct {
 	size int64
 }
 
+// NewFileSystem builds an object store backed by the supplied filesystem that
+// will store at most capacity bytes.
 func NewFileSystem(fs fs.Interface, capacity int64) Store {
 	return &filesystem{
 		fs:       fs,
