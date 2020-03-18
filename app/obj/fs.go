@@ -23,8 +23,8 @@ type entry struct {
 	size int64
 }
 
-// NewFileSystem builds an object store backed by the supplied filesystem that
-// will store at most capacity bytes.
+// NewFileSystem builds an filesystem-backed object cache with the supplied
+// maximum capacity.
 func NewFileSystem(fs fs.Interface, capacity int64) Store {
 	return &filesystem{
 		fs:       fs,
@@ -32,6 +32,12 @@ func NewFileSystem(fs fs.Interface, capacity int64) Store {
 		capacity: capacity,
 		lru:      lru.New(0),
 	}
+}
+
+// NewMem builds a memory-backed object cache with the supplied maximum
+// capacity.
+func NewMem(capacity int64) Store {
+	return NewFileSystem(fs.NewMem(), capacity)
 }
 
 func (f *filesystem) Get(ctx context.Context, k Key, v Object) error {
