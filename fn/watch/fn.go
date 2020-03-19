@@ -8,41 +8,22 @@ import (
 
 	"cloud.google.com/go/firestore"
 
+	"github.com/mmcloughlin/cb/app/obj"
 	"github.com/mmcloughlin/cb/app/repo"
-	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
 // Parameters.
-var (
-	project           = os.Getenv("CB_PROJECT_ID")
-	commitscollection = os.Getenv("CB_COMMITS_COLLECTION")
-)
-
-const (
-	gitilesbase = "https://go.googlesource.com"
-	gitilesrepo = "go"
-)
+var project = os.Getenv("CB_PROJECT_ID")
 
 // Services.
-var (
-	repolog repo.Log
-)
-
-// One-time initialization.
-func init() {
-	// Repository log.
-	repolog = repo.NewGitilesLog(
-		gitiles.NewClient(http.DefaultClient, gitilesbase),
-		gitilesrepo,
-	)
-}
+var repository = repo.Go(http.DefaultClient)
 
 // Handle HTTP trigger.
 func Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Fetch commits.
-	commits, err := repolog.RecentCommits(ctx)
+	commits, err := repository.RecentCommits(ctx)
 	if err != nil {
 		log.Printf("recent commits: %s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,9 +38,10 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write commits to store.
-	s := repo.NewFirestoreStore(fsc, commitscollection)
+	s := obj.NewFirestore(fsc)
+	o := repo.NewObjectStore(s)
 	for _, c := range commits {
-		if err := s.Upsert(ctx, c); err != nil {
+		if err := o.Upsert(ctx, c); err != nil {
 			log.Printf("upsert commit %s: %s", c.SHA, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"cloud.google.com/go/firestore"
+	"github.com/mmcloughlin/cb/app/obj"
 )
 
 type Store interface {
@@ -12,53 +12,39 @@ type Store interface {
 	Upsert(ctx context.Context, c *Commit) error
 }
 
-type fsstore struct {
-	client *firestore.Client
-	ref    *firestore.CollectionRef
+type objstore struct {
+	store obj.Store
 }
 
-func NewFirestoreStore(c *firestore.Client, collection string) Store {
-	return &fsstore{
-		client: c,
-		ref:    c.Collection(collection),
+func NewObjectStore(s obj.Store) Store {
+	return &objstore{
+		store: s,
 	}
 }
 
-func (s *fsstore) FindBySHA(ctx context.Context, sha string) (*Commit, error) {
-	// Fetch document from Firestore.
-	docsnap, err := s.ref.Doc(sha).Get(ctx)
-	if err != nil {
+func (s *objstore) FindBySHA(ctx context.Context, sha string) (*Commit, error) {
+	obj := new(fscommit)
+	obj.SHA = sha
+	if err := s.store.Get(ctx, obj, obj); err != nil {
 		return nil, err
 	}
-
-	// Unmarshal.
-	var obj fscommit
-	if err := docsnap.DataTo(&obj); err != nil {
-		return nil, err
-	}
-
 	return obj.Commit(), nil
 }
 
-func (s *fsstore) Upsert(ctx context.Context, c *Commit) error {
-	// Map to Firestore object.
+func (s *objstore) Upsert(ctx context.Context, c *Commit) error {
+	// Map to object.
 	obj := tofscommit(c)
 
 	// Write to Firestore.
-	_, err := s.ref.Doc(obj.SHA).Set(ctx, obj)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return s.store.Set(ctx, obj)
 }
 
 type fscommit struct {
-	SHA            string    `firestore:"sha"`
-	Tree           string    `firestore:"tree"`
-	Parents        []string  `firestore:"parents"`
-	AuthorName     string    `firestore:"author_name"`
-	AuthorEmail    string    `firestore:"author_email"`
+	SHA            string    `firestore:"sha" json:"sha"`
+	Tree           string    `firestore:"tree" json:"tree"`
+	Parents        []string  `firestore:"parents" json:"parents"`
+	AuthorName     string    `firestore:"author_name" json:"author_name"`
+	AuthorEmail    string    `firestore:"author_email" json:"author_email"`
 	AuthorTime     time.Time `firestore:"author_time"`
 	CommitterName  string    `firestore:"committer_name"`
 	CommitterEmail string    `firestore:"committer_email"`
@@ -80,6 +66,9 @@ func tofscommit(c *Commit) *fscommit {
 		Message:        c.Message,
 	}
 }
+
+func (c *fscommit) Type() string { return "commits" }
+func (c *fscommit) ID() string   { return c.SHA }
 
 func (c *fscommit) Commit() *Commit {
 	return &Commit{
