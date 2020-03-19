@@ -15,5 +15,33 @@
       { "name": "CommitTime", "type": "time.Time" },
       { "name": "Message" }
     ]
+  },
+  {
+    "name": "Module",
+    "collection": "modules",
+    "id": "UUID",
+    "fields": [{ "name": "UUID" }, { "name": "Path" }, { "name": "Version" }]
+  },
+  {
+    "name": "Package",
+    "collection": "packages",
+    "id": "UUID",
+    "fields": [
+      { "name": "UUID" },
+      { "name": "ModuleUUID" },
+      { "name": "RelativePath" }
+    ]
+  },
+  {
+    "name": "Benchmark",
+    "collection": "benchmarks",
+    "id": "UUID",
+    "fields": [
+      { "name": "UUID" },
+      { "name": "PackageUUID" },
+      { "name": "Name" },
+      { "name": "Unit" },
+      { "name": "Parameters", "type": "map[string]string" }
+    ]
   }
 ]
