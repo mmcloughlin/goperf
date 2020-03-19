@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Commit",
+    "collection": "commits",
+    "id": "SHA",
+    "fields": [
+      { "name": "SHA" },
+      { "name": "Tree" },
+      { "name": "Parents", "type": "[]string" },
+      { "name": "AuthorName" },
+      { "name": "AuthorEmail" },
+      { "name": "AuthorTime", "type": "time.Time" },
+      { "name": "CommitterName" },
+      { "name": "CommitterEmail" },
+      { "name": "CommitTime", "type": "time.Time" },
+      { "name": "Message" }
+    ]
+  }
+]
