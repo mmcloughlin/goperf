@@ -2,8 +2,8 @@ package repo
 
 import (
 	"context"
-	"time"
 
+	"github.com/mmcloughlin/cb/app/model"
 	"github.com/mmcloughlin/cb/app/obj"
 )
 
@@ -23,37 +23,24 @@ func NewObjectStore(s obj.Store) Store {
 }
 
 func (s *objstore) FindBySHA(ctx context.Context, sha string) (*Commit, error) {
-	obj := new(fscommit)
+	obj := new(model.Commit)
 	obj.SHA = sha
 	if err := s.store.Get(ctx, obj, obj); err != nil {
 		return nil, err
 	}
-	return obj.Commit(), nil
+	return frommodelcommit(obj), nil
 }
 
 func (s *objstore) Upsert(ctx context.Context, c *Commit) error {
 	// Map to object.
-	obj := tofscommit(c)
+	obj := tomodelcommit(c)
 
 	// Write to Firestore.
 	return s.store.Set(ctx, obj)
 }
 
-type fscommit struct {
-	SHA            string    `firestore:"sha" json:"sha"`
-	Tree           string    `firestore:"tree" json:"tree"`
-	Parents        []string  `firestore:"parents" json:"parents"`
-	AuthorName     string    `firestore:"author_name" json:"author_name"`
-	AuthorEmail    string    `firestore:"author_email" json:"author_email"`
-	AuthorTime     time.Time `firestore:"author_time" json:"author_time"`
-	CommitterName  string    `firestore:"committer_name" json:"committer_name"`
-	CommitterEmail string    `firestore:"committer_email" json:"committer_email"`
-	CommitTime     time.Time `firestore:"commit_time" json:"commit_time"`
-	Message        string    `firestore:"message" json:"message"`
-}
-
-func tofscommit(c *Commit) *fscommit {
-	return &fscommit{
+func tomodelcommit(c *Commit) *model.Commit {
+	return &model.Commit{
 		SHA:            c.SHA,
 		Tree:           c.Tree,
 		Parents:        c.Parents,
@@ -67,10 +54,7 @@ func tofscommit(c *Commit) *fscommit {
 	}
 }
 
-func (c *fscommit) Type() string { return "commits" }
-func (c *fscommit) ID() string   { return c.SHA }
-
-func (c *fscommit) Commit() *Commit {
+func frommodelcommit(c *model.Commit) *Commit {
 	return &Commit{
 		SHA:     c.SHA,
 		Tree:    c.Tree,
