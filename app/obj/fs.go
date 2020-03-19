@@ -41,6 +41,10 @@ func NewMem(capacity int64) Store {
 }
 
 func (f *filesystem) Get(ctx context.Context, k Key, v Object) error {
+	if err := validatekey(k); err != nil {
+		return err
+	}
+
 	// Lookup the key in the cache first.
 	key := cachekey(k)
 	value, ok := f.lru.Get(key)
@@ -64,6 +68,10 @@ func (f *filesystem) Get(ctx context.Context, k Key, v Object) error {
 }
 
 func (f *filesystem) Set(ctx context.Context, v Object) error {
+	if err := validatekey(v); err != nil {
+		return err
+	}
+
 	// Encode.
 	buf := bytes.NewBuffer(nil)
 	if err := Encode(buf, v); err != nil {

@@ -3,6 +3,7 @@ package obj
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -24,6 +25,16 @@ func (e KeyNotFoundError) Error() string {
 type Key interface {
 	Type() string
 	ID() string
+}
+
+func validatekey(k Key) error {
+	if k.Type() == "" {
+		return errors.New("empty type")
+	}
+	if k.ID() == "" {
+		return errors.New("empty id")
+	}
+	return nil
 }
 
 type key struct {

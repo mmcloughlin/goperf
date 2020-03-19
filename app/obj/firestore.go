@@ -18,6 +18,10 @@ func NewFirestore(c *firestore.Client) Store {
 }
 
 func (s *firestorestore) Get(ctx context.Context, k Key, v Object) error {
+	if err := validatekey(k); err != nil {
+		return err
+	}
+
 	// Fetch from firestore.
 	snap, err := s.client.Collection(k.Type()).Doc(k.ID()).Get(ctx)
 	if err != nil {
@@ -29,6 +33,10 @@ func (s *firestorestore) Get(ctx context.Context, k Key, v Object) error {
 }
 
 func (s *firestorestore) Set(ctx context.Context, v Object) error {
+	if err := validatekey(v); err != nil {
+		return err
+	}
+
 	_, err := s.client.Collection(v.Type()).Doc(v.ID()).Set(ctx, v)
 	return err
 }
