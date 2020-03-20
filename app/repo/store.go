@@ -35,7 +35,7 @@ func (s *objstore) Upsert(ctx context.Context, c *Commit) error {
 	// Map to object.
 	obj := tomodelcommit(c)
 
-	// Write to Firestore.
+	// Write to object store.
 	return s.store.Set(ctx, obj)
 }
 
