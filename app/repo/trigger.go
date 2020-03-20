@@ -1,6 +1,10 @@
 package repo
 
-import "time"
+import (
+	"time"
+
+	"github.com/mmcloughlin/cb/app/entity"
+)
 
 type stringvalue struct {
 	V string `json:"stringValue"`
@@ -44,17 +48,17 @@ type triggervalue struct {
 }
 
 // Commit converts fields to a Commit object.
-func (f *CommitFields) Commit() *Commit {
-	return &Commit{
+func (f *CommitFields) Commit() *entity.Commit {
+	return &entity.Commit{
 		SHA:     f.SHA.V,
 		Tree:    f.Tree.V,
 		Parents: f.Parents.Strings(),
-		Author: Person{
+		Author: entity.Person{
 			Name:  f.AuthorName.V,
 			Email: f.AuthorEmail.V,
 		},
 		AuthorTime: f.AuthorTime.V,
-		Committer: Person{
+		Committer: entity.Person{
 			Name:  f.CommitterName.V,
 			Email: f.CommitterEmail.V,
 		},

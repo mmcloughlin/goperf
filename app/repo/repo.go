@@ -10,12 +10,13 @@ import (
 	"github.com/golang/groupcache/lru"
 	"github.com/google/go-github/v29/github"
 
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
 // Revisions provides query access to repository revisions.
 type Revisions interface {
-	Revision(ctx context.Context, ref string) (*Commit, error)
+	Revision(ctx context.Context, ref string) (*entity.Commit, error)
 }
 
 type revisionscache struct {
@@ -31,9 +32,9 @@ func NewRevisionsCache(r Revisions, maxentries int) Revisions {
 	}
 }
 
-func (c *revisionscache) Revision(ctx context.Context, ref string) (*Commit, error) {
+func (c *revisionscache) Revision(ctx context.Context, ref string) (*entity.Commit, error) {
 	if commit, ok := c.cache.Get(ref); ok {
-		return commit.(*Commit), nil
+		return commit.(*entity.Commit), nil
 	}
 
 	commit, err := c.r.Revision(ctx, ref)
@@ -55,7 +56,7 @@ func NewRevisionsFromStore(s Store) Revisions {
 	return storerevisions{s: s}
 }
 
-func (s storerevisions) Revision(ctx context.Context, ref string) (*Commit, error) {
+func (s storerevisions) Revision(ctx context.Context, ref string) (*entity.Commit, error) {
 	if !isgitsha(ref) {
 		return nil, fmt.Errorf("cannot fetch revision information for %q: only supports full git sha refs", ref)
 	}
@@ -65,7 +66,7 @@ func (s storerevisions) Revision(ctx context.Context, ref string) (*Commit, erro
 // Repository provides access to git repository properties.
 type Repository interface {
 	Revisions
-	RecentCommits(ctx context.Context) ([]*Commit, error)
+	RecentCommits(ctx context.Context) ([]*entity.Commit, error)
 }
 
 type composite []Repository
@@ -81,7 +82,7 @@ func NewCompositeRepository(rs ...Repository) Repository {
 	return composite(rs)
 }
 
-func (c composite) RecentCommits(ctx context.Context) (commits []*Commit, err error) {
+func (c composite) RecentCommits(ctx context.Context) (commits []*entity.Commit, err error) {
 	for _, r := range c {
 		commits, err = r.RecentCommits(ctx)
 		if err == nil {
@@ -91,7 +92,7 @@ func (c composite) RecentCommits(ctx context.Context) (commits []*Commit, err er
 	return
 }
 
-func (c composite) Revision(ctx context.Context, ref string) (commit *Commit, err error) {
+func (c composite) Revision(ctx context.Context, ref string) (commit *entity.Commit, err error) {
 	for _, r := range c {
 		commit, err = r.Revision(ctx, ref)
 		if err == nil {
@@ -128,7 +129,7 @@ func NewGitilesGo(c *http.Client) Repository {
 	return NewGitiles(gitilesclient, "go")
 }
 
-func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
+func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*entity.Commit, error) {
 	// Fetch repository log.
 	res, err := g.client.Log(ctx, g.repo)
 	if err != nil {
@@ -136,7 +137,7 @@ func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
 	}
 
 	// Map commits to model type.
-	var commits []*Commit
+	var commits []*entity.Commit
 	for _, c := range res.Log {
 		commit, err := mapgitilescommit(c)
 		if err != nil {
@@ -148,7 +149,7 @@ func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
 	return commits, nil
 }
 
-func (g *gitilesrepo) Revision(ctx context.Context, ref string) (*Commit, error) {
+func (g *gitilesrepo) Revision(ctx context.Context, ref string) (*entity.Commit, error) {
 	// Make revision API call.
 	res, err := g.client.Revision(ctx, g.repo, ref)
 	if err != nil {
@@ -164,7 +165,7 @@ func (g *gitilesrepo) Revision(ctx context.Context, ref string) (*Commit, error)
 	return c, nil
 }
 
-func mapgitilescommit(c gitiles.Commit) (*Commit, error) {
+func mapgitilescommit(c gitiles.Commit) (*entity.Commit, error) {
 	// Parse times.
 	const timeformat = "Mon Jan _2 15:04:05 2006 -0700"
 	authortime, err := time.Parse(timeformat, c.Author.Time)
@@ -181,16 +182,16 @@ func mapgitilescommit(c gitiles.Commit) (*Commit, error) {
 	message := strings.TrimSpace(c.Message)
 
 	// Convert into model type.
-	return &Commit{
+	return &entity.Commit{
 		SHA:     c.SHA,
 		Tree:    c.Tree,
 		Parents: c.Parents,
-		Author: Person{
+		Author: entity.Person{
 			Name:  c.Author.Name,
 			Email: c.Author.Email,
 		},
 		AuthorTime: authortime,
-		Committer: Person{
+		Committer: entity.Person{
 			Name:  c.Committer.Name,
 			Email: c.Committer.Email,
 		},
@@ -220,7 +221,7 @@ func NewGithubGo(c *http.Client) Repository {
 	return NewGithub(githubclient, "golang", "go")
 }
 
-func (g *githubrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
+func (g *githubrepo) RecentCommits(ctx context.Context) ([]*entity.Commit, error) {
 	// List commits.
 	res, _, err := g.client.Repositories.ListCommits(ctx, g.owner, g.repo, nil)
 	if err != nil {
@@ -228,7 +229,7 @@ func (g *githubrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
 	}
 
 	// Map commits to model type.
-	var commits []*Commit
+	var commits []*entity.Commit
 	for _, c := range res {
 		commits = append(commits, mapgithubcommit(c))
 	}
@@ -236,7 +237,7 @@ func (g *githubrepo) RecentCommits(ctx context.Context) ([]*Commit, error) {
 	return commits, nil
 }
 
-func (g *githubrepo) Revision(ctx context.Context, ref string) (*Commit, error) {
+func (g *githubrepo) Revision(ctx context.Context, ref string) (*entity.Commit, error) {
 	// Make commit API call.
 	res, _, err := g.client.Repositories.GetCommit(ctx, g.owner, g.repo, ref)
 	if err != nil {
@@ -247,22 +248,22 @@ func (g *githubrepo) Revision(ctx context.Context, ref string) (*Commit, error) 
 	return mapgithubcommit(res), nil
 }
 
-func mapgithubcommit(c *github.RepositoryCommit) *Commit {
+func mapgithubcommit(c *github.RepositoryCommit) *entity.Commit {
 	var parents []string
 	for _, parent := range c.Parents {
 		parents = append(parents, parent.GetSHA())
 	}
 
-	return &Commit{
+	return &entity.Commit{
 		SHA:     c.GetSHA(),
 		Tree:    c.GetCommit().GetTree().GetSHA(),
 		Parents: parents,
-		Author: Person{
+		Author: entity.Person{
 			Name:  c.GetCommit().GetAuthor().GetName(),
 			Email: c.GetCommit().GetAuthor().GetEmail(),
 		},
 		AuthorTime: c.GetCommit().GetAuthor().GetDate(),
-		Committer: Person{
+		Committer: entity.Person{
 			Name:  c.GetCommit().GetCommitter().GetName(),
 			Email: c.GetCommit().GetCommitter().GetEmail(),
 		},

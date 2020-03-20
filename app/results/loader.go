@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/repo"
 	"github.com/mmcloughlin/cb/app/suite"
 	"github.com/mmcloughlin/cb/pkg/cfg"
@@ -101,7 +102,7 @@ func NewLoader(opts ...LoaderOption) (*Loader, error) {
 }
 
 // Load the named benchmark file.
-func (l *Loader) Load(ctx context.Context, name string) ([]*Result, error) {
+func (l *Loader) Load(ctx context.Context, name string) ([]*entity.Result, error) {
 	// Open the input data file.
 	f, err := l.fs.Open(ctx, name)
 	if err != nil {
@@ -120,11 +121,11 @@ func (l *Loader) Load(ctx context.Context, name string) ([]*Result, error) {
 	}
 
 	// Construct DataFile object.
-	datafile := &DataFile{Name: name}
+	datafile := &entity.DataFile{Name: name}
 	h.Sum(datafile.SHA256[:0])
 
 	// Process results.
-	output := make([]*Result, 0, len(results))
+	output := make([]*entity.Result, 0, len(results))
 	for _, result := range results {
 		out, err := l.convert(ctx, result)
 		if err != nil {
@@ -138,7 +139,7 @@ func (l *Loader) Load(ctx context.Context, name string) ([]*Result, error) {
 }
 
 // conert the parsed result into a model Result.
-func (l *Loader) convert(ctx context.Context, r *parse.Result) (*Result, error) {
+func (l *Loader) convert(ctx context.Context, r *parse.Result) (*entity.Result, error) {
 	// Lookup commit.
 	commit, err := l.commit(ctx, r)
 	if err != nil {
@@ -164,7 +165,7 @@ func (l *Loader) convert(ctx context.Context, r *parse.Result) (*Result, error) 
 	l.deletekeys(env)
 	l.deletekeys(meta)
 
-	return &Result{
+	return &entity.Result{
 		Line:        r.Line,
 		Benchmark:   bench,
 		Commit:      commit,
@@ -176,7 +177,7 @@ func (l *Loader) convert(ctx context.Context, r *parse.Result) (*Result, error) 
 }
 
 // commit looks up the commit associated with the given result.
-func (l *Loader) commit(ctx context.Context, r *parse.Result) (*repo.Commit, error) {
+func (l *Loader) commit(ctx context.Context, r *parse.Result) (*entity.Commit, error) {
 	ref, err := lookup(r.Labels, l.keys.ToolchainRef)
 	if err != nil {
 		return nil, err
@@ -185,7 +186,7 @@ func (l *Loader) commit(ctx context.Context, r *parse.Result) (*repo.Commit, err
 }
 
 // benchmark builds the benchmark object corresponding to this result.
-func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*suite.Benchmark, error) {
+func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*entity.Benchmark, error) {
 	// Load module path, version and package.
 	modpath, err := lookup(r.Labels, l.keys.ModulePath)
 	if err != nil {
@@ -214,18 +215,18 @@ func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*suite.Benchma
 		return nil, err
 	}
 
-	// Build model objects.
-	mod := &suite.Module{
+	// Build entity objects.
+	mod := &entity.Module{
 		Path:    modpath,
 		Version: info.Version,
 	}
 
-	pkg := &suite.Package{
+	pkg := &entity.Package{
 		Module:       mod,
 		RelativePath: relpath,
 	}
 
-	bench := &suite.Benchmark{
+	bench := &entity.Benchmark{
 		Package:    pkg,
 		FullName:   r.FullName,
 		Name:       r.Name,
@@ -249,7 +250,7 @@ func (l *Loader) environment(r *parse.Result) map[string]string {
 }
 
 // deletekeys clears special keys from the supplied properties.
-func (l *Loader) deletekeys(p Properties) {
+func (l *Loader) deletekeys(p entity.Properties) {
 	for _, key := range l.keys.All() {
 		delete(p, key)
 	}

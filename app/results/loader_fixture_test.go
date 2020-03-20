@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
-	"github.com/mmcloughlin/cb/app/repo"
 	"github.com/mmcloughlin/cb/app/results"
 	"github.com/mmcloughlin/cb/app/suite"
 	"github.com/mmcloughlin/cb/pkg/cfg"
@@ -160,10 +160,10 @@ func TestLoadSHA256Hash(t *testing.T) {
 // Revision is an implementation of repo.Revisions that returns a fixed commit.
 type SingleRevision struct {
 	Ref    string
-	Commit *repo.Commit
+	Commit *entity.Commit
 }
 
-func (r *SingleRevision) Revision(_ context.Context, ref string) (*repo.Commit, error) {
+func (r *SingleRevision) Revision(_ context.Context, ref string) (*entity.Commit, error) {
 	if r.Ref != "" && ref != r.Ref {
 		return nil, errors.New("unknown")
 	}

@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/mmcloughlin/cb/app/entity"
 )
 
 var triggerpayload = `{
@@ -54,16 +56,16 @@ func TestCommitFieldsCommit(t *testing.T) {
 	}
 
 	got := f.Commit()
-	expect := &Commit{
+	expect := &entity.Commit{
 		SHA:     "cc6a8bd0d7f782c31e1a35793b4e1253c6716ad5",
 		Tree:    "efa562f9aafdc87a201acbdd3da66ee0ec6587ee",
 		Parents: []string{"585e31df63f6879c03b285711de6f9dcba1f2cb0"},
-		Author: Person{
+		Author: entity.Person{
 			Name:  "Joel Sing",
 			Email: "joel@sing.id.au",
 		},
 		AuthorTime: time.Date(2020, 3, 1, 17, 26, 54, 0, time.UTC),
-		Committer: Person{
+		Committer: entity.Person{
 			Name:  "Joel Sing",
 			Email: "joel@sing.id.au",
 		},
