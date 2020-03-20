@@ -41,7 +41,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	// Write commits to store.
 	s := obj.NewFirestore(fsc)
 	for _, c := range commits {
-		m := mapper.CommitToModel(c)
+		m := mapper.CommitModel(c)
 		if err := s.Set(ctx, m); err != nil {
 			log.Printf("upsert commit %s: %s", c.SHA, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
