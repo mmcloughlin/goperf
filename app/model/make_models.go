@@ -69,6 +69,7 @@ func mainerr() error {
 
 type Model struct {
 	Name       string  `json:"name"`
+	Doc        string  `json:"doc"`
 	Collection string  `json:"collection"`
 	ID         string  `json:"id"`
 	Fields     []Field `json:"fields"`
@@ -124,6 +125,9 @@ func WriteModels(buf *bytes.Buffer, models []Model) {
 
 func WriteModel(buf *bytes.Buffer, model Model) {
 	// Struct definition.
+	if model.Doc != "" {
+		fmt.Fprintf(buf, "// %s\n", model.Doc)
+	}
 	fmt.Fprintf(buf, "type %s struct{\n", model.Name)
 	for _, field := range model.Fields {
 		fmt.Fprintf(buf, "%s %s `firestore:%q json:%q`\n", field.Name, field.Type(), field.Key(), field.Key())
@@ -131,8 +135,10 @@ func WriteModel(buf *bytes.Buffer, model Model) {
 	fmt.Fprintf(buf, "}\n")
 
 	// Type definition.
-	fmt.Fprintf(buf, `func (%s *%s) Type() string { return %q };`, model.Receiver(), model.Name, model.Collection)
+	fmt.Fprintf(buf, "// Type returns %q.\n", model.Collection)
+	fmt.Fprintf(buf, "func (%s *%s) Type() string { return %q }\n", model.Receiver(), model.Name, model.Collection)
 
 	// ID definition.
-	fmt.Fprintf(buf, `func (%s *%s) ID() string { return %s.%s };`, model.Receiver(), model.Name, model.Receiver(), model.ID)
+	fmt.Fprintf(buf, "// ID returns the %s field.\n", model.ID)
+	fmt.Fprintf(buf, "func (%s *%s) ID() string { return %s.%s }\n", model.Receiver(), model.Name, model.Receiver(), model.ID)
 }

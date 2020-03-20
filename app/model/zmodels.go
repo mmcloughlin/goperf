@@ -4,6 +4,7 @@ package model
 
 import "time"
 
+// Commit in the Go repository.
 type Commit struct {
 	SHA            string    `firestore:"sha" json:"sha"`
 	Tree           string    `firestore:"tree" json:"tree"`
@@ -17,27 +18,39 @@ type Commit struct {
 	Message        string    `firestore:"message" json:"message"`
 }
 
+// Type returns "commits".
 func (c *Commit) Type() string { return "commits" }
-func (c *Commit) ID() string   { return c.SHA }
 
+// ID returns the SHA field.
+func (c *Commit) ID() string { return c.SHA }
+
+// Module is a Go module at a specific version.
 type Module struct {
 	UUID    string `firestore:"uuid" json:"uuid"`
 	Path    string `firestore:"path" json:"path"`
 	Version string `firestore:"version" json:"version"`
 }
 
+// Type returns "modules".
 func (m *Module) Type() string { return "modules" }
-func (m *Module) ID() string   { return m.UUID }
 
+// ID returns the UUID field.
+func (m *Module) ID() string { return m.UUID }
+
+// Package is a Go package within a versioned module.
 type Package struct {
 	UUID         string `firestore:"uuid" json:"uuid"`
 	ModuleUUID   string `firestore:"module_uuid" json:"module_uuid"`
 	RelativePath string `firestore:"relative_path" json:"relative_path"`
 }
 
+// Type returns "packages".
 func (p *Package) Type() string { return "packages" }
-func (p *Package) ID() string   { return p.UUID }
 
+// ID returns the UUID field.
+func (p *Package) ID() string { return p.UUID }
+
+// Benchmark is a single benchmark measurement within a package.
 type Benchmark struct {
 	UUID        string            `firestore:"uuid" json:"uuid"`
 	PackageUUID string            `firestore:"package_uuid" json:"package_uuid"`
@@ -46,5 +59,52 @@ type Benchmark struct {
 	Parameters  map[string]string `firestore:"parameters" json:"parameters"`
 }
 
+// Type returns "benchmarks".
 func (b *Benchmark) Type() string { return "benchmarks" }
-func (b *Benchmark) ID() string   { return b.UUID }
+
+// ID returns the UUID field.
+func (b *Benchmark) ID() string { return b.UUID }
+
+// DataFile is an output file from a benchmark run.
+type DataFile struct {
+	UUID   string `firestore:"uuid" json:"uuid"`
+	Name   string `firestore:"name" json:"name"`
+	SHA256 []byte `firestore:"sha256" json:"sha256"`
+}
+
+// Type returns "datafiles".
+func (d *DataFile) Type() string { return "datafiles" }
+
+// ID returns the UUID field.
+func (d *DataFile) ID() string { return d.UUID }
+
+// Result from running a benchmark with a specific Go version.
+type Result struct {
+	UUID            string  `firestore:"uuid" json:"uuid"`
+	DataFileUUID    string  `firestore:"data_file_uuid" json:"data_file_uuid"`
+	Line            int     `firestore:"line" json:"line"`
+	BenchmarkUUID   string  `firestore:"benchmark_uuid" json:"benchmark_uuid"`
+	CommitSHA       string  `firestore:"commit_sha" json:"commit_sha"`
+	EnvironmentUUID string  `firestore:"environment_uuid" json:"environment_uuid"`
+	MetadataUUID    string  `firestore:"metadata_uuid" json:"metadata_uuid"`
+	Iterations      uint64  `firestore:"iterations" json:"iterations"`
+	Value           float64 `firestore:"value" json:"value"`
+}
+
+// Type returns "results".
+func (r *Result) Type() string { return "results" }
+
+// ID returns the UUID field.
+func (r *Result) ID() string { return r.UUID }
+
+// Properties is a collection of key-value pairs.
+type Properties struct {
+	UUID   string            `firestore:"uuid" json:"uuid"`
+	Fields map[string]string `firestore:"fields" json:"fields"`
+}
+
+// Type returns "properties".
+func (p *Properties) Type() string { return "properties" }
+
+// ID returns the UUID field.
+func (p *Properties) ID() string { return p.UUID }
