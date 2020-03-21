@@ -60,10 +60,20 @@ type Object interface {
 	Key
 }
 
+// Getter can get object by key.
+type Getter interface {
+	Get(context.Context, Key, Object) error
+}
+
+// Setter can write objects.
+type Setter interface {
+	Set(context.Context, Object) error
+}
+
 // Store is a method of storing objects by key.
 type Store interface {
-	Get(context.Context, Key, Object) error
-	Set(context.Context, Object) error
+	Getter
+	Setter
 }
 
 // Encode the object to w.
