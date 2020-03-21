@@ -37,6 +37,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		log.Printf("firestore new client: %s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	defer fsc.Close()
 
 	// Write commits to store.
 	s := obj.NewFirestore(fsc)
