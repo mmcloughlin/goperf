@@ -71,6 +71,7 @@ resource "google_cloudfunctions_function" "result_function" {
 
   name                  = each.key
   available_memory_mb   = 256
+  timeout               = 480
   source_archive_bucket = google_storage_bucket.functions_bucket.name
   source_archive_object = google_storage_bucket_object.function_zip[each.key].name
   entry_point           = "Handle"
