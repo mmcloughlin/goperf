@@ -54,6 +54,7 @@ func (p *Package) ID() string { return p.UUID }
 type Benchmark struct {
 	UUID        string            `firestore:"uuid" json:"uuid"`
 	PackageUUID string            `firestore:"package_uuid" json:"package_uuid"`
+	FullName    string            `firestore:"full_name" json:"full_name"`
 	Name        string            `firestore:"name" json:"name"`
 	Unit        string            `firestore:"unit" json:"unit"`
 	Parameters  map[string]string `firestore:"parameters" json:"parameters"`

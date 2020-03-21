@@ -43,6 +43,7 @@
     "fields": [
       { "name": "UUID" },
       { "name": "PackageUUID" },
+      { "name": "FullName" },
       { "name": "Name" },
       { "name": "Unit" },
       { "name": "Parameters", "type": "map[string]string" }
