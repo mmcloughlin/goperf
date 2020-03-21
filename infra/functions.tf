@@ -70,7 +70,7 @@ resource "google_cloudfunctions_function" "result_function" {
   for_each = toset([for f in var.functions : f.name if f.trigger_type == "result"])
 
   name                  = each.key
-  available_memory_mb   = 128
+  available_memory_mb   = 256
   source_archive_bucket = google_storage_bucket.functions_bucket.name
   source_archive_object = google_storage_bucket_object.function_zip[each.key].name
   entry_point           = "Handle"
