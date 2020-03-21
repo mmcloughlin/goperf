@@ -73,7 +73,7 @@
       { "name": "CommitSHA" },
       { "name": "EnvironmentUUID" },
       { "name": "MetadataUUID" },
-      { "name": "Iterations", "type": "uint64" },
+      { "name": "Iterations", "type": "int64" },
       { "name": "Value", "type": "float64" }
     ]
   },

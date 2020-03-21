@@ -88,7 +88,7 @@ type Result struct {
 	CommitSHA       string  `firestore:"commit_sha" json:"commit_sha"`
 	EnvironmentUUID string  `firestore:"environment_uuid" json:"environment_uuid"`
 	MetadataUUID    string  `firestore:"metadata_uuid" json:"metadata_uuid"`
-	Iterations      uint64  `firestore:"iterations" json:"iterations"`
+	Iterations      int64   `firestore:"iterations" json:"iterations"`
 	Value           float64 `firestore:"value" json:"value"`
 }
 

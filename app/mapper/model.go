@@ -105,7 +105,7 @@ func ResultModel(r *entity.Result) *model.Result {
 		CommitSHA:       r.Commit.SHA,
 		EnvironmentUUID: r.Environment.UUID().String(),
 		MetadataUUID:    r.Metadata.UUID().String(),
-		Iterations:      r.Iterations,
+		Iterations:      int64(r.Iterations), // model must be int64 since firestore does not support uint64
 		Value:           r.Value,
 	}
 }
