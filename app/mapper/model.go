@@ -49,6 +49,13 @@ func ModuleModel(m *entity.Module) *model.Module {
 	}
 }
 
+func ModuleFromModel(m *model.Module) *entity.Module {
+	return &entity.Module{
+		Path:    m.Path,
+		Version: m.Version,
+	}
+}
+
 func PackageModel(p *entity.Package) *model.Package {
 	return &model.Package{
 		UUID:         p.UUID().String(),
