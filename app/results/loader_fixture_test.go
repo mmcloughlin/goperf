@@ -12,9 +12,9 @@ import (
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
 	"github.com/mmcloughlin/cb/app/results"
-	"github.com/mmcloughlin/cb/app/suite"
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/mod"
 )
 
 func TestLoader(t *testing.T) {
@@ -174,10 +174,10 @@ func (r *SingleRevision) Revision(_ context.Context, ref string) (*entity.Commit
 // revision information.
 type SingleModule struct {
 	Mod, Rev string
-	Info     *suite.RevInfo
+	Info     *mod.RevInfo
 }
 
-func (m *SingleModule) Stat(_ context.Context, mod, rev string) (*suite.RevInfo, error) {
+func (m *SingleModule) Stat(_ context.Context, mod, rev string) (*mod.RevInfo, error) {
 	if (m.Mod != "" && mod != m.Mod) || (m.Rev != "" && rev != m.Rev) {
 		return nil, errors.New("unknown")
 	}

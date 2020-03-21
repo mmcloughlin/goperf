@@ -15,12 +15,10 @@ require (
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.2-0.20191028172631-481baca67f93
-	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
-	github.com/hashicorp/golang-lru v0.5.1
-	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
@@ -32,7 +30,6 @@ require (
 	golang.org/x/perf v0.0.0-20180704124530-6e6d33e29852
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
-	golang.org/x/tools v0.0.0-20191206204035-259af5ff87bd
 	google.golang.org/api v0.14.0
 	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f
 )
