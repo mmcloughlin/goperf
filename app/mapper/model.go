@@ -68,6 +68,7 @@ func BenchmarkModel(b *entity.Benchmark) *model.Benchmark {
 	return &model.Benchmark{
 		UUID:        b.UUID().String(),
 		PackageUUID: b.Package.UUID().String(),
+		FullName:    b.FullName,
 		Name:        b.Name,
 		Unit:        b.Unit,
 		Parameters:  b.Parameters,
