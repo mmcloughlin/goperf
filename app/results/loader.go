@@ -11,9 +11,9 @@ import (
 
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/repo"
-	"github.com/mmcloughlin/cb/app/suite"
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/mod"
 	"github.com/mmcloughlin/cb/pkg/parse"
 )
 
@@ -49,7 +49,7 @@ var DefaultKeys = Keys{
 type Loader struct {
 	fs      fs.Readable
 	rev     repo.Revisions
-	mod     suite.ModuleDatabase
+	mod     mod.ModuleDatabase
 	keys    Keys
 	envtags []cfg.Tag
 }
@@ -69,8 +69,8 @@ func WithRevisions(r repo.Revisions) LoaderOption {
 }
 
 // WithModuleDatabase configures a Loader to lookup module information from mod.
-func WithModuleDatabase(mod suite.ModuleDatabase) LoaderOption {
-	return func(l *Loader) { l.mod = mod }
+func WithModuleDatabase(mdb mod.ModuleDatabase) LoaderOption {
+	return func(l *Loader) { l.mod = mdb }
 }
 
 // WithKeys configures which benchmark configuration keys are special.
@@ -88,7 +88,7 @@ func WithEnvironmentTags(tags ...cfg.Tag) LoaderOption {
 func NewLoader(opts ...LoaderOption) (*Loader, error) {
 	l := &Loader{
 		rev:     repo.NewRevisionsCache(repo.Go(http.DefaultClient), 16),
-		mod:     suite.NewModuleCache(suite.NewOfficialModuleProxy(http.DefaultClient), 16),
+		mod:     mod.NewModuleCache(mod.NewOfficialModuleProxy(http.DefaultClient), 16),
 		keys:    DefaultKeys,
 		envtags: []cfg.Tag{cfg.TagPerfCritical},
 	}

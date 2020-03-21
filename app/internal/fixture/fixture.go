@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/suite"
+	"github.com/mmcloughlin/cb/pkg/mod"
 )
 
 // Sample model objects for testing purposes.
 var (
 	ModuleSHA = "788b7f06fee85b7e1d2aa4a3a86f8dbbbcc771ae"
 
-	RevInfo = &suite.RevInfo{
+	RevInfo = &mod.RevInfo{
 		Version: "v1.10.3",
 		Time:    time.Date(2020, 3, 11, 11, 43, 27, 0, time.UTC), // "2020-03-11T11:43:27Z"
 	}
