@@ -43,9 +43,11 @@ func (g *gcs) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 }
 
 // List objects in bucket.
-func (g *gcs) List(ctx context.Context) ([]*fs.FileInfo, error) {
+func (g *gcs) List(ctx context.Context, prefix string) ([]*fs.FileInfo, error) {
 	var files []*fs.FileInfo
-	it := g.bucket.Objects(ctx, nil)
+	it := g.bucket.Objects(ctx, &storage.Query{
+		Prefix: prefix,
+	})
 	for {
 		attrs, err := it.Next()
 		if err == iterator.Done {

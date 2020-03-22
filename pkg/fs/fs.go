@@ -8,12 +8,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
-
-// PathSeparator is the separator for file paths in filesystems.
-const PathSeparator = '/'
 
 // FileInfo describes a file.
 type FileInfo struct {
@@ -31,7 +29,7 @@ type Writable interface {
 // Readable can read from named files.
 type Readable interface {
 	Open(ctx context.Context, name string) (io.ReadCloser, error)
-	List(ctx context.Context) ([]*FileInfo, error)
+	List(ctx context.Context, prefix string) ([]*FileInfo, error)
 }
 
 // Interface is a filesystem abstraction.
@@ -68,9 +66,9 @@ func (l *local) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 	return os.Open(path)
 }
 
-func (l *local) List(ctx context.Context) ([]*FileInfo, error) {
+func (l *local) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
 	var files []*FileInfo
-	err := filepath.Walk(l.root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(filepath.Join(l.root, prefix), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -111,6 +109,39 @@ type devnull struct{}
 
 func (devnull) Write(p []byte) (int, error) { return len(p), nil }
 func (devnull) Close() error                { return nil }
+
+type sub struct {
+	fs     Interface
+	prefix string
+}
+
+// NewSub returns the sub-filesystem of fs rooted at prefix.
+func NewSub(fs Interface, prefix string) Interface {
+	return &sub{
+		fs:     fs,
+		prefix: prefix,
+	}
+}
+
+func (s *sub) Create(ctx context.Context, name string) (io.WriteCloser, error) {
+	return s.fs.Create(ctx, s.path(name))
+}
+
+func (s *sub) Remove(ctx context.Context, name string) error {
+	return s.fs.Remove(ctx, s.path(name))
+}
+
+func (s *sub) Open(ctx context.Context, name string) (io.ReadCloser, error) {
+	return s.fs.Open(ctx, s.path(name))
+}
+
+func (s *sub) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
+	return s.fs.List(ctx, s.path(prefix))
+}
+
+func (s *sub) path(name string) string {
+	return filepath.Join(s.prefix, name)
+}
 
 type mem struct {
 	files map[string]memfile
@@ -173,12 +204,15 @@ func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
 }
 
-func (m *mem) List(_ context.Context) ([]*FileInfo, error) {
+func (m *mem) List(_ context.Context, prefix string) ([]*FileInfo, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	files := make([]*FileInfo, 0, len(m.files))
 	for path, file := range m.files {
+		if !strings.HasPrefix(path, prefix) {
+			continue
+		}
 		files = append(files, &FileInfo{
 			Path:    path,
 			Size:    int64(len(file.data)),
