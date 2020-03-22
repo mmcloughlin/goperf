@@ -124,9 +124,21 @@ type memfile struct {
 
 // NewMem builds an in-memory filesystem.
 func NewMem() Interface {
-	return &mem{
+	return NewMemWithFiles(map[string][]byte{})
+}
+
+// NewMemWithFiles creates an in-memory filesystem initialized with the given files.
+func NewMemWithFiles(files map[string][]byte) Interface {
+	m := &mem{
 		files: map[string]memfile{},
 	}
+	for name, data := range files {
+		m.files[name] = memfile{
+			data:    data,
+			modtime: time.Now(),
+		}
+	}
+	return m
 }
 
 func (m *mem) Create(_ context.Context, name string) (io.WriteCloser, error) {
