@@ -92,23 +92,31 @@ func (l *local) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
 	return files, nil
 }
 
-// Discard stores nothing.
-var Discard Writable = discard{}
+// Null contains no files and discards writes.
+var Null Interface = null{}
 
-type discard struct{}
+type null struct{}
 
-func (discard) Create(context.Context, string) (io.WriteCloser, error) {
-	return devnull{}, nil
+func (null) Create(context.Context, string) (io.WriteCloser, error) {
+	return discard{}, nil
 }
 
-func (discard) Remove(ctx context.Context, name string) error {
+func (null) Remove(ctx context.Context, name string) error {
 	return nil
 }
 
-type devnull struct{}
+func (null) Open(ctx context.Context, name string) (io.ReadCloser, error) {
+	return nil, os.ErrNotExist
+}
 
-func (devnull) Write(p []byte) (int, error) { return len(p), nil }
-func (devnull) Close() error                { return nil }
+func (null) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
+	return []*FileInfo{}, nil
+}
+
+type discard struct{}
+
+func (discard) Write(p []byte) (int, error) { return len(p), nil }
+func (discard) Close() error                { return nil }
 
 type sub struct {
 	fs     Interface

@@ -61,7 +61,7 @@ func NewWorkspace(opts ...Option) (*Workspace, error) {
 	w := &Workspace{
 		Logger:    lg.Default(),
 		client:    http.DefaultClient,
-		artifacts: fs.Discard,
+		artifacts: fs.Null,
 		env:       map[string]string{},
 	}
 
