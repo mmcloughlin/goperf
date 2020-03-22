@@ -217,9 +217,7 @@ func main() {
 	}
 }
 
-var (
-	output = flag.String("output", "", "path to output file (default stdout)")
-)
+var output = flag.String("output", "", "path to output file (default stdout)")
 
 func mainerr() error {
 	flag.Parse()
