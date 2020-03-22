@@ -38,6 +38,7 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 
 	h.mux.HandleFunc("/mods/", h.Modules)
 	h.mux.HandleFunc("/mod/", h.Module)
+	h.mux.HandleFunc("/pkg/", h.Package)
 
 	return h
 }
@@ -89,6 +90,36 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	h.render(ctx, w, "mod.html", map[string]interface{}{
 		"Module":   mod,
 		"Packages": pkgs,
+	})
+}
+
+func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse UUID.
+	id, err := parseuuid(r.URL.Path, "/pkg/")
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Fetch package.
+	pkg, err := h.srv.FindPackageByUUID(ctx, id)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	benchs, err := h.srv.ListPackageBenchmarks(ctx, pkg)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Write response.
+	h.render(ctx, w, "pkg.html", map[string]interface{}{
+		"Package":    pkg,
+		"Benchmarks": benchs,
 	})
 }
 

@@ -8,7 +8,11 @@
     <p>Version: {{ .Module.Version }}</p>
     <ul>
       {{ range .Packages }}
-      <li><small>{{ .Module.Path }}/</small>{{ .RelativePath }}</li>
+      <li>
+        <a href="/pkg/{{ .UUID }}"
+          ><small>{{ .Module.Path }}/</small>{{ .RelativePath }}</a
+        >
+      </li>
       {{ end }}
     </ul>
   </body>

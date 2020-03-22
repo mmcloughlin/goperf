@@ -64,17 +64,17 @@ func PackageModel(p *entity.Package) *model.Package {
 	}
 }
 
-func PackageFromModel(p *model.Package, m *entity.Module) *entity.Package {
-	return &entity.Package{
-		Module:       m,
-		RelativePath: p.RelativePath,
-	}
-}
-
 func PackageModels(p *entity.Package) []obj.Object {
 	return []obj.Object{
 		ModuleModel(p.Module),
 		PackageModel(p),
+	}
+}
+
+func PackageFromModel(p *model.Package, m *entity.Module) *entity.Package {
+	return &entity.Package{
+		Module:       m,
+		RelativePath: p.RelativePath,
 	}
 }
 
@@ -94,6 +94,16 @@ func BenchmarkModels(b *entity.Benchmark) []obj.Object {
 		PackageModels(b.Package),
 		BenchmarkModel(b),
 	)
+}
+
+func BenchmarkFromModel(b *model.Benchmark, p *entity.Package) *entity.Benchmark {
+	return &entity.Benchmark{
+		Package:    p,
+		FullName:   b.FullName,
+		Name:       b.Name,
+		Parameters: b.Parameters,
+		Unit:       b.Unit,
+	}
 }
 
 func DataFileModel(f *entity.DataFile) *model.DataFile {
