@@ -1,0 +1,3 @@
+#!/bin/bash -ex
+
+go generate -x ./...
