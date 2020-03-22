@@ -4,6 +4,10 @@
     <title>Modules</title>
   </head>
   <body>
-    Hello, World!
+    <ul>
+      {{ range .Modules }}
+      <li>{{ .Path }} <small>{{ .Version }}</small></li>
+      {{ end }}
+    </ul>
   </body>
 </html>

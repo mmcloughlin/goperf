@@ -1,26 +1,35 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"html/template"
 	"net/http"
 
 	"github.com/mmcloughlin/cb/app/service"
+	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
 type Handlers struct {
-	srv service.Service
+	srv    service.Service
+	tmplfs fs.Readable
+
 	mux *http.ServeMux
 }
 
 func NewHandlers(srv service.Service) *Handlers {
 	h := &Handlers{
-		srv: srv,
-		mux: http.NewServeMux(),
+		srv:    srv,
+		tmplfs: AssetFileSystem(),
+		mux:    http.NewServeMux(),
 	}
 
 	h.mux.HandleFunc("/", h.Index)
 
 	return h
+}
+
+func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mux.ServeHTTP(w, r)
 }
 
 func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
@@ -34,17 +43,30 @@ func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	for _, mod := range mods {
-		_, err := fmt.Fprintln(w, mod.UUID(), mod.Path, mod.Version)
+	h.render(ctx, w, "templates/mods.html", map[string]interface{}{
+		"Modules": mods,
+	})
+}
+
+func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
+	tmpl, err := fs.ReadFile(ctx, h.tmplfs, name)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	t, err := template.New(name).Parse(string(tmpl))
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	if err := t.Execute(w, data); err != nil {
 		if err != nil {
 			httperror(w, err)
 			return
 		}
 	}
-}
-
-func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.mux.ServeHTTP(w, r)
 }
 
 func httperror(w http.ResponseWriter, err error) {

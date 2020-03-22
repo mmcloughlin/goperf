@@ -3,5 +3,5 @@
 package main
 
 var Assets = map[string][]byte{
-	"templates/mods.html": []byte("<!DOCTYPE html>\n<html>\n  <head>\n    <title>Modules</title>\n  </head>\n  <body>\n    Hello, World!\n  </body>\n</html>\n"),
+	"templates/mods.html": []byte("<!DOCTYPE html>\n<html>\n  <head>\n    <title>Modules</title>\n  </head>\n  <body>\n    <ul>\n      {{ range .Modules }}\n      <li>{{ .Path }} <small>{{ .Version }}</small></li>\n      {{ end }}\n    </ul>\n  </body>\n</html>\n"),
 }
