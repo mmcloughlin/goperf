@@ -36,7 +36,7 @@ var (
 func mainerr() error {
 	flag.Parse()
 
-	filenames, err := ExpandPatterns(flag.Args())
+	filenames, err := Expand(flag.Args())
 	if err != nil {
 		return err
 	}
@@ -65,6 +65,15 @@ func mainerr() error {
 	return err
 }
 
+// Expand provided arguments into a file list.
+func Expand(patterns []string) ([]string, error) {
+	paths, err := ExpandPatterns(patterns)
+	if err != nil {
+		return nil, err
+	}
+	return ExpandDirectories(paths)
+}
+
 // ExpandPatterns expands glob patterns into a full list of files.
 func ExpandPatterns(patterns []string) ([]string, error) {
 	filenames := []string{}
@@ -74,6 +83,45 @@ func ExpandPatterns(patterns []string) ([]string, error) {
 			return nil, err
 		}
 		filenames = append(filenames, matches...)
+	}
+	return filenames, nil
+}
+
+// ExpandDirectories expands any directories in the paths list to all the files
+// under that path.
+func ExpandDirectories(paths []string) ([]string, error) {
+	var filenames []string
+	for _, path := range paths {
+		files, err := ExpandDirectory(path)
+		if err != nil {
+			return nil, err
+		}
+		filenames = append(filenames, files...)
+	}
+	return filenames, nil
+}
+
+// ExpandDirectory returns all files under the given path.
+func ExpandDirectory(path string) ([]string, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	if !info.IsDir() {
+		return []string{path}, nil
+	}
+	var filenames []string
+	err = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			filenames = append(filenames, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 	return filenames, nil
 }
