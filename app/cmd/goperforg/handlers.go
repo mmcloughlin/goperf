@@ -39,6 +39,7 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/mods/", h.Modules)
 	h.mux.HandleFunc("/mod/", h.Module)
 	h.mux.HandleFunc("/pkg/", h.Package)
+	h.mux.HandleFunc("/bench/", h.Benchmark)
 
 	return h
 }
@@ -120,6 +121,29 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	h.render(ctx, w, "pkg.html", map[string]interface{}{
 		"Package":    pkg,
 		"Benchmarks": benchs,
+	})
+}
+
+func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse UUID.
+	id, err := parseuuid(r.URL.Path, "/bench/")
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Fetch benchmark.
+	bench, err := h.srv.FindBenchmarkByUUID(ctx, id)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Write response.
+	h.render(ctx, w, "bench.html", map[string]interface{}{
+		"Benchmark": bench,
 	})
 }
 

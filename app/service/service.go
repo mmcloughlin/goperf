@@ -20,6 +20,7 @@ type Service interface {
 	FindPackageByUUID(ctx context.Context, id uuid.UUID) (*entity.Package, error)
 	ListModulePackages(ctx context.Context, m *entity.Module) ([]*entity.Package, error)
 
+	FindBenchmarkByUUID(ctx context.Context, id uuid.UUID) (*entity.Benchmark, error)
 	ListPackageBenchmarks(ctx context.Context, p *entity.Package) ([]*entity.Benchmark, error)
 }
 
@@ -113,6 +114,28 @@ func (f *fire) ListModulePackages(ctx context.Context, m *entity.Module) ([]*ent
 	}
 
 	return pkgs, nil
+}
+
+func (f *fire) FindBenchmarkByUUID(ctx context.Context, id uuid.UUID) (*entity.Benchmark, error) {
+	// Get the benchmark.
+	obj := new(model.Benchmark)
+	obj.UUID = id.String()
+	if err := f.store.Get(ctx, obj, obj); err != nil {
+		return nil, err
+	}
+
+	// Get the associated package.
+	pkgid, err := uuid.Parse(obj.PackageUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	pkg, err := f.FindPackageByUUID(ctx, pkgid)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.BenchmarkFromModel(obj, pkg), nil
 }
 
 func (f *fire) ListPackageBenchmarks(ctx context.Context, p *entity.Package) ([]*entity.Benchmark, error) {
