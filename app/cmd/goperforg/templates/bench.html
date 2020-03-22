@@ -5,5 +5,19 @@
   </head>
   <body>
     <h1>{{ .Benchmark.Name }}</h1>
+    <table>
+      <tr>
+        <th>Commit</th>
+        <th>Commit Time</th>
+        <th>Value</th>
+      </tr>
+      {{ range .Results }}
+      <tr>
+        <td>{{ .Commit.SHA }}</td>
+        <td>{{ .Commit.CommitTime }}</td>
+        <td>{{ .Value }}</td>
+      </tr>
+      {{ end }}
+    </table>
   </body>
 </html>

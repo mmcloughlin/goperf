@@ -141,9 +141,16 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	results, err := h.srv.ListBenchmarkResults(ctx, bench)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
 	// Write response.
 	h.render(ctx, w, "bench.html", map[string]interface{}{
 		"Benchmark": bench,
+		"Results":   results,
 	})
 }
 

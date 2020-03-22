@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/v29/github"
 
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/app/service"
 	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
@@ -46,21 +47,22 @@ func (c *revisionscache) Revision(ctx context.Context, ref string) (*entity.Comm
 	return commit, nil
 }
 
-type storerevisions struct {
-	s Store
+type servicerevisions struct {
+	srv service.Commits
 }
 
-// NewRevisionsFromStore adapts a commit Store to the Revisions interface,
-// delegating to the commit lookup by SHA. Only supports full SHA git refs.
-func NewRevisionsFromStore(s Store) Revisions {
-	return storerevisions{s: s}
+// NewRevisionsFromCommitsService adapts a commit service to the Revisions
+// interface, delegating to the commit lookup by SHA. Only supports full SHA git
+// refs.
+func NewRevisionsFromCommitsService(srv service.Commits) Revisions {
+	return servicerevisions{srv: srv}
 }
 
-func (s storerevisions) Revision(ctx context.Context, ref string) (*entity.Commit, error) {
+func (s servicerevisions) Revision(ctx context.Context, ref string) (*entity.Commit, error) {
 	if !isgitsha(ref) {
 		return nil, fmt.Errorf("cannot fetch revision information for %q: only supports full git sha refs", ref)
 	}
-	return s.s.FindBySHA(ctx, ref)
+	return s.srv.FindCommitBySHA(ctx, ref)
 }
 
 // Repository provides access to git repository properties.

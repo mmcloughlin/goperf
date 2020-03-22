@@ -114,11 +114,21 @@ func DataFileModel(f *entity.DataFile) *model.DataFile {
 	}
 }
 
-func PropertiesModel(f entity.Properties) *model.Properties {
+func DataFileFromModel(f *model.DataFile) *entity.DataFile {
+	e := &entity.DataFile{Name: f.Name}
+	copy(e.SHA256[:], f.SHA256)
+	return e
+}
+
+func PropertiesModel(p entity.Properties) *model.Properties {
 	return &model.Properties{
-		UUID:   f.UUID().String(),
-		Fields: f,
+		UUID:   p.UUID().String(),
+		Fields: p,
 	}
+}
+
+func PropertiesFromModel(p *model.Properties) entity.Properties {
+	return p.Fields
 }
 
 func ResultModel(r *entity.Result) *model.Result {
@@ -145,4 +155,24 @@ func ResultsModels(r *entity.Result) []obj.Object {
 		PropertiesModel(r.Metadata),
 		ResultModel(r),
 	)
+}
+
+func ResultsFromModel(
+	r *model.Result,
+	f *entity.DataFile,
+	b *entity.Benchmark,
+	c *entity.Commit,
+	env entity.Properties,
+	meta entity.Properties,
+) *entity.Result {
+	return &entity.Result{
+		File:        f,
+		Line:        r.Line,
+		Benchmark:   b,
+		Commit:      c,
+		Environment: env,
+		Metadata:    meta,
+		Iterations:  uint64(r.Iterations),
+		Value:       r.Value,
+	}
 }
