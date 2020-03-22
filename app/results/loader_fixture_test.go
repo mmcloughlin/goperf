@@ -18,7 +18,7 @@ import (
 )
 
 func TestLoader(t *testing.T) {
-	var ref = "go1.23.4"
+	ref := "go1.23.4"
 
 	// Setup configuration lines.
 	keys := results.Keys{

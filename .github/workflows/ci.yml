@@ -48,3 +48,15 @@ jobs:
         run: ./script/bootstrap.sh
       - name: Lint
         run: ./script/lint.sh
+      - name: Generate
+        run: ./script/generate.sh
+      - name: Git Status
+        run: |
+          git diff
+          test -z "$(git status --porcelain)"
+      - name: Format
+        run: ./script/fmt.sh
+      - name: Git Status
+        run: |
+          git diff
+          test -z "$(git status --porcelain)"

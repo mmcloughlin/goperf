@@ -11,10 +11,8 @@ import (
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
-var (
-	// TODO(mbm): remove hardcoded topic
-	topic = "projects/contbench/topics/jobs"
-)
+// TODO(mbm): remove hardcoded topic
+var topic = "projects/contbench/topics/jobs"
 
 func main() {
 	os.Exit(main1())

@@ -11,4 +11,4 @@ sed -i.fmtbackup '/^import (/,/)/ { /^$/ d; }' ${files}
 find . -name '*.fmtbackup' -delete
 
 # goimports is goimports with stricter formatting.
-goimports -w -local ${repo} ${files}
+gofumports -w -local ${repo} ${files}
