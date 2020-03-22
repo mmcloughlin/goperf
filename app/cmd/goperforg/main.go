@@ -10,6 +10,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 
+	"github.com/mmcloughlin/cb/app/gcs"
 	"github.com/mmcloughlin/cb/app/service"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
@@ -33,6 +34,7 @@ var (
 	addr    = flag.String("http", "localhost:6060", "http address")
 	tmpl    = flag.String("templates", "", "templates directory")
 	project = flag.String("project", "", "google cloud project")
+	bucket  = flag.String("bucket", "", "data files bucket")
 )
 
 func mainerr(l lg.Logger) error {
@@ -51,6 +53,15 @@ func mainerr(l lg.Logger) error {
 
 	// Build handlers.
 	var opts []Option
+
+	if *bucket != "" {
+		datafs, err := gcs.New(ctx, *bucket)
+		if err != nil {
+			return err
+		}
+		opts = append(opts, WithDataFileSystem(datafs))
+	}
+
 	if *tmpl != "" {
 		opts = append(opts, WithTemplateFileSystem(fs.NewLocal(*tmpl)))
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"html/template"
@@ -16,6 +17,7 @@ import (
 type Handlers struct {
 	srv    service.Service
 	tmplfs fs.Readable
+	datafs fs.Readable
 
 	mux *http.ServeMux
 }
@@ -26,20 +28,28 @@ func WithTemplateFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.tmplfs = r }
 }
 
+func WithDataFileSystem(r fs.Readable) Option {
+	return func(h *Handlers) { h.datafs = r }
+}
+
 func NewHandlers(srv service.Service, opts ...Option) *Handlers {
+	// Configure.
 	h := &Handlers{
 		srv:    srv,
 		tmplfs: AssetFileSystem(),
+		datafs: fs.Null,
 		mux:    http.NewServeMux(),
 	}
 	for _, opt := range opts {
 		opt(h)
 	}
 
+	// Setup mux.
 	h.mux.HandleFunc("/mods/", h.Modules)
 	h.mux.HandleFunc("/mod/", h.Module)
 	h.mux.HandleFunc("/pkg/", h.Package)
 	h.mux.HandleFunc("/bench/", h.Benchmark)
+	h.mux.HandleFunc("/file/", h.File)
 
 	return h
 }
@@ -151,6 +161,56 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	h.render(ctx, w, "bench.html", map[string]interface{}{
 		"Benchmark": bench,
 		"Results":   results,
+	})
+}
+
+func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse UUID.
+	id, err := parseuuid(r.URL.Path, "/file/")
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Fetch file.
+	file, err := h.srv.FindDataFileByUUID(ctx, id)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Fetch raw data.
+	rdr, err := h.datafs.Open(ctx, file.Name)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+	defer rdr.Close()
+
+	type line struct {
+		Num      int
+		Contents string
+	}
+	var lines []line
+
+	s := bufio.NewScanner(rdr)
+	for s.Scan() {
+		lines = append(lines, line{
+			Num:      len(lines) + 1,
+			Contents: s.Text(),
+		})
+	}
+	if err := s.Err(); err != nil {
+		httperror(w, err)
+		return
+	}
+
+	// Write response.
+	h.render(ctx, w, "file.html", map[string]interface{}{
+		"File":  file,
+		"Lines": lines,
 	})
 }
 

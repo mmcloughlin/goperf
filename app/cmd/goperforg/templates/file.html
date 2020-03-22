@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ .File.Name }}</title>
+  </head>
+  <body>
+    <h1>{{ .File.Name }}</h1>
+    <pre>
+      {{ range .Lines -}}
+      <span id="L{{ .Num }}">{{ .Num }}</span> {{ .Contents }}
+      {{ end }}
+    </pre>
+  </body>
+</html>
