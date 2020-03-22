@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+// ErrNotExist is returned when a file does not exist.
+var ErrNotExist = errors.New("file does not exist")
+
 // FileInfo describes a file.
 type FileInfo struct {
 	Path    string    // path to the file relative to the filesystem
@@ -106,7 +109,7 @@ func (null) Remove(ctx context.Context, name string) error {
 }
 
 func (null) Open(ctx context.Context, name string) (io.ReadCloser, error) {
-	return nil, os.ErrNotExist
+	return nil, ErrNotExist
 }
 
 func (null) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
@@ -193,7 +196,7 @@ func (m *mem) Remove(_ context.Context, name string) error {
 	defer m.mu.RUnlock()
 
 	if _, ok := m.files[name]; !ok {
-		return os.ErrNotExist
+		return ErrNotExist
 	}
 
 	delete(m.files, name)
@@ -206,7 +209,7 @@ func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
 
 	f, ok := m.files[name]
 	if !ok {
-		return nil, os.ErrNotExist
+		return nil, ErrNotExist
 	}
 
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil

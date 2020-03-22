@@ -39,7 +39,11 @@ func (g *gcs) Remove(ctx context.Context, name string) error {
 
 // Open named object for reading.
 func (g *gcs) Open(ctx context.Context, name string) (io.ReadCloser, error) {
-	return g.bucket.Object(name).NewReader(ctx)
+	r, err := g.bucket.Object(name).NewReader(ctx)
+	if err == storage.ErrObjectNotExist {
+		return nil, fs.ErrNotExist
+	}
+	return r, err
 }
 
 // List objects in bucket.

@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"testing"
 )
 
@@ -25,7 +24,7 @@ func TestMem(t *testing.T) {
 
 	// File should on exist "on disk" until close.
 	_, err = m.Open(ctx, "greeting.txt")
-	if err != os.ErrNotExist {
+	if err != ErrNotExist {
 		t.Fatal("expected file to not exist")
 	}
 
