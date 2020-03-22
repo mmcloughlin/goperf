@@ -12,6 +12,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/service"
 	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
@@ -30,6 +31,7 @@ func main1() int {
 
 var (
 	addr    = flag.String("http", "localhost:6060", "http address")
+	tmpl    = flag.String("templates", "", "templates directory")
 	project = flag.String("project", "", "google cloud project")
 )
 
@@ -47,8 +49,15 @@ func mainerr(l lg.Logger) error {
 
 	srv := service.NewFirestore(fsc)
 
+	// Build handlers.
+	var opts []Option
+	if *tmpl != "" {
+		opts = append(opts, WithTemplateFileSystem(fs.NewLocal(*tmpl)))
+	}
+
+	h := NewHandlers(srv, opts...)
+
 	// Launch server.
-	h := NewHandlers(srv)
 
 	s := &http.Server{
 		Addr:        *addr,

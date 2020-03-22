@@ -16,11 +16,20 @@ type Handlers struct {
 	mux *http.ServeMux
 }
 
-func NewHandlers(srv service.Service) *Handlers {
+type Option func(*Handlers)
+
+func WithTemplateFileSystem(r fs.Readable) Option {
+	return func(h *Handlers) { h.tmplfs = r }
+}
+
+func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	h := &Handlers{
 		srv:    srv,
 		tmplfs: AssetFileSystem(),
 		mux:    http.NewServeMux(),
+	}
+	for _, opt := range opts {
+		opt(h)
 	}
 
 	h.mux.HandleFunc("/", h.Index)
@@ -43,7 +52,7 @@ func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "templates/mods.html", map[string]interface{}{
+	h.render(ctx, w, "mods.html", map[string]interface{}{
 		"Modules": mods,
 	})
 }

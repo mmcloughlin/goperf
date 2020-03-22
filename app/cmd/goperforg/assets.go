@@ -6,5 +6,5 @@ import "github.com/mmcloughlin/cb/pkg/fs"
 
 // AssetFileSystem returns a read-only filesystem.
 func AssetFileSystem() fs.Readable {
-	return fs.NewMemWithFiles(Assets)
+	return fs.NewSub(fs.NewMemWithFiles(Assets), "templates")
 }
