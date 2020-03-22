@@ -32,6 +32,7 @@ type Writable interface {
 // Readable can read from named files.
 type Readable interface {
 	Open(ctx context.Context, name string) (io.ReadCloser, error)
+	Stat(ctx context.Context, name string) (*FileInfo, error)
 	List(ctx context.Context, prefix string) ([]*FileInfo, error)
 }
 
@@ -52,7 +53,7 @@ func NewLocal(root string) Interface {
 }
 
 func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error) {
-	path := filepath.Join(l.root, name)
+	path := l.path(name)
 	if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
 		return nil, err
 	}
@@ -60,39 +61,58 @@ func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error)
 }
 
 func (l *local) Remove(ctx context.Context, name string) error {
-	path := filepath.Join(l.root, name)
-	return os.Remove(path)
+	return os.Remove(l.path(name))
 }
 
 func (l *local) Open(ctx context.Context, name string) (io.ReadCloser, error) {
-	path := filepath.Join(l.root, name)
-	return os.Open(path)
+	return os.Open(l.path(name))
+}
+
+func (l *local) Stat(ctx context.Context, name string) (*FileInfo, error) {
+	path := l.path(name)
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+	return l.fileinfo(path, info)
 }
 
 func (l *local) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
 	var files []*FileInfo
-	err := filepath.Walk(filepath.Join(l.root, prefix), func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(l.path(prefix), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
 			return nil
 		}
-		rel, err := filepath.Rel(l.root, path)
+		file, err := l.fileinfo(path, info)
 		if err != nil {
 			return err
 		}
-		files = append(files, &FileInfo{
-			Path:    rel,
-			Size:    info.Size(),
-			ModTime: info.ModTime(),
-		})
+		files = append(files, file)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 	return files, nil
+}
+
+func (l *local) path(name string) string {
+	return filepath.Join(l.root, name)
+}
+
+func (l *local) fileinfo(path string, info os.FileInfo) (*FileInfo, error) {
+	rel, err := filepath.Rel(l.root, path)
+	if err != nil {
+		return nil, err
+	}
+	return &FileInfo{
+		Path:    rel,
+		Size:    info.Size(),
+		ModTime: info.ModTime(),
+	}, nil
 }
 
 // Null contains no files and discards writes.
@@ -109,6 +129,10 @@ func (null) Remove(ctx context.Context, name string) error {
 }
 
 func (null) Open(ctx context.Context, name string) (io.ReadCloser, error) {
+	return nil, ErrNotExist
+}
+
+func (null) Stat(ctx context.Context, name string) (*FileInfo, error) {
 	return nil, ErrNotExist
 }
 
@@ -146,6 +170,10 @@ func (s *sub) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 	return s.fs.Open(ctx, s.path(name))
 }
 
+func (s *sub) Stat(ctx context.Context, name string) (*FileInfo, error) {
+	return s.fs.Stat(ctx, s.path(name))
+}
+
 func (s *sub) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
 	return s.fs.List(ctx, s.path(prefix))
 }
@@ -160,8 +188,17 @@ type mem struct {
 }
 
 type memfile struct {
+	path    string
 	data    []byte
 	modtime time.Time
+}
+
+func (f *memfile) FileInfo() *FileInfo {
+	return &FileInfo{
+		Path:    f.path,
+		Size:    int64(len(f.data)),
+		ModTime: f.modtime,
+	}
 }
 
 // NewMem builds an in-memory filesystem.
@@ -176,6 +213,7 @@ func NewMemWithFiles(files map[string][]byte) Interface {
 	}
 	for name, data := range files {
 		m.files[name] = memfile{
+			path:    name,
 			data:    data,
 			modtime: time.Now(),
 		}
@@ -215,6 +253,14 @@ func (m *mem) Open(_ context.Context, name string) (io.ReadCloser, error) {
 	return ioutil.NopCloser(bytes.NewBuffer(f.data)), nil
 }
 
+func (m *mem) Stat(_ context.Context, name string) (*FileInfo, error) {
+	f, ok := m.files[name]
+	if !ok {
+		return nil, ErrNotExist
+	}
+	return f.FileInfo(), nil
+}
+
 func (m *mem) List(_ context.Context, prefix string) ([]*FileInfo, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -224,11 +270,7 @@ func (m *mem) List(_ context.Context, prefix string) ([]*FileInfo, error) {
 		if !strings.HasPrefix(path, prefix) {
 			continue
 		}
-		files = append(files, &FileInfo{
-			Path:    path,
-			Size:    int64(len(file.data)),
-			ModTime: file.modtime,
-		})
+		files = append(files, file.FileInfo())
 	}
 
 	return files, nil
@@ -247,6 +289,7 @@ func (w *memwriter) Close() error {
 	w.fs.mu.Lock()
 	defer w.fs.mu.Unlock()
 	w.fs.files[w.name] = memfile{
+		path:    w.name,
 		data:    w.Bytes(),
 		modtime: time.Now(),
 	}

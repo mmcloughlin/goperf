@@ -3,6 +3,7 @@ package gcs
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"cloud.google.com/go/storage"
@@ -40,10 +41,22 @@ func (g *gcs) Remove(ctx context.Context, name string) error {
 // Open named object for reading.
 func (g *gcs) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 	r, err := g.bucket.Object(name).NewReader(ctx)
-	if err == storage.ErrObjectNotExist {
+	if errors.Is(err, storage.ErrObjectNotExist) {
 		return nil, fs.ErrNotExist
 	}
 	return r, err
+}
+
+// Stat describes the named object.
+func (g *gcs) Stat(ctx context.Context, name string) (*fs.FileInfo, error) {
+	attrs, err := g.bucket.Object(name).Attrs(ctx)
+	if errors.Is(err, storage.ErrObjectNotExist) {
+		return nil, fs.ErrNotExist
+	}
+	if err != nil {
+		return nil, err
+	}
+	return fileinfo(attrs), nil
 }
 
 // List objects in bucket.
@@ -60,11 +73,15 @@ func (g *gcs) List(ctx context.Context, prefix string) ([]*fs.FileInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		files = append(files, &fs.FileInfo{
-			Path:    attrs.Name,
-			Size:    attrs.Size,
-			ModTime: attrs.Updated,
-		})
+		files = append(files, fileinfo(attrs))
 	}
 	return files, nil
+}
+
+func fileinfo(attrs *storage.ObjectAttrs) *fs.FileInfo {
+	return &fs.FileInfo{
+		Path:    attrs.Name,
+		Size:    attrs.Size,
+		ModTime: attrs.Updated,
+	}
 }
