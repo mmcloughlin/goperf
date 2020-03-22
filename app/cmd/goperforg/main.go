@@ -33,6 +33,7 @@ func main1() int {
 var (
 	addr    = flag.String("http", "localhost:6060", "http address")
 	tmpl    = flag.String("templates", "", "templates directory")
+	static  = flag.String("static", "", "static assets directory")
 	project = flag.String("project", "", "google cloud project")
 	bucket  = flag.String("bucket", "", "data files bucket")
 )
@@ -64,6 +65,10 @@ func mainerr(l lg.Logger) error {
 
 	if *tmpl != "" {
 		opts = append(opts, WithTemplateFileSystem(fs.NewLocal(*tmpl)))
+	}
+
+	if *static != "" {
+		opts = append(opts, WithStaticFileSystem(fs.NewLocal(*static)))
 	}
 
 	h := NewHandlers(srv, opts...)

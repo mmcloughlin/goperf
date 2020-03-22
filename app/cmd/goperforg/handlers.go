@@ -17,6 +17,7 @@ import (
 type Handlers struct {
 	srv    service.Service
 	tmplfs fs.Readable
+	static fs.Readable
 	datafs fs.Readable
 
 	mux *http.ServeMux
@@ -28,6 +29,10 @@ func WithTemplateFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.tmplfs = r }
 }
 
+func WithStaticFileSystem(r fs.Readable) Option {
+	return func(h *Handlers) { h.static = r }
+}
+
 func WithDataFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.datafs = r }
 }
@@ -36,7 +41,7 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
 		srv:    srv,
-		tmplfs: AssetFileSystem(),
+		tmplfs: TemplateFileSystem,
 		datafs: fs.Null,
 		mux:    http.NewServeMux(),
 	}
@@ -51,6 +56,9 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/bench/", h.Benchmark)
 	h.mux.HandleFunc("/file/", h.File)
 
+	static := NewStatic(h.static)
+	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
+
 	return h
 }
 
@@ -64,7 +72,7 @@ func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
 	// Fetch modules.
 	mods, err := h.srv.ListModules(ctx)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
@@ -80,20 +88,20 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/mod/")
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	// Fetch module.
 	mod, err := h.srv.FindModuleByUUID(ctx, id)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	pkgs, err := h.srv.ListModulePackages(ctx, mod)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
@@ -110,20 +118,20 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/pkg/")
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	// Fetch package.
 	pkg, err := h.srv.FindPackageByUUID(ctx, id)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	benchs, err := h.srv.ListPackageBenchmarks(ctx, pkg)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
@@ -140,20 +148,20 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/bench/")
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	// Fetch benchmark.
 	bench, err := h.srv.FindBenchmarkByUUID(ctx, id)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	results, err := h.srv.ListBenchmarkResults(ctx, bench)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
@@ -170,21 +178,21 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/file/")
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	// Fetch file.
 	file, err := h.srv.FindDataFileByUUID(ctx, id)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	// Fetch raw data.
 	rdr, err := h.datafs.Open(ctx, file.Name)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 	defer rdr.Close()
@@ -203,7 +211,7 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	if err := s.Err(); err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
@@ -217,26 +225,22 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
 	tmpl, err := fs.ReadFile(ctx, h.tmplfs, name)
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	t, err := template.New(name).Parse(string(tmpl))
 	if err != nil {
-		httperror(w, err)
+		Error(w, err)
 		return
 	}
 
 	if err := t.Execute(w, data); err != nil {
 		if err != nil {
-			httperror(w, err)
+			Error(w, err)
 			return
 		}
 	}
-}
-
-func httperror(w http.ResponseWriter, err error) {
-	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
 func parseuuid(path, prefix string) (uuid.UUID, error) {
