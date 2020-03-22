@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ .Path }}</title>
+    <title>{{ .Module.Path }}</title>
   </head>
   <body>
-    <h1>{{ .Path }}</h1>
-    <p>Version: {{ .Version }}</p>
+    <h1>{{ .Module.Path }}</h1>
+    <p>Version: {{ .Module.Version }}</p>
+    <ul>
+      {{ range .Packages }}
+      <li><small>{{ .Module.Path }}/</small>{{ .RelativePath }}</li>
+      {{ end }}
+    </ul>
   </body>
 </html>

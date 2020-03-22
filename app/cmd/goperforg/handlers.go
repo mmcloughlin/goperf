@@ -79,8 +79,17 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pkgs, err := h.srv.ListModulePackages(ctx, mod)
+	if err != nil {
+		httperror(w, err)
+		return
+	}
+
 	// Write response.
-	h.render(ctx, w, "mod.html", mod)
+	h.render(ctx, w, "mod.html", map[string]interface{}{
+		"Module":   mod,
+		"Packages": pkgs,
+	})
 }
 
 func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {

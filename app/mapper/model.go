@@ -64,6 +64,13 @@ func PackageModel(p *entity.Package) *model.Package {
 	}
 }
 
+func PackageFromModel(p *model.Package, m *entity.Module) *entity.Package {
+	return &entity.Package{
+		Module:       m,
+		RelativePath: p.RelativePath,
+	}
+}
+
 func PackageModels(p *entity.Package) []obj.Object {
 	return []obj.Object{
 		ModuleModel(p.Module),

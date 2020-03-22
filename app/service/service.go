@@ -16,6 +16,7 @@ import (
 type Service interface {
 	FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module, error)
 	ListModules(ctx context.Context) ([]*entity.Module, error)
+	ListModulePackages(ctx context.Context, m *entity.Module) ([]*entity.Package, error)
 }
 
 type fire struct {
@@ -62,6 +63,30 @@ func (f *fire) ListModules(ctx context.Context) ([]*entity.Module, error) {
 	}
 
 	return mods, nil
+}
+
+func (f *fire) ListModulePackages(ctx context.Context, m *entity.Module) ([]*entity.Package, error) {
+	iter := f.Collection(&model.Package{}).Where("module_uuid", "==", m.UUID().String()).Documents(ctx)
+
+	var pkgs []*entity.Package
+	for {
+		docsnap, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		pkg := &model.Package{}
+		if err := docsnap.DataTo(pkg); err != nil {
+			return nil, err
+		}
+
+		pkgs = append(pkgs, mapper.PackageFromModel(pkg, m))
+	}
+
+	return pkgs, nil
 }
 
 func (f *fire) Collection(k obj.Key) *firestore.CollectionRef {
