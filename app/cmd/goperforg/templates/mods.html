@@ -6,7 +6,9 @@
   <body>
     <ul>
       {{ range .Modules }}
-      <li><strong>{{ .Path }}</strong> <small>{{ .Version }}</small></li>
+      <li>
+        <a href="/mod/{{ .UUID }}">{{ .Path }}</a> <small>{{ .Version }}</small>
+      </li>
       {{ end }}
     </ul>
   </body>

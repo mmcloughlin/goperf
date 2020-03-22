@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cloud.google.com/go/firestore"
+	"github.com/google/uuid"
 	"google.golang.org/api/iterator"
 
 	"github.com/mmcloughlin/cb/app/entity"
@@ -13,17 +14,29 @@ import (
 )
 
 type Service interface {
+	FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module, error)
 	ListModules(ctx context.Context) ([]*entity.Module, error)
 }
 
 type fire struct {
 	client *firestore.Client
+	store  obj.Store
 }
 
 func NewFirestore(c *firestore.Client) Service {
 	return &fire{
 		client: c,
+		store:  obj.NewFirestore(c),
 	}
+}
+
+func (f *fire) FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module, error) {
+	obj := new(model.Module)
+	obj.UUID = id.String()
+	if err := f.store.Get(ctx, obj, obj); err != nil {
+		return nil, err
+	}
+	return mapper.ModuleFromModel(obj), nil
 }
 
 func (f *fire) ListModules(ctx context.Context) ([]*entity.Module, error) {
