@@ -42,6 +42,7 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	h := &Handlers{
 		srv:    srv,
 		tmplfs: TemplateFileSystem,
+		static: StaticFileSystem,
 		datafs: fs.Null,
 		mux:    http.NewServeMux(),
 	}
