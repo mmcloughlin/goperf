@@ -1,10 +1,6 @@
 {{ define "mods" }}
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Modules</title>
-  </head>
-  <body>
+{{ template "header" }}
+
     <ul>
       {{ range .Modules }}
       <li>
@@ -12,6 +8,6 @@
       </li>
       {{ end }}
     </ul>
-  </body>
-</html>
+
+{{ template "footer" }}
 {{ end }}

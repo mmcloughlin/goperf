@@ -1,0 +1,25 @@
+{{ define "bench" }}
+{{ template "header" }}
+
+<h1>{{ .Benchmark.Name }}</h1>
+<table>
+  <tr>
+    <th>Value</th>
+    <th>Commit</th>
+    <th>Commit Time</th>
+    <th>File</th>
+  </tr>
+  {{ range .Results }}
+  <tr>
+    <td>{{ .Value }}</td>
+    <td>{{ .Commit.SHA }}</td>
+    <td>{{ .Commit.CommitTime }}</td>
+    <td>
+      <a href="/file/{{ .File.UUID }}#L{{ .Line }}">{{ .File.UUID }}</a>
+    </td>
+  </tr>
+  {{ end }}
+</table>
+
+{{ template "footer" }}
+{{ end }}

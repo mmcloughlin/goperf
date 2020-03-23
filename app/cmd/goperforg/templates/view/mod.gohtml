@@ -1,10 +1,6 @@
 {{ define "mod" }}
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>{{ .Module.Path }}</title>
-  </head>
-  <body>
+{{ template "header" }}
+
     <h1>{{ .Module.Path }}</h1>
     <p>Version: {{ .Module.Version }}</p>
     <ul>
@@ -16,6 +12,6 @@
       </li>
       {{ end }}
     </ul>
-  </body>
-</html>
+
+{{ template "footer" }}
 {{ end }}
