@@ -9,6 +9,8 @@ Original work is Copyright 2019 The Go Authors and BSD-3 licensed
 */
 
 :root {
+  --turq: #00758d;
+
   --gray-1: #202224;
   --gray-2: #3e4042;
   --gray-3: #555759;
@@ -19,18 +21,6 @@ Original work is Copyright 2019 The Go Authors and BSD-3 licensed
   --gray-8: #dcdee0;
   --gray-9: #f0f1f2;
   --gray-10: #fafafa;
-
-  --turq-light: #5dc9e2;
-  --turq-med: #00add8;
-  --turq-text: #007d9c;
-
-  --blue: #92e1f3;
-  --green: #00a29c;
-  --pink: #ce3262;
-  --purple: #542c7d;
-  --slate: #253443;
-  --white: #fff;
-  --yellow: #fddd00;
 }
 
 html {
@@ -46,7 +36,7 @@ body {
 a,
 a:link,
 a:visited {
-  color: var(--turq-text);
+  color: var(--turq);
   text-decoration: none;
 }
 
@@ -86,7 +76,32 @@ p {
   line-height: 1.5rem;
 }
 
-code {
+code,
+pre {
   font-size: 1rem;
   font-family: "Go Mono", "Source Code Pro", monospace;
+}
+
+header {
+  background: var(--turq);
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+header nav {
+  margin: 0 auto;
+  max-width: 60em;
+}
+
+header .logo {
+  display: block;
+  width: 5.125rem;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  margin: 0 auto;
+  max-width: 60em;
 }
