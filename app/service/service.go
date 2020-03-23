@@ -50,10 +50,11 @@ type fire struct {
 	store  obj.Store
 }
 
-func NewFirestore(c *firestore.Client) Service {
+func NewFirestore(c *firestore.Client, caches ...obj.Store) Service {
+	stores := append(caches, obj.NewFirestore(c))
 	return &fire{
 		client: c,
-		store:  obj.NewFirestore(c),
+		store:  obj.Overlay(stores...),
 	}
 }
 

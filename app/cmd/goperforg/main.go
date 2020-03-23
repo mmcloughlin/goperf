@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"cloud.google.com/go/firestore"
 
 	"github.com/mmcloughlin/cb/app/gcs"
+	"github.com/mmcloughlin/cb/app/obj"
 	"github.com/mmcloughlin/cb/app/service"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
@@ -50,7 +52,16 @@ func mainerr(l lg.Logger) error {
 	}
 	defer fsc.Close()
 
-	srv := service.NewFirestore(fsc)
+	memcache := obj.NewMem(1 << 29)
+
+	d, err := ioutil.TempDir("", "goperforg")
+	if err != nil {
+		return err
+	}
+	diskcache := obj.NewFileSystem(fs.NewLocal(d), 1<<32)
+	lg.Param(l, "disk_cache", d)
+
+	srv := service.NewFirestore(fsc, memcache, diskcache)
 
 	// Build handlers.
 	var opts []Option
