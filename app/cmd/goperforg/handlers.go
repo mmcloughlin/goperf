@@ -100,7 +100,7 @@ func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "mods", map[string]interface{}{
+	h.render(w, "mods", map[string]interface{}{
 		"Modules": mods,
 	})
 }
@@ -129,7 +129,7 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "mod", map[string]interface{}{
+	h.render(w, "mod", map[string]interface{}{
 		"Module":   mod,
 		"Packages": pkgs,
 	})
@@ -159,7 +159,7 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "pkg", map[string]interface{}{
+	h.render(w, "pkg", map[string]interface{}{
 		"Package":    pkg,
 		"Benchmarks": benchs,
 	})
@@ -189,7 +189,7 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "bench", map[string]interface{}{
+	h.render(w, "bench", map[string]interface{}{
 		"Benchmark": bench,
 		"Results":   results,
 	})
@@ -239,13 +239,13 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "file", map[string]interface{}{
+	h.render(w, "file", map[string]interface{}{
 		"File":  file,
 		"Lines": lines,
 	})
 }
 
-func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
+func (h *Handlers) render(w http.ResponseWriter, name string, data interface{}) {
 	if err := h.templates.ExecuteTemplate(w, name, data); err != nil {
 		if err != nil {
 			Error(w, err)
