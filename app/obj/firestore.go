@@ -17,6 +17,11 @@ func NewFirestore(c *firestore.Client) Store {
 	}
 }
 
+func (s *firestorestore) Contains(ctx context.Context, k Key) bool {
+	_, err := s.client.Collection(k.Type()).Doc(k.ID()).Get(ctx)
+	return err == nil
+}
+
 func (s *firestorestore) Get(ctx context.Context, k Key, v Object) error {
 	if err := validatekey(k); err != nil {
 		return err

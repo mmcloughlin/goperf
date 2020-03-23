@@ -62,6 +62,7 @@ type Object interface {
 
 // Getter can get object by key.
 type Getter interface {
+	Contains(context.Context, Key) bool
 	Get(context.Context, Key, Object) error
 }
 
@@ -75,6 +76,15 @@ type Store interface {
 	Getter
 	Setter
 }
+
+// Null contains nothing and stores nothing.
+var Null Store = null{}
+
+type null struct{}
+
+func (null) Contains(context.Context, Key) bool           { return false }
+func (null) Get(_ context.Context, k Key, v Object) error { return KeyNotFoundError{Key: k} }
+func (null) Set(context.Context, Object) error            { return nil }
 
 // Encode the object to w.
 func Encode(w io.Writer, v Object) error {

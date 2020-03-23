@@ -40,6 +40,12 @@ func NewMem(capacity int64) Store {
 	return NewFileSystem(fs.NewMem(), capacity)
 }
 
+func (f *filesystem) Contains(ctx context.Context, k Key) bool {
+	key := cachekey(k)
+	_, ok := f.lru.Get(key)
+	return ok
+}
+
 func (f *filesystem) Get(ctx context.Context, k Key, v Object) error {
 	if err := validatekey(k); err != nil {
 		return err
