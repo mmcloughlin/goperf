@@ -84,8 +84,11 @@ func mainerr(l lg.Logger) error {
 
 	h := NewHandlers(srv, opts...)
 
-	// Launch server.
+	if err := h.Init(ctx); err != nil {
+		return err
+	}
 
+	// Launch server.
 	s := &http.Server{
 		Addr:        *addr,
 		Handler:     h,

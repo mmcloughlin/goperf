@@ -20,7 +20,8 @@ type Handlers struct {
 	static fs.Readable
 	datafs fs.Readable
 
-	mux *http.ServeMux
+	mux       *http.ServeMux
+	templates *template.Template
 }
 
 type Option func(*Handlers)
@@ -40,11 +41,12 @@ func WithDataFileSystem(r fs.Readable) Option {
 func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
-		srv:    srv,
-		tmplfs: TemplateFileSystem,
-		static: StaticFileSystem,
-		datafs: fs.Null,
-		mux:    http.NewServeMux(),
+		srv:       srv,
+		tmplfs:    TemplateFileSystem,
+		static:    StaticFileSystem,
+		datafs:    fs.Null,
+		mux:       http.NewServeMux(),
+		templates: template.New(""),
 	}
 	for _, opt := range opts {
 		opt(h)
@@ -63,6 +65,26 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	return h
 }
 
+func (h *Handlers) Init(ctx context.Context) error {
+	files, err := h.tmplfs.List(ctx, "")
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		b, err := fs.ReadFile(ctx, h.tmplfs, file.Path)
+		if err != nil {
+			return err
+		}
+
+		if _, err := h.templates.Parse(string(b)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
@@ -78,7 +100,7 @@ func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "mods.html", map[string]interface{}{
+	h.render(ctx, w, "mods", map[string]interface{}{
 		"Modules": mods,
 	})
 }
@@ -107,7 +129,7 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "mod.html", map[string]interface{}{
+	h.render(ctx, w, "mod", map[string]interface{}{
 		"Module":   mod,
 		"Packages": pkgs,
 	})
@@ -137,7 +159,7 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "pkg.html", map[string]interface{}{
+	h.render(ctx, w, "pkg", map[string]interface{}{
 		"Package":    pkg,
 		"Benchmarks": benchs,
 	})
@@ -167,7 +189,7 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "bench.html", map[string]interface{}{
+	h.render(ctx, w, "bench", map[string]interface{}{
 		"Benchmark": bench,
 		"Results":   results,
 	})
@@ -217,26 +239,14 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(ctx, w, "file.html", map[string]interface{}{
+	h.render(ctx, w, "file", map[string]interface{}{
 		"File":  file,
 		"Lines": lines,
 	})
 }
 
 func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
-	tmpl, err := fs.ReadFile(ctx, h.tmplfs, name)
-	if err != nil {
-		Error(w, err)
-		return
-	}
-
-	t, err := template.New(name).Parse(string(tmpl))
-	if err != nil {
-		Error(w, err)
-		return
-	}
-
-	if err := t.Execute(w, data); err != nil {
+	if err := h.templates.ExecuteTemplate(w, name, data); err != nil {
 		if err != nil {
 			Error(w, err)
 			return
