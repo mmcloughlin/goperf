@@ -1,0 +1,92 @@
+/*
+
+Style derived from https://pkg.go.dev/static/css/stylesheet.css and
+https://blog.golang.org/go-brand.
+
+Original work is Copyright 2019 The Go Authors and BSD-3 licensed
+(https://golang.org/LICENSE).
+
+*/
+
+:root {
+  --gray-1: #202224;
+  --gray-2: #3e4042;
+  --gray-3: #555759;
+  --gray-4: #6e7072;
+  --gray-5: #848688;
+  --gray-6: #aaacae;
+  --gray-7: #c6c8ca;
+  --gray-8: #dcdee0;
+  --gray-9: #f0f1f2;
+  --gray-10: #fafafa;
+
+  --turq-light: #5dc9e2;
+  --turq-med: #00add8;
+  --turq-text: #007d9c;
+
+  --blue: #92e1f3;
+  --green: #00a29c;
+  --pink: #ce3262;
+  --purple: #542c7d;
+  --slate: #253443;
+  --white: #fff;
+  --yellow: #fddd00;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  color: var(--gray-1);
+  font-family: Roboto, Arial, sans-serif;
+  margin: 0;
+}
+
+a,
+a:link,
+a:visited {
+  color: var(--turq-text);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Work Sans", Arial, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+h2 {
+  font-size: 1.125rem;
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+code {
+  font-size: 1rem;
+  font-family: "Go Mono", "Source Code Pro", monospace;
+}
