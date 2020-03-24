@@ -78,8 +78,8 @@ p {
 
 code,
 pre {
-  font-size: 1rem;
   font-family: "Go Mono", "Source Code Pro", monospace;
+  font-size: 0.875rem;
 }
 
 header {
@@ -91,12 +91,12 @@ header {
 
 header nav {
   margin: 0 auto;
-  max-width: 60em;
+  max-width: 70em;
 }
 
 header .logo {
   display: block;
-  width: 5.125rem;
+  width: 5rem;
   margin: 0;
   padding: 0;
 }
