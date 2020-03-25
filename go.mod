@@ -19,6 +19,7 @@ require (
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 // indirect
+	github.com/lib/pq v1.3.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
