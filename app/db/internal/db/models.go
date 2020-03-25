@@ -3,8 +3,8 @@
 package db
 
 import (
-	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -22,13 +22,13 @@ type Commit struct {
 	SHA            []byte
 	Tree           []byte
 	Parents        [][]byte
-	AuthorName     sql.NullString
-	AuthorEmail    sql.NullString
-	AuthorTime     sql.NullTime
-	CommitterName  sql.NullString
-	CommitterEmail sql.NullString
-	CommitTime     sql.NullTime
-	Message        sql.NullString
+	AuthorName     string
+	AuthorEmail    string
+	AuthorTime     time.Time
+	CommitterName  string
+	CommitterEmail string
+	CommitTime     time.Time
+	Message        string
 }
 
 type Datafile struct {
@@ -40,7 +40,7 @@ type Datafile struct {
 type Module struct {
 	UUID    uuid.UUID
 	Path    string
-	Version sql.NullString
+	Version string
 }
 
 type Package struct {
@@ -62,6 +62,6 @@ type Result struct {
 	CommitSHA       []byte
 	EnvironmentUUID uuid.UUID
 	MetadataUUID    uuid.UUID
-	Iterations      sql.NullInt64
+	Iterations      int64
 	Value           float64
 }

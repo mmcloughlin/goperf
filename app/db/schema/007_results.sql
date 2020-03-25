@@ -7,7 +7,7 @@ CREATE TABLE results (
     commit_sha BYTEA NOT NULL REFERENCES commits,
     environment_uuid UUID NOT NULL REFERENCES properties,
     metadata_uuid UUID NOT NULL REFERENCES properties,
-    iterations BIGINT,
+    iterations BIGINT NOT NULL,
     value DOUBLE PRECISION NOT NULL
 );
 

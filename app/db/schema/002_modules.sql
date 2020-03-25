@@ -2,7 +2,7 @@
 CREATE TABLE modules (
     uuid UUID PRIMARY KEY,
     path TEXT NOT NULL,
-    version TEXT
+    version TEXT NOT NULL
 );
 
 -- +goose Down

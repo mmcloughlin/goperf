@@ -5,6 +5,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -30,4 +31,59 @@ func (q *Queries) Commit(ctx context.Context, sha []byte) (Commit, error) {
 		&i.Message,
 	)
 	return i, err
+}
+
+const insertCommit = `-- name: InsertCommit :exec
+INSERT INTO commits (
+    sha,
+    tree,
+    parents,
+    author_name,
+    author_email,
+    author_time,
+    committer_name,
+    committer_email,
+    commit_time,
+    message
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10
+)
+`
+
+type InsertCommitParams struct {
+	SHA            []byte
+	Tree           []byte
+	Parents        [][]byte
+	AuthorName     string
+	AuthorEmail    string
+	AuthorTime     time.Time
+	CommitterName  string
+	CommitterEmail string
+	CommitTime     time.Time
+	Message        string
+}
+
+func (q *Queries) InsertCommit(ctx context.Context, arg InsertCommitParams) error {
+	_, err := q.db.ExecContext(ctx, insertCommit,
+		arg.SHA,
+		arg.Tree,
+		pq.Array(arg.Parents),
+		arg.AuthorName,
+		arg.AuthorEmail,
+		arg.AuthorTime,
+		arg.CommitterName,
+		arg.CommitterEmail,
+		arg.CommitTime,
+		arg.Message,
+	)
+	return err
 }
