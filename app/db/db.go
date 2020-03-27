@@ -38,7 +38,7 @@ func (d *DB) Close() error {
 }
 
 // tx executes the given query function in a transaction.
-func (d *DB) tx(ctx context.Context, ops ...operation) (err error) {
+func (d *DB) tx(ctx context.Context, fn func(q *db.Queries) error) (err error) {
 	tx, err := d.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -53,62 +53,47 @@ func (d *DB) tx(ctx context.Context, ops ...operation) (err error) {
 			err = tx.Commit()
 		}
 	}()
-	return operations(ops...)(ctx, d.q.WithTx(tx))
-}
-
-// operation on the database.
-type operation func(context.Context, *db.Queries) error
-
-// operations performs the ops in order.
-func operations(ops ...operation) operation {
-	return func(ctx context.Context, q *db.Queries) error {
-		for _, op := range ops {
-			if err := op(ctx, q); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
+	return fn(d.q.WithTx(tx))
 }
 
 // StoreCommit writes commit to the database.
 func (d *DB) StoreCommit(ctx context.Context, c *entity.Commit) error {
-	return d.tx(ctx, storeCommit(c))
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeCommit(ctx, q, c)
+	})
 }
 
-func storeCommit(c *entity.Commit) operation {
-	return func(ctx context.Context, q *db.Queries) error {
-		sha, err := hex.DecodeString(c.SHA)
-		if err != nil {
-			return fmt.Errorf("invalid sha: %w", err)
-		}
-
-		tree, err := hex.DecodeString(c.Tree)
-		if err != nil {
-			return fmt.Errorf("invalid tree: %w", err)
-		}
-
-		parents := make([][]byte, len(c.Parents))
-		for i, p := range c.Parents {
-			parents[i], err = hex.DecodeString(p)
-			if err != nil {
-				return fmt.Errorf("invalid parent: %w", err)
-			}
-		}
-
-		return q.InsertCommit(ctx, db.InsertCommitParams{
-			SHA:            sha,
-			Tree:           tree,
-			Parents:        parents,
-			AuthorName:     c.Author.Name,
-			AuthorEmail:    c.Author.Email,
-			AuthorTime:     c.AuthorTime,
-			CommitterName:  c.Committer.Name,
-			CommitterEmail: c.Committer.Email,
-			CommitTime:     c.CommitTime,
-			Message:        c.Message,
-		})
+func storeCommit(ctx context.Context, q *db.Queries, c *entity.Commit) error {
+	sha, err := hex.DecodeString(c.SHA)
+	if err != nil {
+		return fmt.Errorf("invalid sha: %w", err)
 	}
+
+	tree, err := hex.DecodeString(c.Tree)
+	if err != nil {
+		return fmt.Errorf("invalid tree: %w", err)
+	}
+
+	parents := make([][]byte, len(c.Parents))
+	for i, p := range c.Parents {
+		parents[i], err = hex.DecodeString(p)
+		if err != nil {
+			return fmt.Errorf("invalid parent: %w", err)
+		}
+	}
+
+	return q.InsertCommit(ctx, db.InsertCommitParams{
+		SHA:            sha,
+		Tree:           tree,
+		Parents:        parents,
+		AuthorName:     c.Author.Name,
+		AuthorEmail:    c.Author.Email,
+		AuthorTime:     c.AuthorTime,
+		CommitterName:  c.Committer.Name,
+		CommitterEmail: c.Committer.Email,
+		CommitTime:     c.CommitTime,
+		Message:        c.Message,
+	})
 }
 
 // FindCommitBySHA looks up the given commit in the database.
@@ -148,22 +133,32 @@ func (d *DB) FindCommitBySHA(ctx context.Context, sha string) (*entity.Commit, e
 
 // StoreModule writes module to the database.
 func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
-	return d.tx(ctx, storeModule(m))
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeModule(ctx, q, m)
+	})
 }
 
-func storeModule(m *entity.Module) operation {
-	return func(ctx context.Context, q *db.Queries) error {
-		return q.InsertModule(ctx, db.InsertModuleParams{
-			UUID:    m.UUID(),
-			Path:    m.Path,
-			Version: m.Version,
-		})
-	}
+func storeModule(ctx context.Context, q *db.Queries, m *entity.Module) error {
+	return q.InsertModule(ctx, db.InsertModuleParams{
+		UUID:    m.UUID(),
+		Path:    m.Path,
+		Version: m.Version,
+	})
 }
 
 // FindModuleByUUID looks up the given module in the database.
 func (d *DB) FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module, error) {
-	m, err := d.q.Module(ctx, id)
+	var m *entity.Module
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		m, err = findModuleByUUID(ctx, q, id)
+		return err
+	})
+	return m, err
+}
+
+func findModuleByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.Module, error) {
+	m, err := q.Module(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -175,18 +170,47 @@ func (d *DB) FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module
 }
 
 func (d *DB) StorePackage(ctx context.Context, p *entity.Package) error {
-	return d.tx(ctx,
-		storeModule(p.Module),
-		storePackage(p),
-	)
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storePackage(ctx, q, p)
+	})
 }
 
-func storePackage(p *entity.Package) operation {
-	return func(ctx context.Context, q *db.Queries) error {
-		return q.InsertPkg(ctx, db.InsertPkgParams{
-			UUID:         p.UUID(),
-			ModuleUUID:   p.Module.UUID(),
-			RelativePath: p.RelativePath,
-		})
+func storePackage(ctx context.Context, q *db.Queries, p *entity.Package) error {
+	if err := storeModule(ctx, q, p.Module); err != nil {
+		return err
 	}
+
+	return q.InsertPkg(ctx, db.InsertPkgParams{
+		UUID:         p.UUID(),
+		ModuleUUID:   p.Module.UUID(),
+		RelativePath: p.RelativePath,
+	})
+}
+
+// FindPackageByUUID looks up the given package in the database.
+func (d *DB) FindPackageByUUID(ctx context.Context, id uuid.UUID) (*entity.Package, error) {
+	var p *entity.Package
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		p, err = findPackageByUUID(ctx, q, id)
+		return err
+	})
+	return p, err
+}
+
+func findPackageByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.Package, error) {
+	p, err := q.Pkg(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := findModuleByUUID(ctx, q, p.ModuleUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.Package{
+		Module:       m,
+		RelativePath: p.RelativePath,
+	}, nil
 }

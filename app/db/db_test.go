@@ -86,13 +86,13 @@ func TestDBPackage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// // Find.
-	// got, err := db.FindModuleByUUID(ctx, expect.UUID())
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
+	// Find.
+	got, err := db.FindPackageByUUID(ctx, expect.UUID())
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// if diff := cmp.Diff(expect, got); diff != "" {
-	// 	t.Errorf("mismatch\n%s", diff)
-	// }
+	if diff := cmp.Diff(expect, got); diff != "" {
+		t.Errorf("mismatch\n%s", diff)
+	}
 }
