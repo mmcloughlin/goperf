@@ -11,4 +11,4 @@ INSERT INTO modules (
     $1,
     $2,
     $3
-);
+) ON CONFLICT DO NOTHING;

@@ -56,7 +56,7 @@ INSERT INTO commits (
     $8,
     $9,
     $10
-)
+) ON CONFLICT DO NOTHING
 `
 
 type InsertCommitParams struct {
