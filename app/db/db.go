@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
 )
@@ -101,5 +102,27 @@ func (d *DB) FindCommitBySHA(ctx context.Context, sha string) (*entity.Commit, e
 		},
 		CommitTime: c.CommitTime,
 		Message:    c.Message,
+	}, nil
+}
+
+// StoreModule writes module to the database.
+func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
+	return d.q.InsertModule(ctx, db.InsertModuleParams{
+		UUID:    m.UUID(),
+		Path:    m.Path,
+		Version: m.Version,
+	})
+}
+
+// FindModuleByUUID looks up the given module in the database.
+func (d *DB) FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module, error) {
+	m, err := d.q.Module(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.Module{
+		Path:    m.Path,
+		Version: m.Version,
 	}, nil
 }

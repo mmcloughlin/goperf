@@ -52,3 +52,25 @@ func TestDBCommit(t *testing.T) {
 		t.Errorf("mismatch\n%s", diff)
 	}
 }
+
+func TestDBModule(t *testing.T) {
+	db := Database(t)
+
+	// Store.
+	ctx := context.Background()
+	expect := fixture.Module
+	err := db.StoreModule(ctx, expect)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find.
+	got, err := db.FindModuleByUUID(ctx, expect.UUID())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(expect, got); diff != "" {
+		t.Errorf("mismatch\n%s", diff)
+	}
+}
