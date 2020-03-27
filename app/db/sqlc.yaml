@@ -15,3 +15,6 @@ rename:
   commit_sha: CommitSHA
   environment_uuid: EnvironmentUUID
   metadata_uuid: MetadataUUID
+overrides:
+  - go_type: github.com/lib/pq.ByteaArray
+    column: commits.parents

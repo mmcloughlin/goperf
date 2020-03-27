@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type Benchmark struct {
@@ -21,7 +22,7 @@ type Benchmark struct {
 type Commit struct {
 	SHA            []byte
 	Tree           []byte
-	Parents        [][]byte
+	Parents        pq.ByteaArray
 	AuthorName     string
 	AuthorEmail    string
 	AuthorTime     time.Time

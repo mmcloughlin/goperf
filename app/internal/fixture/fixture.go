@@ -9,7 +9,7 @@ import (
 	"github.com/mmcloughlin/cb/pkg/mod"
 )
 
-// Sample model objects for testing purposes.
+// Sample entity objects for testing purposes.
 var (
 	ModuleSHA = "788b7f06fee85b7e1d2aa4a3a86f8dbbbcc771ae"
 

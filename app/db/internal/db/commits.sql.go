@@ -21,7 +21,7 @@ func (q *Queries) Commit(ctx context.Context, sha []byte) (Commit, error) {
 	err := row.Scan(
 		&i.SHA,
 		&i.Tree,
-		pq.Array(&i.Parents),
+		&i.Parents,
 		&i.AuthorName,
 		&i.AuthorEmail,
 		&i.AuthorTime,
@@ -62,7 +62,7 @@ INSERT INTO commits (
 type InsertCommitParams struct {
 	SHA            []byte
 	Tree           []byte
-	Parents        [][]byte
+	Parents        pq.ByteaArray
 	AuthorName     string
 	AuthorEmail    string
 	AuthorTime     time.Time
@@ -76,7 +76,7 @@ func (q *Queries) InsertCommit(ctx context.Context, arg InsertCommitParams) erro
 	_, err := q.db.ExecContext(ctx, insertCommit,
 		arg.SHA,
 		arg.Tree,
-		pq.Array(arg.Parents),
+		arg.Parents,
 		arg.AuthorName,
 		arg.AuthorEmail,
 		arg.AuthorTime,
