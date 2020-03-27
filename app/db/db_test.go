@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
 	"github.com/mmcloughlin/cb/app/internal/fixture"
 )
 
