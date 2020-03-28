@@ -4,19 +4,15 @@
 <h1>{{ .Benchmark.Name }}</h1>
 <table>
   <tr>
-    <th>Value</th>
     <th>Commit</th>
     <th>Commit Time</th>
-    <th>File</th>
+    <th>Value</th>
   </tr>
-  {{ range .Results }}
+  {{ range .Points }}
   <tr>
+    <td><code>{{ .CommitSHA }}</code></td>
+    <td>{{ .CommitTime }}</td>
     <td>{{ .Value }}</td>
-    <td>{{ .Commit.SHA }}</td>
-    <td>{{ .Commit.CommitTime }}</td>
-    <td>
-      <a href="/file/{{ .File.UUID }}#L{{ .Line }}">{{ .File.UUID }}</a>
-    </td>
   </tr>
   {{ end }}
 </table>

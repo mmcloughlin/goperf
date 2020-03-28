@@ -182,7 +182,7 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := h.db.ListBenchmarkResults(ctx, bench)
+	points, err := h.db.ListBenchmarkPoints(ctx, bench, 128)
 	if err != nil {
 		Error(w, err)
 		return
@@ -191,7 +191,7 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	// Write response.
 	h.render(w, "bench", map[string]interface{}{
 		"Benchmark": bench,
-		"Results":   results,
+		"Points":    points,
 	})
 }
 
