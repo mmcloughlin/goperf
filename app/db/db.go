@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ import (
 	"github.com/mmcloughlin/cb/app/entity"
 )
 
+//go:generate rm -rf internal/db
 //go:generate sqlc generate
 
 // DB provides a database storage layer.
@@ -169,6 +171,7 @@ func findModuleByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity
 	}, nil
 }
 
+// StorePackage writes package to the database.
 func (d *DB) StorePackage(ctx context.Context, p *entity.Package) error {
 	return d.tx(ctx, func(q *db.Queries) error {
 		return storePackage(ctx, q, p)
@@ -212,5 +215,68 @@ func findPackageByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entit
 	return &entity.Package{
 		Module:       m,
 		RelativePath: p.RelativePath,
+	}, nil
+}
+
+// StoreBenchmark writes benchmark to the database.
+func (d *DB) StoreBenchmark(ctx context.Context, b *entity.Benchmark) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeBenchmark(ctx, q, b)
+	})
+}
+
+func storeBenchmark(ctx context.Context, q *db.Queries, b *entity.Benchmark) error {
+	if err := storePackage(ctx, q, b.Package); err != nil {
+		return err
+	}
+
+	paramsjson, err := json.Marshal(b.Parameters)
+	if err != nil {
+		return fmt.Errorf("encode parameters: %w", err)
+	}
+
+	return q.InsertBenchmark(ctx, db.InsertBenchmarkParams{
+		UUID:        b.UUID(),
+		PackageUUID: b.Package.UUID(),
+		FullName:    b.FullName,
+		Name:        b.Name,
+		Unit:        b.Unit,
+		Parameters:  paramsjson,
+	})
+}
+
+// FindBenchmarkByUUID looks up the given benchmark in the database.
+func (d *DB) FindBenchmarkByUUID(ctx context.Context, id uuid.UUID) (*entity.Benchmark, error) {
+	var b *entity.Benchmark
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		b, err = findBenchmarkByUUID(ctx, q, id)
+		return err
+	})
+	return b, err
+}
+
+func findBenchmarkByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.Benchmark, error) {
+	b, err := q.Benchmark(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	params := map[string]string{}
+	if err := json.Unmarshal(b.Parameters, &params); err != nil {
+		return nil, fmt.Errorf("decode parameters: %w", err)
+	}
+
+	p, err := findPackageByUUID(ctx, q, b.PackageUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.Benchmark{
+		Package:    p,
+		FullName:   b.FullName,
+		Name:       b.Name,
+		Unit:       b.Unit,
+		Parameters: params,
 	}, nil
 }
