@@ -15,7 +15,7 @@ import (
 )
 
 type Handlers struct {
-	srv    *db.DB
+	db     *db.DB
 	tmplfs fs.Readable
 	static fs.Readable
 	datafs fs.Readable
@@ -41,7 +41,7 @@ func WithDataFileSystem(r fs.Readable) Option {
 func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
-		srv:       d,
+		db:        d,
 		tmplfs:    TemplateFileSystem,
 		static:    StaticFileSystem,
 		datafs:    fs.Null,
@@ -93,7 +93,7 @@ func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Fetch modules.
-	mods, err := h.srv.ListModules(ctx)
+	mods, err := h.db.ListModules(ctx)
 	if err != nil {
 		Error(w, err)
 		return
@@ -116,13 +116,13 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch module.
-	mod, err := h.srv.FindModuleByUUID(ctx, id)
+	mod, err := h.db.FindModuleByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
-	pkgs, err := h.srv.ListModulePackages(ctx, mod)
+	pkgs, err := h.db.ListModulePackages(ctx, mod)
 	if err != nil {
 		Error(w, err)
 		return
@@ -146,13 +146,13 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch package.
-	pkg, err := h.srv.FindPackageByUUID(ctx, id)
+	pkg, err := h.db.FindPackageByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
-	benchs, err := h.srv.ListPackageBenchmarks(ctx, pkg)
+	benchs, err := h.db.ListPackageBenchmarks(ctx, pkg)
 	if err != nil {
 		Error(w, err)
 		return
@@ -176,13 +176,13 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch benchmark.
-	bench, err := h.srv.FindBenchmarkByUUID(ctx, id)
+	bench, err := h.db.FindBenchmarkByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
-	results, err := h.srv.ListBenchmarkResults(ctx, bench)
+	results, err := h.db.ListBenchmarkResults(ctx, bench)
 	if err != nil {
 		Error(w, err)
 		return
@@ -206,7 +206,7 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch file.
-	file, err := h.srv.FindDataFileByUUID(ctx, id)
+	file, err := h.db.FindDataFileByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
