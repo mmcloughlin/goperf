@@ -32,6 +32,34 @@ func (q *Queries) InsertPkg(ctx context.Context, arg InsertPkgParams) error {
 	return err
 }
 
+const modulePkgs = `-- name: ModulePkgs :many
+SELECT uuid, module_uuid, relative_path FROM packages
+WHERE module_uuid = $1
+`
+
+func (q *Queries) ModulePkgs(ctx context.Context, moduleUuid uuid.UUID) ([]Package, error) {
+	rows, err := q.db.QueryContext(ctx, modulePkgs, moduleUuid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Package
+	for rows.Next() {
+		var i Package
+		if err := rows.Scan(&i.UUID, &i.ModuleUUID, &i.RelativePath); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const pkg = `-- name: Pkg :one
 SELECT uuid, module_uuid, relative_path FROM packages
 WHERE uuid = $1 LIMIT 1

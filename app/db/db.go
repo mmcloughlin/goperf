@@ -252,10 +252,39 @@ func findPackageByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entit
 		return nil, err
 	}
 
+	return mapPackage(p, m), nil
+}
+
+// ListModulePackages returns all packages in the given module.
+func (d *DB) ListModulePackages(ctx context.Context, m *entity.Module) ([]*entity.Package, error) {
+	var ps []*entity.Package
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		ps, err = listModulePackages(ctx, q, m)
+		return err
+	})
+	return ps, err
+}
+
+func listModulePackages(ctx context.Context, q *db.Queries, m *entity.Module) ([]*entity.Package, error) {
+	ps, err := q.ModulePkgs(ctx, m.UUID())
+	if err != nil {
+		return nil, err
+	}
+
+	output := make([]*entity.Package, len(ps))
+	for i, p := range ps {
+		output[i] = mapPackage(p, m)
+	}
+
+	return output, nil
+}
+
+func mapPackage(p db.Package, m *entity.Module) *entity.Package {
 	return &entity.Package{
 		Module:       m,
 		RelativePath: p.RelativePath,
-	}, nil
+	}
 }
 
 // StoreBenchmark writes benchmark to the database.

@@ -2,6 +2,10 @@
 SELECT * FROM packages
 WHERE uuid = $1 LIMIT 1;
 
+-- name: ModulePkgs :many
+SELECT * FROM packages
+WHERE module_uuid = $1;
+
 -- name: InsertPkg :exec
 INSERT INTO packages (
     uuid,
