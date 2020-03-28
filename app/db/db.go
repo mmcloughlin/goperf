@@ -602,3 +602,37 @@ func result(ctx context.Context, q *db.Queries, r db.Result) (*entity.Result, er
 		Value:       r.Value,
 	}, nil
 }
+
+// ListBenchmarkPoints returns n most recent timeseries points for the given benchmark.
+func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, n int) ([]*entity.Point, error) {
+	var ps []*entity.Point
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		ps, err = listBenchmarkPoints(ctx, q, b, int32(n))
+		return err
+	})
+	return ps, err
+}
+
+func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark, n int32) ([]*entity.Point, error) {
+	ps, err := q.BenchmarkPoints(ctx, db.BenchmarkPointsParams{
+		BenchmarkUUID: b.UUID(),
+		Limit:         n,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	output := make([]*entity.Point, len(ps))
+	for i, p := range ps {
+		output[i] = &entity.Point{
+			ResultUUID:      p.ResultUUID,
+			EnvironmentUUID: p.EnvironmentUUID,
+			CommitSHA:       hex.EncodeToString(p.CommitSHA),
+			CommitTime:      p.CommitTime,
+			Value:           p.Value,
+		}
+	}
+
+	return output, nil
+}

@@ -5,9 +5,70 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+const benchmarkPoints = `-- name: BenchmarkPoints :many
+SELECT
+    r.uuid AS result_uuid,
+    r.environment_uuid,
+    c.sha AS commit_sha,
+    c.commit_time,
+    r.value
+FROM results AS r
+LEFT JOIN commits AS c
+    ON r.commit_sha = c.sha
+WHERE 1=1
+    AND r.benchmark_uuid = $1
+ORDER BY
+    c.commit_time DESC
+LIMIT
+    $2
+`
+
+type BenchmarkPointsParams struct {
+	BenchmarkUUID uuid.UUID
+	Limit         int32
+}
+
+type BenchmarkPointsRow struct {
+	ResultUUID      uuid.UUID
+	EnvironmentUUID uuid.UUID
+	CommitSHA       []byte
+	CommitTime      time.Time
+	Value           float64
+}
+
+func (q *Queries) BenchmarkPoints(ctx context.Context, arg BenchmarkPointsParams) ([]BenchmarkPointsRow, error) {
+	rows, err := q.db.QueryContext(ctx, benchmarkPoints, arg.BenchmarkUUID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []BenchmarkPointsRow
+	for rows.Next() {
+		var i BenchmarkPointsRow
+		if err := rows.Scan(
+			&i.ResultUUID,
+			&i.EnvironmentUUID,
+			&i.CommitSHA,
+			&i.CommitTime,
+			&i.Value,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const benchmarkResults = `-- name: BenchmarkResults :many
 SELECT uuid, datafile_uuid, line, benchmark_uuid, commit_sha, environment_uuid, metadata_uuid, iterations, value FROM results
