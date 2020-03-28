@@ -322,3 +322,47 @@ func findDataFileByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*enti
 		SHA256: hash,
 	}, nil
 }
+
+// StoreProperties writes properties to the database.
+func (d *DB) StoreProperties(ctx context.Context, p entity.Properties) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeProperties(ctx, q, p)
+	})
+}
+
+func storeProperties(ctx context.Context, q *db.Queries, p entity.Properties) error {
+	propertiesjson, err := json.Marshal(p)
+	if err != nil {
+		return fmt.Errorf("encode properties: %w", err)
+	}
+
+	return q.InsertProperties(ctx, db.InsertPropertiesParams{
+		UUID:   p.UUID(),
+		Fields: propertiesjson,
+	})
+}
+
+// FindPropertiesByUUID looks up the given properties in the database.
+func (d *DB) FindPropertiesByUUID(ctx context.Context, id uuid.UUID) (entity.Properties, error) {
+	var p entity.Properties
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		p, err = findPropertiesByUUID(ctx, q, id)
+		return err
+	})
+	return p, err
+}
+
+func findPropertiesByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (entity.Properties, error) {
+	p, err := q.Properties(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var properties entity.Properties
+	if err := json.Unmarshal(p.Fields, &properties); err != nil {
+		return nil, fmt.Errorf("decode properties: %w", err)
+	}
+
+	return properties, nil
+}

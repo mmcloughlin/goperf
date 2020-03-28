@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
 )
 
@@ -138,5 +139,40 @@ func TestDBDataFile(t *testing.T) {
 
 	if diff := cmp.Diff(expect, got); diff != "" {
 		t.Errorf("mismatch\n%s", diff)
+	}
+}
+
+func TestDBProperties(t *testing.T) {
+	db := Database(t)
+
+	cases := []entity.Properties{
+		nil,
+		map[string]string{},
+		map[string]string{
+			"a": "1",
+			"b": "2",
+		},
+	}
+
+	for _, expect := range cases {
+		t.Logf("uuid=%s", expect.UUID())
+		t.Logf("fields=%s", expect)
+
+		// Store.
+		ctx := context.Background()
+		err := db.StoreProperties(ctx, expect)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Find.
+		got, err := db.FindPropertiesByUUID(ctx, expect.UUID())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if diff := cmp.Diff(expect, got); diff != "" {
+			t.Errorf("mismatch\n%s", diff)
+		}
 	}
 }
