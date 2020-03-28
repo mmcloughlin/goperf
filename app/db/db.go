@@ -176,10 +176,39 @@ func findModuleByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity
 		return nil, err
 	}
 
+	return mapModule(m), nil
+}
+
+// ListModules returns all modules.
+func (d *DB) ListModules(ctx context.Context) ([]*entity.Module, error) {
+	var ms []*entity.Module
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		ms, err = listModules(ctx, q)
+		return err
+	})
+	return ms, err
+}
+
+func listModules(ctx context.Context, q *db.Queries) ([]*entity.Module, error) {
+	ms, err := q.Modules(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	output := make([]*entity.Module, len(ms))
+	for i, m := range ms {
+		output[i] = mapModule(m)
+	}
+
+	return output, nil
+}
+
+func mapModule(m db.Module) *entity.Module {
 	return &entity.Module{
 		Path:    m.Path,
 		Version: m.Version,
-	}, nil
+	}
 }
 
 // StorePackage writes package to the database.

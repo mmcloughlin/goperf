@@ -43,3 +43,30 @@ func (q *Queries) Module(ctx context.Context, uuid uuid.UUID) (Module, error) {
 	err := row.Scan(&i.UUID, &i.Path, &i.Version)
 	return i, err
 }
+
+const modules = `-- name: Modules :many
+SELECT uuid, path, version FROM modules
+`
+
+func (q *Queries) Modules(ctx context.Context) ([]Module, error) {
+	rows, err := q.db.QueryContext(ctx, modules)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Module
+	for rows.Next() {
+		var i Module
+		if err := rows.Scan(&i.UUID, &i.Path, &i.Version); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

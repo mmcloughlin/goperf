@@ -2,6 +2,9 @@
 SELECT * FROM modules
 WHERE uuid = $1 LIMIT 1;
 
+-- name: Modules :many
+SELECT * FROM modules;
+
 -- name: InsertModule :exec
 INSERT INTO modules (
     uuid,
