@@ -331,14 +331,46 @@ func findBenchmarkByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*ent
 		return nil, err
 	}
 
-	params := map[string]string{}
-	if err := json.Unmarshal(b.Parameters, &params); err != nil {
-		return nil, fmt.Errorf("decode parameters: %w", err)
-	}
-
 	p, err := findPackageByUUID(ctx, q, b.PackageUUID)
 	if err != nil {
 		return nil, err
+	}
+
+	return mapBenchmark(b, p)
+}
+
+// ListPackageBenchmarks returns all benchmarks in the given package.
+func (d *DB) ListPackageBenchmarks(ctx context.Context, p *entity.Package) ([]*entity.Benchmark, error) {
+	var bs []*entity.Benchmark
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		bs, err = listPackageBenchmarks(ctx, q, p)
+		return err
+	})
+	return bs, err
+}
+
+func listPackageBenchmarks(ctx context.Context, q *db.Queries, p *entity.Package) ([]*entity.Benchmark, error) {
+	bs, err := q.PackageBenchmarks(ctx, p.UUID())
+	if err != nil {
+		return nil, err
+	}
+
+	output := make([]*entity.Benchmark, len(bs))
+	for i, b := range bs {
+		output[i], err = mapBenchmark(b, p)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return output, nil
+}
+
+func mapBenchmark(b db.Benchmark, p *entity.Package) (*entity.Benchmark, error) {
+	params := map[string]string{}
+	if err := json.Unmarshal(b.Parameters, &params); err != nil {
+		return nil, fmt.Errorf("decode parameters: %w", err)
 	}
 
 	return &entity.Benchmark{
