@@ -106,7 +106,17 @@ func (d *DB) FindCommitBySHA(ctx context.Context, sha string) (*entity.Commit, e
 		return nil, fmt.Errorf("invalid sha: %w", err)
 	}
 
-	c, err := d.q.Commit(ctx, shabytes)
+	var c *entity.Commit
+	err = d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		c, err = findCommitBySHA(ctx, q, shabytes)
+		return err
+	})
+	return c, err
+}
+
+func findCommitBySHA(ctx context.Context, q *db.Queries, sha []byte) (*entity.Commit, error) {
+	c, err := q.Commit(ctx, sha)
 	if err != nil {
 		return nil, err
 	}
@@ -365,4 +375,108 @@ func findPropertiesByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (ent
 	}
 
 	return properties, nil
+}
+
+// StoreResult writes a result to the database.
+func (d *DB) StoreResult(ctx context.Context, r *entity.Result) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeResult(ctx, q, r)
+	})
+}
+
+func storeResult(ctx context.Context, q *db.Queries, r *entity.Result) error {
+	// DataFile.
+	if err := storeDataFile(ctx, q, r.File); err != nil {
+		return err
+	}
+
+	// Benchmark.
+	if err := storeBenchmark(ctx, q, r.Benchmark); err != nil {
+		return err
+	}
+
+	// Commit.
+	if err := storeCommit(ctx, q, r.Commit); err != nil {
+		return err
+	}
+
+	sha, err := hex.DecodeString(r.Commit.SHA)
+	if err != nil {
+		return fmt.Errorf("invalid sha: %w", err)
+	}
+
+	// Environment and metadata.
+	if err := storeProperties(ctx, q, r.Environment); err != nil {
+		return err
+	}
+
+	if err := storeProperties(ctx, q, r.Metadata); err != nil {
+		return err
+	}
+
+	return q.InsertResult(ctx, db.InsertResultParams{
+		UUID:            r.UUID(),
+		DatafileUUID:    r.File.UUID(),
+		Line:            int32(r.Line),
+		BenchmarkUUID:   r.Benchmark.UUID(),
+		CommitSHA:       sha,
+		EnvironmentUUID: r.Environment.UUID(),
+		MetadataUUID:    r.Metadata.UUID(),
+		Iterations:      int64(r.Iterations),
+		Value:           r.Value,
+	})
+}
+
+// FindResultByUUID looks up a result in the database given the ID.
+func (d *DB) FindResultByUUID(ctx context.Context, id uuid.UUID) (*entity.Result, error) {
+	var r *entity.Result
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		r, err = findResultByUUID(ctx, q, id)
+		return err
+	})
+	return r, err
+}
+
+func findResultByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.Result, error) {
+	r, err := q.Result(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	f, err := findDataFileByUUID(ctx, q, r.DatafileUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := findBenchmarkByUUID(ctx, q, r.BenchmarkUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := findCommitBySHA(ctx, q, r.CommitSHA)
+	if err != nil {
+		return nil, err
+	}
+
+	env, err := findPropertiesByUUID(ctx, q, r.EnvironmentUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	meta, err := findPropertiesByUUID(ctx, q, r.MetadataUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity.Result{
+		File:        f,
+		Line:        int(r.Line),
+		Benchmark:   b,
+		Commit:      c,
+		Environment: env,
+		Metadata:    meta,
+		Iterations:  uint64(r.Iterations),
+		Value:       r.Value,
+	}, nil
 }

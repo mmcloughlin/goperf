@@ -176,3 +176,25 @@ func TestDBProperties(t *testing.T) {
 		}
 	}
 }
+
+func TestDBResult(t *testing.T) {
+	db := Database(t)
+
+	// Store.
+	ctx := context.Background()
+	expect := fixture.Result
+	err := db.StoreResult(ctx, expect)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find.
+	got, err := db.FindResultByUUID(ctx, expect.UUID())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(expect, got); diff != "" {
+		t.Errorf("mismatch\n%s", diff)
+	}
+}
