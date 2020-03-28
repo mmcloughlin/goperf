@@ -3,17 +3,13 @@ package main
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"time"
 
-	"cloud.google.com/go/firestore"
-
+	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/gcs"
-	"github.com/mmcloughlin/cb/app/obj"
-	"github.com/mmcloughlin/cb/app/service"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/lg"
@@ -33,11 +29,11 @@ func main1() int {
 }
 
 var (
-	addr    = flag.String("http", "localhost:6060", "http address")
-	tmpl    = flag.String("templates", "", "templates directory")
-	static  = flag.String("static", "", "static assets directory")
-	project = flag.String("project", "", "google cloud project")
-	bucket  = flag.String("bucket", "", "data files bucket")
+	addr   = flag.String("http", "localhost:6060", "http address")
+	tmpl   = flag.String("templates", "", "templates directory")
+	static = flag.String("static", "", "static assets directory")
+	conn   = flag.String("conn", "", "database connection string")
+	bucket = flag.String("bucket", "", "data files bucket")
 )
 
 func mainerr(l lg.Logger) error {
@@ -46,22 +42,11 @@ func mainerr(l lg.Logger) error {
 	ctx := command.BackgroundContext(l)
 
 	// Configure firestore backend.
-	fsc, err := firestore.NewClient(ctx, *project)
+	d, err := db.Open(*conn)
 	if err != nil {
 		return err
 	}
-	defer fsc.Close()
-
-	memcache := obj.NewMem(1 << 29)
-
-	d, err := ioutil.TempDir("", "goperforg")
-	if err != nil {
-		return err
-	}
-	diskcache := obj.NewFileSystem(fs.NewLocal(d), 1<<32)
-	lg.Param(l, "disk_cache", d)
-
-	srv := service.NewFirestore(fsc, memcache, diskcache)
+	defer d.Close()
 
 	// Build handlers.
 	var opts []Option
@@ -82,7 +67,7 @@ func mainerr(l lg.Logger) error {
 		opts = append(opts, WithStaticFileSystem(fs.NewLocal(*static)))
 	}
 
-	h := NewHandlers(srv, opts...)
+	h := NewHandlers(d, opts...)
 
 	if err := h.Init(ctx); err != nil {
 		return err

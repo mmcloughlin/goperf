@@ -70,7 +70,7 @@ func (q *Queries) InsertBenchmark(ctx context.Context, arg InsertBenchmarkParams
 
 const packageBenchmarks = `-- name: PackageBenchmarks :many
 SELECT uuid, package_uuid, full_name, name, unit, parameters FROM benchmarks
-WHERE package_uuid = $1 LIMIT 1
+WHERE package_uuid = $1
 `
 
 func (q *Queries) PackageBenchmarks(ctx context.Context, packageUuid uuid.UUID) ([]Benchmark, error) {

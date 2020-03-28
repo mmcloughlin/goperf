@@ -4,7 +4,7 @@ WHERE uuid = $1 LIMIT 1;
 
 -- name: PackageBenchmarks :many
 SELECT * FROM benchmarks
-WHERE package_uuid = $1 LIMIT 1;
+WHERE package_uuid = $1;
 
 -- name: InsertBenchmark :exec
 INSERT INTO benchmarks (
