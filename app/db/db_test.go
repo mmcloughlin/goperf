@@ -118,3 +118,25 @@ func TestDBBenchmark(t *testing.T) {
 		t.Errorf("mismatch\n%s", diff)
 	}
 }
+
+func TestDBDataFile(t *testing.T) {
+	db := Database(t)
+
+	// Store.
+	ctx := context.Background()
+	expect := fixture.DataFile
+	err := db.StoreDataFile(ctx, expect)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find.
+	got, err := db.FindDataFileByUUID(ctx, expect.UUID())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(expect, got); diff != "" {
+		t.Errorf("mismatch\n%s", diff)
+	}
+}

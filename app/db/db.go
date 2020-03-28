@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
@@ -278,5 +279,46 @@ func findBenchmarkByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*ent
 		Name:       b.Name,
 		Unit:       b.Unit,
 		Parameters: params,
+	}, nil
+}
+
+// StoreDataFile writes the data file to the database.
+func (d *DB) StoreDataFile(ctx context.Context, f *entity.DataFile) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeDataFile(ctx, q, f)
+	})
+}
+
+func storeDataFile(ctx context.Context, q *db.Queries, f *entity.DataFile) error {
+	return q.InsertDataFile(ctx, db.InsertDataFileParams{
+		UUID:   f.UUID(),
+		Name:   f.Name,
+		SHA256: f.SHA256[:],
+	})
+}
+
+// FindDataFileByUUID looks up the given data file in the database.
+func (d *DB) FindDataFileByUUID(ctx context.Context, id uuid.UUID) (*entity.DataFile, error) {
+	var f *entity.DataFile
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		f, err = findDataFileByUUID(ctx, q, id)
+		return err
+	})
+	return f, err
+}
+
+func findDataFileByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.DataFile, error) {
+	f, err := q.DataFile(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var hash [sha256.Size]byte
+	copy(hash[:], f.SHA256)
+
+	return &entity.DataFile{
+		Name:   f.Name,
+		SHA256: hash,
 	}, nil
 }
