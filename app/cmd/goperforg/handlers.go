@@ -10,12 +10,12 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/service"
+	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
 type Handlers struct {
-	srv    service.Service
+	srv    *db.DB
 	tmplfs fs.Readable
 	static fs.Readable
 	datafs fs.Readable
@@ -38,10 +38,10 @@ func WithDataFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.datafs = r }
 }
 
-func NewHandlers(srv service.Service, opts ...Option) *Handlers {
+func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
-		srv:       srv,
+		srv:       d,
 		tmplfs:    TemplateFileSystem,
 		static:    StaticFileSystem,
 		datafs:    fs.Null,
