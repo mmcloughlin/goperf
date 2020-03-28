@@ -2,6 +2,10 @@
 SELECT * FROM results
 WHERE uuid = $1 LIMIT 1;
 
+-- name: BenchmarkResults :many
+SELECT * FROM results
+WHERE benchmark_uuid = $1;
+
 -- name: InsertResult :exec
 INSERT INTO results (
     uuid,

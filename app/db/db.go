@@ -534,6 +534,38 @@ func findResultByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity
 		return nil, err
 	}
 
+	return result(ctx, q, r)
+}
+
+// ListBenchmarkResults returns all results for the given benchmark.
+func (d *DB) ListBenchmarkResults(ctx context.Context, b *entity.Benchmark) ([]*entity.Result, error) {
+	var rs []*entity.Result
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		rs, err = listBenchmarkResults(ctx, q, b)
+		return err
+	})
+	return rs, err
+}
+
+func listBenchmarkResults(ctx context.Context, q *db.Queries, b *entity.Benchmark) ([]*entity.Result, error) {
+	rs, err := q.BenchmarkResults(ctx, b.UUID())
+	if err != nil {
+		return nil, err
+	}
+
+	output := make([]*entity.Result, len(rs))
+	for i, r := range rs {
+		output[i], err = result(ctx, q, r)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return output, nil
+}
+
+func result(ctx context.Context, q *db.Queries, r db.Result) (*entity.Result, error) {
 	f, err := findDataFileByUUID(ctx, q, r.DatafileUUID)
 	if err != nil {
 		return nil, err

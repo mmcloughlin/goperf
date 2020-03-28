@@ -9,6 +9,44 @@ import (
 	"github.com/google/uuid"
 )
 
+const benchmarkResults = `-- name: BenchmarkResults :many
+SELECT uuid, datafile_uuid, line, benchmark_uuid, commit_sha, environment_uuid, metadata_uuid, iterations, value FROM results
+WHERE benchmark_uuid = $1
+`
+
+func (q *Queries) BenchmarkResults(ctx context.Context, benchmarkUuid uuid.UUID) ([]Result, error) {
+	rows, err := q.db.QueryContext(ctx, benchmarkResults, benchmarkUuid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Result
+	for rows.Next() {
+		var i Result
+		if err := rows.Scan(
+			&i.UUID,
+			&i.DatafileUUID,
+			&i.Line,
+			&i.BenchmarkUUID,
+			&i.CommitSHA,
+			&i.EnvironmentUUID,
+			&i.MetadataUUID,
+			&i.Iterations,
+			&i.Value,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertResult = `-- name: InsertResult :exec
 INSERT INTO results (
     uuid,
