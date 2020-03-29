@@ -56,6 +56,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/pkg/", h.Package)
 	h.mux.HandleFunc("/bench/", h.Benchmark)
 	h.mux.HandleFunc("/file/", h.File)
+	h.mux.HandleFunc("/commit/", h.Commit)
 
 	// Static assets.
 	static := NewStatic(h.static)
@@ -230,6 +231,29 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Extract commit SHA.
+	sha, err := stripprefix(r.URL.Path, "/commit/")
+	if err != nil {
+		Error(w, err)
+		return
+	}
+
+	// Fetch commit.
+	commit, err := h.db.FindCommitBySHA(ctx, sha)
+	if err != nil {
+		Error(w, err)
+		return
+	}
+
+	// Write response.
+	h.render(ctx, w, "commit", map[string]interface{}{
+		"Commit": commit,
+	})
+}
+
 func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
 	if err := h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data); err != nil {
 		if err != nil {
@@ -240,8 +264,16 @@ func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name strin
 }
 
 func parseuuid(path, prefix string) (uuid.UUID, error) {
-	if !strings.HasPrefix(path, prefix) {
-		return uuid.Nil, fmt.Errorf("path %q expected to have prefix %q", path, prefix)
+	rest, err := stripprefix(path, prefix)
+	if err != nil {
+		return uuid.Nil, err
 	}
-	return uuid.Parse(path[len(prefix):])
+	return uuid.Parse(rest)
+}
+
+func stripprefix(path, prefix string) (string, error) {
+	if !strings.HasPrefix(path, prefix) {
+		return "", fmt.Errorf("path %q expected to have prefix %q", path, prefix)
+	}
+	return path[len(prefix):], nil
 }
