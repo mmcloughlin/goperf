@@ -1,6 +1,4 @@
-{{ define "mods" }}
-{{ template "header" }}
-
+{{ define "content" }}
     <ul>
       {{ range .Modules }}
       <li>
@@ -8,6 +6,4 @@
       </li>
       {{ end }}
     </ul>
-
-{{ template "footer" }}
 {{ end }}

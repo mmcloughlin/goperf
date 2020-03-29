@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 // ErrNotExist is returned when a file does not exist.
@@ -171,11 +173,36 @@ func (s *sub) Open(ctx context.Context, name string) (io.ReadCloser, error) {
 }
 
 func (s *sub) Stat(ctx context.Context, name string) (*FileInfo, error) {
-	return s.fs.Stat(ctx, s.path(name))
+	info, err := s.fs.Stat(ctx, s.path(name))
+	if err != nil {
+		return nil, err
+	}
+	if err := s.fixup(info); err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 func (s *sub) List(ctx context.Context, prefix string) ([]*FileInfo, error) {
-	return s.fs.List(ctx, s.path(prefix))
+	files, err := s.fs.List(ctx, s.path(prefix))
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		if err := s.fixup(file); err != nil {
+			return nil, err
+		}
+	}
+	return files, nil
+}
+
+func (s *sub) fixup(i *FileInfo) error {
+	prefix := s.prefix + "/"
+	if !strings.HasPrefix(i.Path, prefix) {
+		return errutil.AssertionFailure("path %q expected to have prefix %q", i.Path, prefix)
+	}
+	i.Path = i.Path[len(prefix):]
+	return nil
 }
 
 func (s *sub) path(name string) string {

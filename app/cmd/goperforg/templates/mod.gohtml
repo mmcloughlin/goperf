@@ -1,6 +1,4 @@
-{{ define "mod" }}
-{{ template "header" }}
-
+{{ define "content" }}
     <h1>{{ .Module.Path }}</h1>
     <p>Version: {{ .Module.Version }}</p>
     <ul>
@@ -12,6 +10,4 @@
       </li>
       {{ end }}
     </ul>
-
-{{ template "footer" }}
 {{ end }}
