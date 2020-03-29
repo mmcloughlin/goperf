@@ -26,7 +26,7 @@ func TestSub(t *testing.T) {
 		// Create sub-filesystem.
 		sub := NewSub(fs, "d0")
 
-		// Ensure everthing in the listing can be opened.
+		// Ensure everything in the listing can be opened.
 		files, err := sub.List(ctx, "")
 		if err != nil {
 			t.Fatal(err)

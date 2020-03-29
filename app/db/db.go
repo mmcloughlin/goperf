@@ -12,6 +12,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 //go:generate rm -rf internal/db
@@ -19,8 +20,9 @@ import (
 
 // DB provides a database storage layer.
 type DB struct {
-	db *sql.DB
-	q  *db.Queries
+	db     *sql.DB
+	q      *db.Queries
+	logger lg.Logger
 }
 
 // Open postgres database connection with the given connection string.
@@ -30,14 +32,20 @@ func Open(conn string) (*DB, error) {
 		return nil, err
 	}
 	return &DB{
-		db: d,
-		q:  db.New(d),
+		db:     d,
+		q:      db.New(d),
+		logger: lg.Noop(),
 	}, nil
 }
 
 // Close database connection.
 func (d *DB) Close() error {
 	return d.db.Close()
+}
+
+// SetLogger configures a logger.
+func (d *DB) SetLogger(l lg.Logger) {
+	d.logger = l
 }
 
 // tx executes the given query function in a transaction.
@@ -47,12 +55,13 @@ func (d *DB) tx(ctx context.Context, fn func(q *db.Queries) error) (err error) {
 		return err
 	}
 	defer func() {
-		if p := recover(); p != nil {
-			tx.Rollback()
+		switch p := recover(); {
+		case p != nil:
+			lg.Error(d.logger, "rollback", tx.Rollback())
 			panic(p)
-		} else if err != nil {
-			tx.Rollback()
-		} else {
+		case err != nil:
+			lg.Error(d.logger, "rollback", tx.Rollback())
+		default:
 			err = tx.Commit()
 		}
 	}()
