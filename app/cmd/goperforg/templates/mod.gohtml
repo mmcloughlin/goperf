@@ -3,11 +3,7 @@
     <p>Version: {{ .Module.Version }}</p>
     <ul>
       {{ range .Packages }}
-      <li>
-        <a href="/pkg/{{ .UUID }}"
-          ><small>{{ .Module.Path }}/</small>{{ .RelativePath }}</a
-        >
-      </li>
+      <li>{{ . | pkg }}</li>
       {{ end }}
     </ul>
 {{ end }}

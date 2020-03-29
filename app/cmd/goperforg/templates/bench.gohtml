@@ -61,22 +61,13 @@
 {{ end }}
 
 {{ define "content" }}
-<h1>{{ .Benchmark.Name }}</h1>
+<h1>{{ .Benchmark.FullName }} <span class="sep">/</span> {{ .Benchmark.Unit }}</h1>
+
+<dl>
+  <dt>Package</dt> <dd>{{ .Benchmark.Package | pkg }}</dd>
+  <dt>Version</dt> <dd>{{ .Benchmark.Package.Module.Version }}</dd>
+</dl>
 
 <div id="chart"></div>
 
-<table>
-  <tr>
-    <th>Commit</th>
-    <th>Commit Time</th>
-    <th>Value</th>
-  </tr>
-  {{ range .Points }}
-  <tr>
-    <td><code>{{ .CommitSHA }}</code></td>
-    <td>{{ .CommitTime }}</td>
-    <td>{{ .Value }}</td>
-  </tr>
-  {{ end }}
-</table>
 {{ end }}

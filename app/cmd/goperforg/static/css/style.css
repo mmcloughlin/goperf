@@ -82,6 +82,11 @@ pre {
   font-size: 0.875rem;
 }
 
+.sep {
+  color: var(--gray-3);
+  font-weight: bold;
+}
+
 header {
   background: var(--turq);
   border: none;

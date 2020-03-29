@@ -28,6 +28,13 @@ func NewTemplates(r fs.Readable) *Templates {
 	}
 }
 
+// Func declares a template function.
+func (t *Templates) Func(name string, f interface{}) {
+	t.layouts.Funcs(map[string]interface{}{
+		name: f,
+	})
+}
+
 func (t *Templates) Init(ctx context.Context) error {
 	// Load layouts.
 	files, err := t.fs.List(ctx, t.layoutsdir)

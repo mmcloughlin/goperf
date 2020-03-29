@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	analysis "golang.org/x/perf/analysis/app"
 
 	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
@@ -70,6 +72,10 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 }
 
 func (h *Handlers) Init(ctx context.Context) error {
+	h.templates.Func("pkg", func(p *entity.Package) template.HTML {
+		return template.HTML(fmt.Sprintf(`<a href="/pkg/%s">%s</a>`, p.UUID(), p.ImportPath()))
+	})
+
 	return h.templates.Init(ctx)
 }
 

@@ -632,9 +632,11 @@ func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark
 		return nil, err
 	}
 
+	// Convert to point objects. Reverse at the same time, since the query returns in descending order.
 	output := make(entity.Points, len(ps))
 	for i, p := range ps {
-		output[i] = &entity.Point{
+		j := len(output) - i - 1
+		output[j] = &entity.Point{
 			ResultUUID:      p.ResultUUID,
 			EnvironmentUUID: p.EnvironmentUUID,
 			CommitSHA:       hex.EncodeToString(p.CommitSHA),
