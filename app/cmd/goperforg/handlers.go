@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	analysis "golang.org/x/perf/analysis/app"
 
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/pkg/fs"
@@ -169,16 +170,20 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	points, err := h.db.ListBenchmarkPoints(ctx, bench, 128)
+	points, err := h.db.ListBenchmarkPoints(ctx, bench, 256)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
+	// Apply KZA filter.
+	kza := analysis.AdaptiveKolmogorovZurbenko(points.Values(), 31, 5)
+
 	// Write response.
 	h.render(ctx, w, "bench", map[string]interface{}{
 		"Benchmark": bench,
 		"Points":    points,
+		"Filtered":  kza,
 	})
 }
 
@@ -280,10 +285,8 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
 	if err := h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data); err != nil {
-		if err != nil {
-			Error(w, err)
-			return
-		}
+		Error(w, err)
+		return
 	}
 }
 

@@ -14,3 +14,15 @@ type Point struct {
 	CommitTime      time.Time
 	Value           float64
 }
+
+// Points is a series of measurements.
+type Points []*Point
+
+// Values returns the series of point values.
+func (p Points) Values() []float64 {
+	xs := make([]float64, len(p))
+	for i := range p {
+		xs[i] = p[i].Value
+	}
+	return xs
+}

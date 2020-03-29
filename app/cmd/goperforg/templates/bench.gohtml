@@ -12,16 +12,24 @@
 
   function drawChart () {
     var data = google.visualization.arrayToDataTable([
-      ['Commit Index', 'Value'],
+      ['commit_index', 'value', 'filtered'],
       {{ range $idx, $point := .Points -}}
-      [{{ $idx }}, {{ $point.Value }}],
+      [{{ $idx }}, {{ $point.Value }}, {{ index $.Filtered $idx }}],
       {{ end }}
     ]);
 
     var options = {
-      title: 'Benchmark Results',
-      hAxis: {title: 'Commit Index'},
-      vAxis: {title: 'Value'},
+      chartArea: {
+        width: '85%',
+        height: '95%'
+      },
+      hAxis: { textPosition: 'none' },
+      axisTitlesPosition: 'none',
+      legend: { position: 'none' },
+      series: {
+        1: { lineWidth: 3, pointSize: 0 }
+      },
+      dataOpacity: 0.8,
       tooltip: { trigger: 'selection' }
     };
 
@@ -55,7 +63,7 @@
 {{ define "content" }}
 <h1>{{ .Benchmark.Name }}</h1>
 
-<div id="chart" style="width: 900px; height: 500px;"></div>
+<div id="chart"></div>
 
 <table>
   <tr>
