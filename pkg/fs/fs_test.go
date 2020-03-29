@@ -8,6 +8,39 @@ import (
 	"testing"
 )
 
+func TestSub(t *testing.T) {
+	tree := map[string]string{
+		"a":          "a",
+		"d0/a":       "a",
+		"d0/d1/a":    "a",
+		"d0/d1/d2/a": "a",
+	}
+	FilesystemTest(t, func(ctx context.Context, t *testing.T, fs Interface) {
+		// Populate.
+		for path, content := range tree {
+			if err := WriteFile(ctx, fs, path, []byte(content)); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		// Create sub-filesystem.
+		sub := NewSub(fs, "d0")
+
+		// Ensure everything in the listing can be opened.
+		files, err := sub.List(ctx, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for _, file := range files {
+			_, err := ReadFile(ctx, sub, file.Path)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+}
+
 func TestMem(t *testing.T) {
 	ctx := context.Background()
 	m := NewMem()

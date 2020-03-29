@@ -31,3 +31,9 @@ func Scope(l Logger, name string) func() {
 		l.Printf("finish: %s (time %s)", name, time.Since(t0))
 	}
 }
+
+func Error(l Logger, name string, err error) {
+	if err != nil {
+		l.Printf("%s: %v", name, err)
+	}
+}

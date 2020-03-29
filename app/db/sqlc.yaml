@@ -1,0 +1,21 @@
+version: "1"
+packages:
+  - name: "db"
+    path: internal/db
+    queries: query
+    schema: schema
+rename:
+  uuid: UUID
+  package_uuid: PackageUUID
+  sha: SHA
+  sha256: SHA256
+  module_uuid: ModuleUUID
+  datafile_uuid: DatafileUUID
+  benchmark_uuid: BenchmarkUUID
+  commit_sha: CommitSHA
+  environment_uuid: EnvironmentUUID
+  metadata_uuid: MetadataUUID
+  result_uuid: ResultUUID
+overrides:
+  - go_type: github.com/lib/pq.ByteaArray
+    column: commits.parents

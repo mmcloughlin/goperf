@@ -1,12 +1,8 @@
-{{ define "file" }}
-{{ template "header" }}
-
+{{ define "content" }}
     <h1>{{ .File.Name }}</h1>
     <pre>
       {{ range .Lines -}}
       <span id="L{{ .Num }}">{{ .Num }}</span> {{ .Contents }}
       {{ end }}
     </pre>
-
-{{ template "footer" }}
 {{ end }}

@@ -1,12 +1,8 @@
-{{ define "pkg" }}
-{{ template "header" }}
-
+{{ define "content" }}
     <h1>{{ .Package.ImportPath }}</h1>
     <ul>
       {{ range .Benchmarks }}
       <li><a href="/bench/{{ .UUID }}">{{ .Name }}</a></li>
       {{ end }}
     </ul>
-
-{{ template "footer" }}
 {{ end }}

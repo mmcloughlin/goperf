@@ -4,30 +4,29 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/service"
+	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
 type Handlers struct {
-	srv    service.Service
-	tmplfs fs.Readable
+	db     *db.DB
 	static fs.Readable
 	datafs fs.Readable
 
 	mux       *http.ServeMux
-	templates *template.Template
+	templates *Templates
 }
 
 type Option func(*Handlers)
 
 func WithTemplateFileSystem(r fs.Readable) Option {
-	return func(h *Handlers) { h.tmplfs = r }
+	return func(h *Handlers) { h.templates = NewTemplates(r) }
 }
 
 func WithStaticFileSystem(r fs.Readable) Option {
@@ -38,15 +37,14 @@ func WithDataFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.datafs = r }
 }
 
-func NewHandlers(srv service.Service, opts ...Option) *Handlers {
+func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
-		srv:       srv,
-		tmplfs:    TemplateFileSystem,
+		db:        d,
 		static:    StaticFileSystem,
 		datafs:    fs.Null,
 		mux:       http.NewServeMux(),
-		templates: template.New(""),
+		templates: NewTemplates(TemplateFileSystem),
 	}
 	for _, opt := range opts {
 		opt(h)
@@ -59,30 +57,17 @@ func NewHandlers(srv service.Service, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/bench/", h.Benchmark)
 	h.mux.HandleFunc("/file/", h.File)
 
+	// Static assets.
 	static := NewStatic(h.static)
 	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
+
+	h.mux.Handle("/favicon.ico", ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"}))
 
 	return h
 }
 
 func (h *Handlers) Init(ctx context.Context) error {
-	files, err := h.tmplfs.List(ctx, "")
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		b, err := fs.ReadFile(ctx, h.tmplfs, file.Path)
-		if err != nil {
-			return err
-		}
-
-		if _, err := h.templates.Parse(string(b)); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return h.templates.Init(ctx)
 }
 
 func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -93,14 +78,14 @@ func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Fetch modules.
-	mods, err := h.srv.ListModules(ctx)
+	mods, err := h.db.ListModules(ctx)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
 	// Write response.
-	h.render(w, "mods", map[string]interface{}{
+	h.render(ctx, w, "mods", map[string]interface{}{
 		"Modules": mods,
 	})
 }
@@ -116,20 +101,20 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch module.
-	mod, err := h.srv.FindModuleByUUID(ctx, id)
+	mod, err := h.db.FindModuleByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
-	pkgs, err := h.srv.ListModulePackages(ctx, mod)
+	pkgs, err := h.db.ListModulePackages(ctx, mod)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
 	// Write response.
-	h.render(w, "mod", map[string]interface{}{
+	h.render(ctx, w, "mod", map[string]interface{}{
 		"Module":   mod,
 		"Packages": pkgs,
 	})
@@ -146,20 +131,20 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch package.
-	pkg, err := h.srv.FindPackageByUUID(ctx, id)
+	pkg, err := h.db.FindPackageByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
-	benchs, err := h.srv.ListPackageBenchmarks(ctx, pkg)
+	benchs, err := h.db.ListPackageBenchmarks(ctx, pkg)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
 	// Write response.
-	h.render(w, "pkg", map[string]interface{}{
+	h.render(ctx, w, "pkg", map[string]interface{}{
 		"Package":    pkg,
 		"Benchmarks": benchs,
 	})
@@ -176,22 +161,22 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch benchmark.
-	bench, err := h.srv.FindBenchmarkByUUID(ctx, id)
+	bench, err := h.db.FindBenchmarkByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
-	results, err := h.srv.ListBenchmarkResults(ctx, bench)
+	points, err := h.db.ListBenchmarkPoints(ctx, bench, 128)
 	if err != nil {
 		Error(w, err)
 		return
 	}
 
 	// Write response.
-	h.render(w, "bench", map[string]interface{}{
+	h.render(ctx, w, "bench", map[string]interface{}{
 		"Benchmark": bench,
-		"Results":   results,
+		"Points":    points,
 	})
 }
 
@@ -206,7 +191,7 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch file.
-	file, err := h.srv.FindDataFileByUUID(ctx, id)
+	file, err := h.db.FindDataFileByUUID(ctx, id)
 	if err != nil {
 		Error(w, err)
 		return
@@ -239,14 +224,14 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Write response.
-	h.render(w, "file", map[string]interface{}{
+	h.render(ctx, w, "file", map[string]interface{}{
 		"File":  file,
 		"Lines": lines,
 	})
 }
 
-func (h *Handlers) render(w http.ResponseWriter, name string, data interface{}) {
-	if err := h.templates.ExecuteTemplate(w, name, data); err != nil {
+func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
+	if err := h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data); err != nil {
 		if err != nil {
 			Error(w, err)
 			return
