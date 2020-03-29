@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/google/uuid"
@@ -56,8 +57,11 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/bench/", h.Benchmark)
 	h.mux.HandleFunc("/file/", h.File)
 
+	// Static assets.
 	static := NewStatic(h.static)
 	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
+
+	h.mux.Handle("/favicon.ico", ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"}))
 
 	return h
 }
