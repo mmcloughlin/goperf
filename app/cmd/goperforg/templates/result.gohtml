@@ -1,0 +1,7 @@
+{{ define "content" }}
+{{ with .Result }}
+<p>Package: {{ .Benchmark.Package.ImportPath }}</p>
+<p>Benchmark: {{ .Benchmark.FullName }}</p>
+<p>Value: {{ .Value }}</p>
+{{ end }}
+{{ end }}

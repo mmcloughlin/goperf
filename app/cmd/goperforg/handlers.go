@@ -55,6 +55,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/mod/", h.Module)
 	h.mux.HandleFunc("/pkg/", h.Package)
 	h.mux.HandleFunc("/bench/", h.Benchmark)
+	h.mux.HandleFunc("/result/", h.Result)
 	h.mux.HandleFunc("/file/", h.File)
 	h.mux.HandleFunc("/commit/", h.Commit)
 
@@ -178,6 +179,29 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	h.render(ctx, w, "bench", map[string]interface{}{
 		"Benchmark": bench,
 		"Points":    points,
+	})
+}
+
+func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Parse UUID.
+	id, err := parseuuid(r.URL.Path, "/result/")
+	if err != nil {
+		Error(w, err)
+		return
+	}
+
+	// Fetch result.
+	result, err := h.db.FindResultByUUID(ctx, id)
+	if err != nil {
+		Error(w, err)
+		return
+	}
+
+	// Write response.
+	h.render(ctx, w, "result", map[string]interface{}{
+		"Result": result,
 	})
 }
 
