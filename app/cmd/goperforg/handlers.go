@@ -28,8 +28,8 @@ type Handlers struct {
 
 type Option func(*Handlers)
 
-func WithTemplateFileSystem(r fs.Readable) Option {
-	return func(h *Handlers) { h.templates = NewTemplates(r) }
+func WithTemplates(t *Templates) Option {
+	return func(h *Handlers) { h.templates = t }
 }
 
 func WithStaticFileSystem(r fs.Readable) Option {
@@ -74,6 +74,10 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 func (h *Handlers) Init(ctx context.Context) error {
 	h.templates.Func("pkg", func(p *entity.Package) template.HTML {
 		return template.HTML(fmt.Sprintf(`<a href="/pkg/%s">%s</a>`, p.UUID(), p.ImportPath()))
+	})
+
+	h.templates.Func("mod", func(m *entity.Module) template.HTML {
+		return template.HTML(fmt.Sprintf(`<a href="/mod/%s">%s</a>`, m.UUID(), m.Path))
 	})
 
 	return h.templates.Init(ctx)

@@ -78,6 +78,13 @@ func (m *Module) UUID() uuid.UUID {
 	return id.Strings(modulenamespace, []string{m.Path, m.Version})
 }
 
+func (m *Module) String() string {
+	if m.Version == "" {
+		return m.Path
+	}
+	return m.Path + "@" + m.Version
+}
+
 type Package struct {
 	Module       *Module
 	RelativePath string

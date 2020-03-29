@@ -1,6 +1,8 @@
 {{ define "content" }}
-    <h1>{{ .Module.Path }}</h1>
-    <p>Version: {{ .Module.Version }}</p>
+    <h1>module {{ .Module.Path }}</h1>
+    <dl>
+      <dt>Version</dt> <dd>{{ .Module.Version }}</dd>
+    </dl>
     <ul>
       {{ range .Packages }}
       <li>{{ . | pkg }}</li>

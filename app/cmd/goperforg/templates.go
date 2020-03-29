@@ -14,6 +14,7 @@ import (
 type Templates struct {
 	fs         fs.Readable
 	layoutsdir string
+	cache      bool
 
 	layouts   *template.Template
 	templates sync.Map
@@ -24,8 +25,14 @@ func NewTemplates(r fs.Readable) *Templates {
 	return &Templates{
 		fs:         r,
 		layoutsdir: "layout",
+		cache:      true,
 		layouts:    template.New("layouts"),
 	}
+}
+
+// SetCacheEnabled configures whether templates are cached.
+func (t *Templates) SetCacheEnabled(enabled bool) {
+	t.cache = enabled
 }
 
 // Func declares a template function.
@@ -76,7 +83,10 @@ func (t *Templates) Template(ctx context.Context, path string) (*template.Templa
 		return nil, err
 	}
 
-	t.templates.Store(path, tmpl)
+	if t.cache {
+		t.templates.Store(path, tmpl)
+	}
+
 	return tmpl, nil
 }
 

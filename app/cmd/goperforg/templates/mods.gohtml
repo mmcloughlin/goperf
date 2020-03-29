@@ -1,9 +1,15 @@
 {{ define "content" }}
-    <ul>
-      {{ range .Modules }}
-      <li>
-        <a href="/mod/{{ .UUID }}">{{ .Path }}</a> <small>{{ .Version }}</small>
-      </li>
-      {{ end }}
-    </ul>
+<h1>Modules</h1>
+<table>
+  <tr>
+    <th>Module</th>
+    <th>Version</th>
+  </tr>
+  {{ range .Modules }}
+  <tr>
+    <td>{{ . | mod }}</td>
+    <td>{{ .Version }}</td>
+  </tr>
+  {{ end }}
+</table>
 {{ end }}

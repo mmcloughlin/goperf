@@ -29,11 +29,12 @@ func main1() int {
 }
 
 var (
-	addr   = flag.String("http", "localhost:6060", "http address")
-	tmpl   = flag.String("templates", "", "templates directory")
-	static = flag.String("static", "", "static assets directory")
-	conn   = flag.String("conn", "", "database connection string")
-	bucket = flag.String("bucket", "", "data files bucket")
+	addr    = flag.String("http", "localhost:6060", "http address")
+	tmpl    = flag.String("templates", "", "templates directory")
+	static  = flag.String("static", "", "static assets directory")
+	conn    = flag.String("conn", "", "database connection string")
+	bucket  = flag.String("bucket", "", "data files bucket")
+	nocache = flag.Bool("nocache", false, "disable asset caches")
 )
 
 func mainerr(l lg.Logger) error {
@@ -60,7 +61,9 @@ func mainerr(l lg.Logger) error {
 	}
 
 	if *tmpl != "" {
-		opts = append(opts, WithTemplateFileSystem(fs.NewLocal(*tmpl)))
+		templates := NewTemplates(fs.NewLocal(*tmpl))
+		templates.SetCacheEnabled(!*nocache)
+		opts = append(opts, WithTemplates(templates))
 	}
 
 	if *static != "" {

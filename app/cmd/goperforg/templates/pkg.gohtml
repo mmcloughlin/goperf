@@ -1,5 +1,8 @@
 {{ define "content" }}
-    <h1>{{ .Package.ImportPath }}</h1>
+    <h1>package {{ .Package.ImportPath }}</h1>
+    <dl>
+      <dt>Module</dt> <dd>{{ .Package.Module | mod }}</dd>
+    </dl>
     <ul>
       {{ range .Benchmarks }}
       <li><a href="/bench/{{ .UUID }}">{{ .Name }}</a></li>
