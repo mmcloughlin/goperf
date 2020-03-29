@@ -1,33 +1,53 @@
 {{ define "head" }}
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
-  google.charts.load('current', {'packages':['scatter']});
+  google.charts.load('current', {'packages':['corechart']});
   google.charts.setOnLoadCallback(drawChart);
 
-  function drawChart () {
-    var data = new google.visualization.DataTable();
-    data.addColumn('number', 'Commit Index');
-    data.addColumn('number', 'Value');
+  points = [
+    {{ range .Points -}}
+    { resultUUID: {{ .ResultUUID | js }}, commitSHA: {{ .CommitSHA | js }} },
+    {{ end }}
+  ]
 
-    data.addRows([
+  function drawChart () {
+    var data = google.visualization.arrayToDataTable([
+      ['Commit Index', 'Value'],
       {{ range $idx, $point := .Points -}}
-        [{{ $idx }}, {{ $point.Value }}],
+      [{{ $idx }}, {{ $point.Value }}],
       {{ end }}
     ]);
 
     var options = {
-      width: 800,
-      height: 500,
-      chart: {
-        title: 'Benchmark Results'
-      },
+      title: 'Benchmark Results',
       hAxis: {title: 'Commit Index'},
-      vAxis: {title: 'Value'}
+      vAxis: {title: 'Value'},
+      tooltip: { trigger: 'selection' }
     };
 
-    var chart = new google.charts.Scatter(document.getElementById('chart'));
+    var chart = new google.visualization.ScatterChart(document.getElementById('chart'));
 
-    chart.draw(data, google.charts.Scatter.convertOptions(options));
+    chart.setAction({
+      id: 'result',
+      text: 'View Result',
+      action: function() {
+        selection = chart.getSelection();
+        idx = selection[0].row;
+        window.location.href = '/result/' + points[idx].resultUUID;
+      }
+    });
+
+    chart.setAction({
+      id: 'commit',
+      text: 'View Commit',
+      action: function() {
+        selection = chart.getSelection();
+        idx = selection[0].row;
+        window.location.href = '/commit/' + points[idx].commitSHA;
+      }
+    });
+
+    chart.draw(data, options);
   }
 </script>
 {{ end }}
