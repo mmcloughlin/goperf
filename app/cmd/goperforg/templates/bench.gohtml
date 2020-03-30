@@ -26,10 +26,10 @@
       hAxis: { textPosition: 'none' },
       axisTitlesPosition: 'none',
       legend: { position: 'none' },
-      series: {
-        1: { lineWidth: 3, pointSize: 0 }
-      },
-      dataOpacity: 0.8,
+      series: [
+        { color: {{ color "gopher-blue" | js }}, dataOpacity: 0.5, pointSize: 8 },
+        { color: {{ color "fuchsia" | js }}, lineWidth: 3, pointSize: 0, enableInteractivity: false },
+      ],
       tooltip: { trigger: 'selection' }
     };
 

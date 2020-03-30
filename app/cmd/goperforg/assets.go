@@ -2,6 +2,7 @@ package main
 
 import "github.com/mmcloughlin/cb/pkg/fs"
 
+//go:generate go run make_palette.go -output static/css/palette.css -shades 2
 //go:generate go run make_assets.go -pkg main -var Assets -output zassets.go templates static
 
 // Embedded asset filesystems.

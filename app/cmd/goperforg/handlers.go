@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	analysis "golang.org/x/perf/analysis/app"
 
+	"github.com/mmcloughlin/cb/app/brand"
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/units"
@@ -71,6 +72,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 }
 
 func (h *Handlers) Init(ctx context.Context) error {
+	h.templates.Func("color", brand.Color)
 	return h.templates.Init(ctx)
 }
 
