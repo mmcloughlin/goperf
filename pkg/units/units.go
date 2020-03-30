@@ -73,6 +73,16 @@ func BytesBinary(b float64) Quantity {
 	})
 }
 
+// Frequency represents a frequency in Hertz.
+func Frequency(f float64) Quantity {
+	return scale(f, []Quantity{
+		{1, "Hz"},
+		{1e3, "KHz"},
+		{1e6, "MHz"},
+		{1e9, "GHz"},
+	})
+}
+
 func scale(v float64, units []Quantity) Quantity {
 	i := 0
 	for i+1 < len(units) && v >= units[i+1].Value {

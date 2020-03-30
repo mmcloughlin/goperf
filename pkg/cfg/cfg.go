@@ -12,6 +12,7 @@ import (
 	"unicode"
 
 	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/cb/pkg/units"
 )
 
 // SectionSeparator separates section levels in key names.
@@ -61,23 +62,14 @@ func (t TimeValue) String() string { return time.Time(t).Format(time.RFC3339) }
 type BytesValue uint64
 
 func (b BytesValue) String() string {
-	return formatunit(float64(b), 1024, []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"}, 2)
+	return formatquantity(units.BytesBinary(float64(b)), 2)
 }
 
 // BytesValue represents bytes.
 type FrequencyValue float64
 
 func (f FrequencyValue) String() string {
-	return formatunit(float64(f), 1000, []string{"Hz", "KHz", "MHz", "GHz"}, 2)
-}
-
-func formatunit(x, mult float64, units []string, prec int) string {
-	i := 0
-	for x >= mult && i+1 < len(units) {
-		x /= mult
-		i++
-	}
-	return formatfloat(x, prec) + " " + units[i]
+	return formatquantity(units.Frequency(float64(f)), 2)
 }
 
 // PercentageValue represents a percentage, therefore must be in the range 0 to 100.
@@ -93,6 +85,10 @@ func (p PercentageValue) Validate() error {
 		return errors.New("percentage must be between 0 and 100")
 	}
 	return nil
+}
+
+func formatquantity(q units.Quantity, prec int) string {
+	return formatfloat(q.Value, prec) + " " + q.Unit
 }
 
 func formatfloat(x float64, prec int) string {
