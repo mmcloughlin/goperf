@@ -1,11 +1,13 @@
 {{ define "content" }}
-    <h1>package {{ .Package.ImportPath }}</h1>
-    <dl>
-      <dt>Module</dt> <dd>{{ .Package.Module | mod }}</dd>
-    </dl>
-    <ul>
-      {{ range .Benchmarks }}
-      <li><a href="/bench/{{ .UUID }}">{{ .Name }}</a></li>
-      {{ end }}
-    </ul>
+<h1>package {{ .Package.ImportPath }}</h1>
+<div class="meta">
+  <dl>
+    <dt>Module</dt> <dd>{{ .Package.Module | mod }}</dd>
+  </dl>
+</div>
+<ul>
+  {{ range .Benchmarks }}
+  <li><a href="/bench/{{ .UUID }}">{{ .Name }}</a></li>
+  {{ end }}
+</ul>
 {{ end }}
