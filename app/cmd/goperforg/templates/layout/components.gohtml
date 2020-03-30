@@ -6,7 +6,7 @@
 {{ define "loc" }}<a href="/file/{{ .File.UUID }}#L{{ .Line }}"><code>{{ template "uuidshort" .File.UUID }}#{{ .Line }}</code></a>{{ end }}
 
 {{ define "uuidshort" }}{{ slice .String 0 8 }}{{ end }}
-{{ define "sep" }}<span class="sep">/</span>{{ end }}
+{{ define "sep" }} <span class="sep">/</span> {{ end }}
 
 {{ define "properties" }}
 <table class="properties">

@@ -13,6 +13,8 @@ Original work is Copyright 2019 The Go Authors and BSD-3 licensed
   --turq: #00758d;
   --slate: #555759;
   --cool-gray: #dbd9d6;
+
+  --light-gray: #fafafa;
 }
 
 html {
@@ -72,6 +74,23 @@ pre,
 .code {
   font-family: "Go Mono", "Source Code Pro", monospace;
   font-size: 0.875rem;
+}
+
+pre {
+  background-color: var(--light-gray);
+  overflow-x: auto;
+  padding: 0.625rem;
+  border-radius: 0.3em;
+  border: 0.0625rem solid var(--cool-gray);
+}
+
+.ln {
+  color: var(--slate);
+  display: inline-block;
+  text-align: right;
+  width: 6ch;
+  padding-right: 2ch;
+  user-select: none;
 }
 
 table {

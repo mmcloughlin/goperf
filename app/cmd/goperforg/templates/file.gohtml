@@ -1,8 +1,8 @@
 {{ define "content" }}
-    <h1>{{ .File.Name }}</h1>
-    <pre>
-      {{ range .Lines -}}
-      <span id="L{{ .Num }}">{{ .Num }}</span> {{ .Contents }}
-      {{ end }}
-    </pre>
+<h1>file {{ .File.UUID }}</h1>
+<pre>
+  {{ range .Lines -}}
+  <span class="ln" id="L{{ .Num }}">{{ .Num }}</span>{{ .Contents }}
+  {{ end }}
+</pre>
 {{ end }}
