@@ -17,7 +17,3 @@ issues:
       linters:
         - golint
         - stylecheck
-    - path: app/
-      text: auto-escape HTML
-      linters:
-        - gosec

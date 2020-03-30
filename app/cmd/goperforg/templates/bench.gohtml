@@ -61,11 +61,11 @@
 {{ end }}
 
 {{ define "content" }}
-<h1>{{ .Benchmark.FullName }} <span class="sep">/</span> {{ .Benchmark.Unit }}</h1>
+<h1>{{ .Benchmark.FullName }}{{ template "sep" }}{{ .Benchmark.Unit }}</h1>
 
 <div class="meta">
   <dl>
-    <dt>Package</dt> <dd>{{ .Benchmark.Package | pkg }}</dd>
+    <dt>Package</dt> <dd>{{ template "pkg" .Benchmark.Package }}</dd>
     <dt>Version</dt> <dd>{{ .Benchmark.Package.Module.Version }}</dd>
   </dl>
 </div>

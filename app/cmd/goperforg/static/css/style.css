@@ -9,18 +9,10 @@ Original work is Copyright 2019 The Go Authors and BSD-3 licensed
 */
 
 :root {
+  /* Color scheme from Brand Book https://golang.org/s/brandbook */
   --turq: #00758d;
-
-  --gray-1: #202224;
-  --gray-2: #3e4042;
-  --gray-3: #555759;
-  --gray-4: #6e7072;
-  --gray-5: #848688;
-  --gray-6: #aaacae;
-  --gray-7: #c6c8ca;
-  --gray-8: #dcdee0;
-  --gray-9: #f0f1f2;
-  --gray-10: #fafafa;
+  --slate: #555759;
+  --cool-gray: #dbd9d6;
 }
 
 html {
@@ -28,7 +20,6 @@ html {
 }
 
 body {
-  color: var(--gray-1);
   font-family: Roboto, Arial, sans-serif;
   margin: 0;
 }
@@ -73,11 +64,12 @@ h3 {
 
 p {
   font-size: 1rem;
-  line-height: 1.5rem;
+  line-height: 1.3em;
 }
 
 code,
-pre {
+pre,
+.code {
   font-family: "Go Mono", "Source Code Pro", monospace;
   font-size: 0.875rem;
 }
@@ -89,7 +81,7 @@ table {
 
 td,
 th {
-  border-bottom: 1px solid var(--gray-8);
+  border-bottom: 1px solid var(--cool-gray);
   padding: 0.75rem 0;
   padding-right: 1rem;
 }
@@ -99,7 +91,7 @@ th {
 }
 
 .sep {
-  color: var(--gray-3);
+  color: var(--slate);
   font-weight: bold;
 }
 
@@ -150,7 +142,7 @@ main {
 }
 
 .meta dt {
-  border-left: 1px solid var(--gray-6);
+  border-left: 1px solid var(--slate);
   padding-left: 0.75rem;
 }
 
@@ -160,4 +152,30 @@ main {
 
 .meta dd {
   padding-right: 0.75rem;
+}
+
+.bignumber {
+  text-align: center;
+}
+
+.bignumber .number {
+  font-size: 10rem;
+  margin: 0.2em 0;
+}
+
+.bignumber .unit {
+  font-size: 5rem;
+  color: var(--slate);
+  margin-top: 0;
+}
+
+table.properties td.key {
+  color: var(--slate);
+  white-space: nowrap;
+  font-weight: bold;
+  text-transform: lowercase;
+}
+
+table.properties td.value {
+  overflow-wrap: anywhere;
 }

@@ -2,7 +2,7 @@
 <h1>package {{ .Package.ImportPath }}</h1>
 <div class="meta">
   <dl>
-    <dt>Module</dt> <dd>{{ .Package.Module | mod }}</dd>
+    <dt>Module</dt> <dd>{{ template "mod" .Package.Module }}</dd>
   </dl>
 </div>
 <ul>

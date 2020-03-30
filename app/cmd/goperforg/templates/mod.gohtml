@@ -7,7 +7,7 @@
 </div>
 <ul>
   {{ range .Packages }}
-  <li>{{ . | pkg }}</li>
+  <li>{{ template "pkg" . }}</li>
   {{ end }}
 </ul>
 {{ end }}

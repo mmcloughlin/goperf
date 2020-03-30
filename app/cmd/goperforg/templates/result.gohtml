@@ -1,7 +1,33 @@
 {{ define "content" }}
-{{ with .Result }}
-<p>Package: {{ .Benchmark.Package.ImportPath }}</p>
-<p>Benchmark: {{ .Benchmark.FullName }}</p>
-<p>Value: {{ .Value }}</p>
+
+<h1>{{ .Result.Benchmark.FullName }} {{ template "sep" }} Result</h1>
+
+<div class="meta">
+  <dl>
+    <dt>Benchmark</dt> <dd>{{ template "bench" .Result.Benchmark }}</dd>
+    <dt>Package</dt> <dd>{{ template "pkg" .Result.Benchmark.Package }}</dd>
+    <dt>Commit</dt> <dd>{{ template "commit" .Result.Commit }}</dd>
+    <dt>Source</dt> <dd>{{ template "loc" .Result }}</dd>
+  </dl>
+</div>
+
+{{ with .Quantity }}
+<div class="bignumber">
+    <p class="number">{{ .Value }}</p>
+    <p class="unit">{{ .Unit }}</p>
+</div>
 {{ end }}
+
+{{ with .Result }}
+{{ if .Environment }}
+<h2>Environment</h2>
+{{ template "properties" .Environment }}
+{{ end }}
+
+{{ if .Metadata }}
+<h2>Metadata</h2>
+{{ template "properties" .Metadata }}
+{{ end }}
+{{ end }}
+
 {{ end }}

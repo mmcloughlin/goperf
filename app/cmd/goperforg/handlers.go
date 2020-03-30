@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"html/template"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,8 +12,8 @@ import (
 	analysis "golang.org/x/perf/analysis/app"
 
 	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/units"
 )
 
 type Handlers struct {
@@ -72,14 +71,6 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 }
 
 func (h *Handlers) Init(ctx context.Context) error {
-	h.templates.Func("pkg", func(p *entity.Package) template.HTML {
-		return template.HTML(fmt.Sprintf(`<a href="/pkg/%s">%s</a>`, p.UUID(), p.ImportPath()))
-	})
-
-	h.templates.Func("mod", func(m *entity.Module) template.HTML {
-		return template.HTML(fmt.Sprintf(`<a href="/mod/%s">%s</a>`, m.UUID(), m.Path))
-	})
-
 	return h.templates.Init(ctx)
 }
 
@@ -214,9 +205,15 @@ func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	quantity := units.Humanize(units.Quantity{
+		Value: result.Value,
+		Unit:  result.Benchmark.Unit,
+	})
+
 	// Write response.
 	h.render(ctx, w, "result", map[string]interface{}{
-		"Result": result,
+		"Result":   result,
+		"Quantity": quantity,
 	})
 }
 
