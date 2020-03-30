@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -229,6 +230,12 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Was a line selection specified?
+	hl := 0
+	if ln, err := strconv.Atoi(r.URL.Query().Get("hl")); err == nil {
+		hl = ln
+	}
+
 	// Fetch file.
 	file, err := h.db.FindDataFileByUUID(ctx, id)
 	if err != nil {
@@ -245,16 +252,19 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	defer rdr.Close()
 
 	type line struct {
-		Num      int
-		Contents string
+		Num       int
+		Contents  string
+		Highlight bool
 	}
 	var lines []line
 
 	s := bufio.NewScanner(rdr)
 	for s.Scan() {
+		n := len(lines) + 1
 		lines = append(lines, line{
-			Num:      len(lines) + 1,
-			Contents: s.Text(),
+			Num:       n,
+			Contents:  s.Text(),
+			Highlight: n == hl,
 		})
 	}
 	if err := s.Err(); err != nil {

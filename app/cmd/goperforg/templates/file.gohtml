@@ -2,7 +2,12 @@
 <h1>file {{ .File.UUID }}</h1>
 <pre>
   {{ range .Lines -}}
-  <span class="ln" id="L{{ .Num }}">{{ .Num }}</span>{{ .Contents }}
+  <span class="ln" id="L{{ .Num }}">{{ .Num }}</span>
+  {{- if .Highlight -}}
+  <span class="hl">{{ .Contents }}</span>
+  {{- else -}}
+  {{ .Contents }}
+  {{- end }}
   {{ end }}
 </pre>
 {{ end }}

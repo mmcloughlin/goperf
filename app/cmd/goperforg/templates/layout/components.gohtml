@@ -3,7 +3,7 @@
 {{ define "bench" }}<a href="/bench/{{ .UUID }}">{{ .FullName }}</a>{{ end }}
 {{ define "commit" }}<a href="/commit/{{ .SHA }}"><code>{{ slice .SHA 0 10 }}</code></a>{{ end }}
 {{ define "file" }}<a href="/file/{{ .UUID }}"><code>{{ template "uuidshort" .UUID }}</code></a>{{ end }}
-{{ define "loc" }}<a href="/file/{{ .File.UUID }}#L{{ .Line }}"><code>{{ template "uuidshort" .File.UUID }}#{{ .Line }}</code></a>{{ end }}
+{{ define "loc" }}<a href="/file/{{ .File.UUID }}?hl={{ .Line }}#L{{ .Line }}"><code>{{ template "uuidshort" .File.UUID }}#{{ .Line }}</code></a>{{ end }}
 
 {{ define "uuidshort" }}{{ slice .String 0 8 }}{{ end }}
 {{ define "sep" }} <span class="sep">/</span> {{ end }}

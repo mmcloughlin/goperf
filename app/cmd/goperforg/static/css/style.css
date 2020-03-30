@@ -86,6 +86,10 @@ pre {
   user-select: none;
 }
 
+.hl {
+  background-color: var(--yellow);
+}
+
 table {
   border-collapse: collapse;
   width: 100%;

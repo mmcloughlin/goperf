@@ -1,5 +1,6 @@
 {{ define "content" }}
 {{ with .Commit }}
+<h1>commit {{ .SHA }}</h1>
 <pre>
 {{ .Message }}
 </pre>
