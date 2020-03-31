@@ -2,8 +2,6 @@
 package meta
 
 import (
-	"time"
-
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
 
@@ -16,9 +14,8 @@ var (
 
 // Version and build information. Populated at build time.
 var (
-	Version   = placeholder
-	GitSHA    = placeholder
-	BuildTime = placeholder
+	Version = placeholder
+	GitSHA  = placeholder
 )
 
 // Populated returns whether build information has been populated.
@@ -40,14 +37,9 @@ func (Provider) Available() bool { return Populated() }
 
 // Configuration returns project version and build information.
 func (Provider) Configuration() (cfg.Configuration, error) {
-	t, err := time.Parse("2006-01-02T15:04:05-0700", BuildTime)
-	if err != nil {
-		return nil, err
-	}
 	return cfg.Configuration{
 		cfg.Property("name", "project name", cfg.StringValue(Name)),
 		cfg.Property("version", "project version", cfg.StringValue(Version)),
 		cfg.Property("gitsha", "git sha", cfg.StringValue(GitSHA)),
-		cfg.Property("buildtime", "build time", cfg.TimeValue(t)),
 	}, nil
 }
