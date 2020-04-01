@@ -25,17 +25,22 @@ type DB struct {
 	logger lg.Logger
 }
 
+// New builds a database layer backed by the given postgres connection.
+func New(d *sql.DB) *DB {
+	return &DB{
+		db:     d,
+		q:      db.New(d),
+		logger: lg.Noop(),
+	}
+}
+
 // Open postgres database connection with the given connection string.
 func Open(conn string) (*DB, error) {
 	d, err := sql.Open("postgres", conn)
 	if err != nil {
 		return nil, err
 	}
-	return &DB{
-		db:     d,
-		q:      db.New(d),
-		logger: lg.Noop(),
-	}, nil
+	return New(d), nil
 }
 
 // Close database connection.

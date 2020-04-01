@@ -3,10 +3,11 @@ module github.com/mmcloughlin/cb
 go 1.13
 
 require (
-	cloud.google.com/go v0.46.3
+	cloud.google.com/go v0.50.0
 	cloud.google.com/go/firestore v1.1.1
 	cloud.google.com/go/pubsub v1.0.1
 	cloud.google.com/go/storage v1.0.0
+	github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20200325185443-f6b3391c52cf
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
 	github.com/aclements/go-gg v0.0.0-20170323211221-abd1f791f5ee // indirect
 	github.com/aclements/go-moremath v0.0.0-20190830160640-d16893ddf098 // indirect
@@ -31,14 +32,16 @@ require (
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pressly/goose v2.6.0+incompatible
 	github.com/shirou/gopsutil v2.20.1+incompatible
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/build v0.0.0-20200207163221-ab7b028cb90c
-	golang.org/x/mod v0.1.0
+	golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee
 	golang.org/x/perf v0.0.0-20180704124530-6e6d33e29852
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
-	google.golang.org/api v0.14.0
-	google.golang.org/genproto v0.0.0-20191206224255-0243a4be9c8f
+	golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+	google.golang.org/api v0.15.0
+	google.golang.org/genproto v0.0.0-20191220162840-803ea799ed88
 )
