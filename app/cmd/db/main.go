@@ -29,6 +29,7 @@ func main() {
 	subcommands.Register(NewMigrate(base), "database admin")
 
 	subcommands.Register(NewIngest(base), "data ingestion")
+	subcommands.Register(NewCommits(base), "data ingestion")
 
 	// Help.
 	subcommands.Register(subcommands.HelpCommand(), "help")

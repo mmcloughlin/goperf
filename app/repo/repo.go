@@ -15,6 +15,9 @@ import (
 	"github.com/mmcloughlin/cb/pkg/gitiles"
 )
 
+// GoURL is the URL for the canonical Go git repository.
+const GoURL = "https://go.googlesource.com/go"
+
 // Revisions provides query access to repository revisions.
 type Revisions interface {
 	Revision(ctx context.Context, ref string) (*entity.Commit, error)
