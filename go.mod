@@ -14,6 +14,7 @@ require (
 	github.com/c9s/goprocinfo v0.0.0-20200130063400-86ec00c33cd5
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
+	github.com/go-git/go-git/v5 v5.0.0
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 	github.com/golang/snappy v0.0.1 // indirect
@@ -41,7 +42,7 @@ require (
 	golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee
 	golang.org/x/perf v0.0.0-20180704124530-6e6d33e29852
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20191220142924-d4481acd189f
+	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
 	google.golang.org/api v0.15.0
 	google.golang.org/genproto v0.0.0-20191220162840-803ea799ed88
 )
