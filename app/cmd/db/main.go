@@ -28,6 +28,8 @@ func main() {
 	// Datbase commands.
 	subcommands.Register(NewMigrate(base), "database admin")
 
+	subcommands.Register(NewIngest(base), "data ingestion")
+
 	// Help.
 	subcommands.Register(subcommands.HelpCommand(), "help")
 	subcommands.Register(subcommands.CommandsCommand(), "help")

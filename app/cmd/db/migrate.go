@@ -54,6 +54,7 @@ func (cmd *Migrate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	if err != nil {
 		return cmd.Error(err)
 	}
+	defer d.Close()
 
 	return cmd.Status(goose.Run(command, d, cmd.dir, args...))
 }
