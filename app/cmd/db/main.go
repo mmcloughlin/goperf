@@ -25,7 +25,7 @@ func main() {
 	logger := lg.Default()
 	base := command.NewBase(logger)
 
-	// Datbase commands.
+	// Database commands.
 	subcommands.Register(NewMigrate(base), "database admin")
 
 	subcommands.Register(NewIngest(base), "data ingestion")
