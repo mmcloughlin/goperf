@@ -7,4 +7,5 @@ curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | 
 # Install Go tools.
 GO111MODULE=off go get -u \
     mvdan.cc/gofumpt/gofumports \
-    github.com/kyleconroy/sqlc/cmd/sqlc
+    github.com/kyleconroy/sqlc/cmd/sqlc \
+    github.com/GoogleCloudPlatform/cloudsql-proxy/cmd/cloud_sql_proxy
