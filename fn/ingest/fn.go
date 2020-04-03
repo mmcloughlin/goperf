@@ -3,18 +3,11 @@ package ingest
 import (
 	"context"
 	"log"
-	"os"
-
-	"cloud.google.com/go/firestore"
 
 	"github.com/mmcloughlin/cb/app/gcs"
-	"github.com/mmcloughlin/cb/app/mapper"
-	"github.com/mmcloughlin/cb/app/obj"
 	"github.com/mmcloughlin/cb/app/results"
+	"github.com/mmcloughlin/cb/app/service"
 )
-
-// Parameters.
-var project = os.Getenv("CB_PROJECT_ID")
 
 // GCSEvent is the payload of a GCS event.
 type GCSEvent struct {
@@ -43,25 +36,22 @@ func Handle(ctx context.Context, e GCSEvent) error {
 		return err
 	}
 
-	// Create Firestore object store.
-	fsc, err := firestore.NewClient(ctx, project)
+	// Open database connection.
+	d, err := service.DB(ctx)
 	if err != nil {
 		return err
 	}
-	defer fsc.Close()
-
-	s := obj.OnceSetter(obj.NewFirestore(fsc))
+	defer d.Close()
 
 	// Write to object storage.
 	for _, r := range rs {
-		for _, m := range mapper.ResultsModels(r) {
-			if err := s.Set(ctx, m); err != nil {
-				return err
-			}
+		if err := d.StoreResult(ctx, r); err != nil {
+			return err
 		}
-
-		log.Print(r.Benchmark.FullName)
+		log.Printf("inserted result: %s %v %s", r.Benchmark.FullName, r.Value, r.Benchmark.Unit)
 	}
+
+	log.Printf("inserted %d results", len(rs))
 
 	return nil
 }
