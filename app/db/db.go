@@ -80,6 +80,18 @@ func (d *DB) StoreCommit(ctx context.Context, c *entity.Commit) error {
 	})
 }
 
+// StoreCommits writes the given commits to the database.
+func (d *DB) StoreCommits(ctx context.Context, cs []*entity.Commit) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		for _, c := range cs {
+			if err := storeCommit(ctx, q, c); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func storeCommit(ctx context.Context, q *db.Queries, c *entity.Commit) error {
 	sha, err := hex.DecodeString(c.SHA)
 	if err != nil {

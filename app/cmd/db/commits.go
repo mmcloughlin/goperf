@@ -8,6 +8,7 @@ import (
 	"github.com/google/subcommands"
 
 	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/repo"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/lg"
@@ -15,6 +16,8 @@ import (
 
 type Commits struct {
 	command.Base
+
+	batch int
 }
 
 func NewCommits(b command.Base) *Commits {
@@ -34,6 +37,7 @@ func (*Commits) Usage() string {
 }
 
 func (cmd *Commits) SetFlags(f *flag.FlagSet) {
+	f.IntVar(&cmd.batch, "batch", 1024, "number of inserts per transaction")
 }
 
 func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
@@ -65,6 +69,7 @@ func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	defer it.Close()
 
 	n := 0
+	batch := []*entity.Commit{}
 	for {
 		c, err := it.Next()
 		if err == io.EOF {
@@ -74,13 +79,25 @@ func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 			return cmd.Error(err)
 		}
 
-		// Insert.
-		if err := d.StoreCommit(ctx, c); err != nil {
-			return cmd.Error(err)
+		// Insert if the batch is full.
+		if len(batch) == cmd.batch {
+			cmd.Log.Printf("inserting %d commits", len(batch))
+			if err := d.StoreCommits(ctx, batch); err != nil {
+				return cmd.Error(err)
+			}
+			batch = batch[:0]
 		}
-		n++
 
-		cmd.Log.Printf("inserted %s total %d", c.SHA, n)
+		// Add to batch.
+		batch = append(batch, c)
+		n++
+		cmd.Log.Printf("added %s total %d", c.SHA, n)
+	}
+
+	// Final batch.
+	cmd.Log.Printf("inserting %d commits", len(batch))
+	if err := d.StoreCommits(ctx, batch); err != nil {
+		return cmd.Error(err)
 	}
 
 	return subcommands.ExitSuccess
