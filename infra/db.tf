@@ -10,6 +10,11 @@ resource "google_sql_database_instance" "primary" {
   }
 }
 
+resource "google_sql_database" "database" {
+  name     = var.project_name
+  instance = google_sql_database_instance.primary.name
+}
+
 resource "random_password" "sql_admin_password" {
   keepers = {
     name = google_sql_database_instance.primary.name
@@ -25,7 +30,17 @@ resource "google_sql_user" "admin" {
   password = random_password.sql_admin_password.result
 }
 
-resource "google_sql_database" "database" {
-  name     = var.project_name
-  instance = google_sql_database_instance.primary.name
+resource "google_secret_manager_secret" "sql_admin_password_secret" {
+  provider  = google-beta
+  secret_id = "sql_admin_password"
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "sql_admin_password_secret_version" {
+  provider    = google-beta
+  secret      = google_secret_manager_secret.sql_admin_password_secret.id
+  secret_data = random_password.sql_admin_password.result
 }
