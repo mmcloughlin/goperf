@@ -151,6 +151,30 @@ func findCommitBySHA(ctx context.Context, q *db.Queries, sha []byte) (*entity.Co
 		return nil, err
 	}
 
+	return mapCommit(c), nil
+}
+
+// MostRecentCommit returns the most recent commit by commit time.
+func (d *DB) MostRecentCommit(ctx context.Context) (*entity.Commit, error) {
+	var c *entity.Commit
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		c, err = mostRecentCommit(ctx, q)
+		return err
+	})
+	return c, err
+}
+
+func mostRecentCommit(ctx context.Context, q *db.Queries) (*entity.Commit, error) {
+	c, err := q.MostRecentCommit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapCommit(c), nil
+}
+
+func mapCommit(c db.Commit) *entity.Commit {
 	parents := make([]string, len(c.Parents))
 	for i, parent := range c.Parents {
 		parents[i] = hex.EncodeToString(parent)
@@ -171,7 +195,7 @@ func findCommitBySHA(ctx context.Context, q *db.Queries, sha []byte) (*entity.Co
 		},
 		CommitTime: c.CommitTime,
 		Message:    c.Message,
-	}, nil
+	}
 }
 
 // StoreModule writes module to the database.

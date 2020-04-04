@@ -87,3 +87,27 @@ func (q *Queries) InsertCommit(ctx context.Context, arg InsertCommitParams) erro
 	)
 	return err
 }
+
+const mostRecentCommit = `-- name: MostRecentCommit :one
+SELECT sha, tree, parents, author_name, author_email, author_time, committer_name, committer_email, commit_time, message FROM commits
+ORDER BY commit_time DESC
+LIMIT 1
+`
+
+func (q *Queries) MostRecentCommit(ctx context.Context) (Commit, error) {
+	row := q.queryRow(ctx, q.mostRecentCommitStmt, mostRecentCommit)
+	var i Commit
+	err := row.Scan(
+		&i.SHA,
+		&i.Tree,
+		&i.Parents,
+		&i.AuthorName,
+		&i.AuthorEmail,
+		&i.AuthorTime,
+		&i.CommitterName,
+		&i.CommitterEmail,
+		&i.CommitTime,
+		&i.Message,
+	)
+	return i, err
+}

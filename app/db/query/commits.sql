@@ -2,6 +2,11 @@
 SELECT * FROM commits
 WHERE sha = $1 LIMIT 1;
 
+-- name: MostRecentCommit :one
+SELECT * FROM commits
+ORDER BY commit_time DESC
+LIMIT 1;
+
 -- name: InsertCommit :exec
 INSERT INTO commits (
     sha,

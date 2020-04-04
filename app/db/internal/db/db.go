@@ -67,6 +67,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.modulesStmt, err = db.PrepareContext(ctx, modules); err != nil {
 		return nil, fmt.Errorf("error preparing query Modules: %w", err)
 	}
+	if q.mostRecentCommitStmt, err = db.PrepareContext(ctx, mostRecentCommit); err != nil {
+		return nil, fmt.Errorf("error preparing query MostRecentCommit: %w", err)
+	}
 	if q.packageBenchmarksStmt, err = db.PrepareContext(ctx, packageBenchmarks); err != nil {
 		return nil, fmt.Errorf("error preparing query PackageBenchmarks: %w", err)
 	}
@@ -159,6 +162,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing modulesStmt: %w", cerr)
 		}
 	}
+	if q.mostRecentCommitStmt != nil {
+		if cerr := q.mostRecentCommitStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing mostRecentCommitStmt: %w", cerr)
+		}
+	}
 	if q.packageBenchmarksStmt != nil {
 		if cerr := q.packageBenchmarksStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing packageBenchmarksStmt: %w", cerr)
@@ -233,6 +241,7 @@ type Queries struct {
 	moduleStmt            *sql.Stmt
 	modulePkgsStmt        *sql.Stmt
 	modulesStmt           *sql.Stmt
+	mostRecentCommitStmt  *sql.Stmt
 	packageBenchmarksStmt *sql.Stmt
 	pkgStmt               *sql.Stmt
 	propertiesStmt        *sql.Stmt
@@ -258,6 +267,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		moduleStmt:            q.moduleStmt,
 		modulePkgsStmt:        q.modulePkgsStmt,
 		modulesStmt:           q.modulesStmt,
+		mostRecentCommitStmt:  q.mostRecentCommitStmt,
 		packageBenchmarksStmt: q.packageBenchmarksStmt,
 		pkgStmt:               q.pkgStmt,
 		propertiesStmt:        q.propertiesStmt,
