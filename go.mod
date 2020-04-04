@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.56.0
-	cloud.google.com/go/firestore v1.1.1
 	cloud.google.com/go/pubsub v1.2.0
 	cloud.google.com/go/storage v1.6.0
 	github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20200325185443-f6b3391c52cf
@@ -27,7 +26,6 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
-	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/mholt/archiver v3.1.1+incompatible
@@ -36,7 +34,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/shirou/gopsutil v2.20.1+incompatible
-	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/build v0.0.0-20200207163221-ab7b028cb90c
 	golang.org/x/mod v0.2.0
