@@ -12,7 +12,7 @@ func TestClientLog(t *testing.T) {
 	test.RequiresNetwork(t)
 
 	c := NewClient(http.DefaultClient, "https://go.googlesource.com")
-	r, err := c.Log(context.Background(), "go")
+	r, err := c.Log(context.Background(), "go", "HEAD")
 	if err != nil {
 		t.Fatal(err)
 	}

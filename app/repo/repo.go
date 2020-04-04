@@ -70,7 +70,7 @@ func (d dbrevisions) Revision(ctx context.Context, ref string) (*entity.Commit, 
 // Repository provides access to git repository properties.
 type Repository interface {
 	Revisions
-	RecentCommits(ctx context.Context) ([]*entity.Commit, error)
+	Log(ctx context.Context, ref string) ([]*entity.Commit, error)
 }
 
 type composite []Repository
@@ -86,9 +86,9 @@ func NewCompositeRepository(rs ...Repository) Repository {
 	return composite(rs)
 }
 
-func (c composite) RecentCommits(ctx context.Context) (commits []*entity.Commit, err error) {
+func (c composite) Log(ctx context.Context, ref string) (commits []*entity.Commit, err error) {
 	for _, r := range c {
-		commits, err = r.RecentCommits(ctx)
+		commits, err = r.Log(ctx, ref)
 		if err == nil {
 			return
 		}
@@ -133,9 +133,9 @@ func NewGitilesGo(c *http.Client) Repository {
 	return NewGitiles(gitilesclient, "go")
 }
 
-func (g *gitilesrepo) RecentCommits(ctx context.Context) ([]*entity.Commit, error) {
+func (g *gitilesrepo) Log(ctx context.Context, ref string) ([]*entity.Commit, error) {
 	// Fetch repository log.
-	res, err := g.client.Log(ctx, g.repo)
+	res, err := g.client.Log(ctx, g.repo, ref)
 	if err != nil {
 		return nil, fmt.Errorf("fetching gitiles log: %w", err)
 	}
@@ -225,9 +225,11 @@ func NewGithubGo(c *http.Client) Repository {
 	return NewGithub(githubclient, "golang", "go")
 }
 
-func (g *githubrepo) RecentCommits(ctx context.Context) ([]*entity.Commit, error) {
+func (g *githubrepo) Log(ctx context.Context, ref string) ([]*entity.Commit, error) {
 	// List commits.
-	res, _, err := g.client.Repositories.ListCommits(ctx, g.owner, g.repo, nil)
+	res, _, err := g.client.Repositories.ListCommits(ctx, g.owner, g.repo, &github.CommitsListOptions{
+		SHA: ref,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("fetching github commits: %w", err)
 	}

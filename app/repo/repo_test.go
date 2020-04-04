@@ -32,7 +32,7 @@ func TestRepositoryImplementations(t *testing.T) {
 		r := r // scopelint
 		t.Run(r.Name, func(t *testing.T) {
 			// Recent commits.
-			commits, err := r.Repo.RecentCommits(context.Background())
+			commits, err := r.Repo.Log(context.Background(), "HEAD")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -56,7 +56,7 @@ func TestRepositoryImplementationsSameRevisions(t *testing.T) {
 	test.RequiresNetwork(t)
 
 	ctx := context.Background()
-	commits, err := repos[0].Repo.RecentCommits(ctx)
+	commits, err := repos[0].Repo.Log(ctx, "go1.14beta1")
 	if err != nil {
 		t.Fatal(err)
 	}

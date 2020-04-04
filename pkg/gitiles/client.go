@@ -23,8 +23,8 @@ func NewClient(c *http.Client, base string) *Client {
 	}
 }
 
-func (c *Client) Log(ctx context.Context, repo string) (*LogResponse, error) {
-	path := repo + "/+log?format=JSON"
+func (c *Client) Log(ctx context.Context, repo, ref string) (*LogResponse, error) {
+	path := fmt.Sprintf("%s/+log/%s?format=JSON", repo, ref)
 	payload := &LogResponse{}
 	if err := c.get(ctx, path, payload); err != nil {
 		return nil, err

@@ -24,7 +24,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Fetch commits.
-	commits, err := repository.RecentCommits(ctx)
+	commits, err := repository.Log(ctx, "master")
 	if err != nil {
 		log.Printf("recent commits: %s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
