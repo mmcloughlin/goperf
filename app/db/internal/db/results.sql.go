@@ -42,7 +42,7 @@ type BenchmarkPointsRow struct {
 }
 
 func (q *Queries) BenchmarkPoints(ctx context.Context, arg BenchmarkPointsParams) ([]BenchmarkPointsRow, error) {
-	rows, err := q.db.QueryContext(ctx, benchmarkPoints, arg.BenchmarkUUID, arg.Limit)
+	rows, err := q.query(ctx, q.benchmarkPointsStmt, benchmarkPoints, arg.BenchmarkUUID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ WHERE benchmark_uuid = $1
 `
 
 func (q *Queries) BenchmarkResults(ctx context.Context, benchmarkUuid uuid.UUID) ([]Result, error) {
-	rows, err := q.db.QueryContext(ctx, benchmarkResults, benchmarkUuid)
+	rows, err := q.query(ctx, q.benchmarkResultsStmt, benchmarkResults, benchmarkUuid)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ type InsertResultParams struct {
 }
 
 func (q *Queries) InsertResult(ctx context.Context, arg InsertResultParams) error {
-	_, err := q.db.ExecContext(ctx, insertResult,
+	_, err := q.exec(ctx, q.insertResultStmt, insertResult,
 		arg.UUID,
 		arg.DatafileUUID,
 		arg.Line,
@@ -165,7 +165,7 @@ WHERE uuid = $1 LIMIT 1
 `
 
 func (q *Queries) Result(ctx context.Context, uuid uuid.UUID) (Result, error) {
-	row := q.db.QueryRowContext(ctx, result, uuid)
+	row := q.queryRow(ctx, q.resultStmt, result, uuid)
 	var i Result
 	err := row.Scan(
 		&i.UUID,

@@ -26,21 +26,25 @@ type DB struct {
 }
 
 // New builds a database layer backed by the given postgres connection.
-func New(d *sql.DB) *DB {
+func New(ctx context.Context, d *sql.DB) (*DB, error) {
+	q, err := db.Prepare(ctx, d)
+	if err != nil {
+		return nil, err
+	}
 	return &DB{
 		db:     d,
-		q:      db.New(d),
+		q:      q,
 		logger: lg.Noop(),
-	}
+	}, nil
 }
 
 // Open postgres database connection with the given connection string.
-func Open(conn string) (*DB, error) {
+func Open(ctx context.Context, conn string) (*DB, error) {
 	d, err := sql.Open("postgres", conn)
 	if err != nil {
 		return nil, err
 	}
-	return New(d), nil
+	return New(ctx, d)
 }
 
 // Close database connection.

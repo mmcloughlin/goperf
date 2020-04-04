@@ -16,7 +16,7 @@ WHERE uuid = $1 LIMIT 1
 `
 
 func (q *Queries) Benchmark(ctx context.Context, uuid uuid.UUID) (Benchmark, error) {
-	row := q.db.QueryRowContext(ctx, benchmark, uuid)
+	row := q.queryRow(ctx, q.benchmarkStmt, benchmark, uuid)
 	var i Benchmark
 	err := row.Scan(
 		&i.UUID,
@@ -57,7 +57,7 @@ type InsertBenchmarkParams struct {
 }
 
 func (q *Queries) InsertBenchmark(ctx context.Context, arg InsertBenchmarkParams) error {
-	_, err := q.db.ExecContext(ctx, insertBenchmark,
+	_, err := q.exec(ctx, q.insertBenchmarkStmt, insertBenchmark,
 		arg.UUID,
 		arg.PackageUUID,
 		arg.FullName,
@@ -74,7 +74,7 @@ WHERE package_uuid = $1
 `
 
 func (q *Queries) PackageBenchmarks(ctx context.Context, packageUuid uuid.UUID) ([]Benchmark, error) {
-	rows, err := q.db.QueryContext(ctx, packageBenchmarks, packageUuid)
+	rows, err := q.query(ctx, q.packageBenchmarksStmt, packageBenchmarks, packageUuid)
 	if err != nil {
 		return nil, err
 	}

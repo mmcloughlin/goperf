@@ -42,8 +42,8 @@ func mainerr(l lg.Logger) error {
 
 	ctx := command.BackgroundContext(l)
 
-	// Configure firestore backend.
-	d, err := db.Open(*conn)
+	// Open database connection.
+	d, err := db.Open(ctx, *conn)
 	if err != nil {
 		return err
 	}

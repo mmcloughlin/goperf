@@ -28,7 +28,7 @@ type InsertPkgParams struct {
 }
 
 func (q *Queries) InsertPkg(ctx context.Context, arg InsertPkgParams) error {
-	_, err := q.db.ExecContext(ctx, insertPkg, arg.UUID, arg.ModuleUUID, arg.RelativePath)
+	_, err := q.exec(ctx, q.insertPkgStmt, insertPkg, arg.UUID, arg.ModuleUUID, arg.RelativePath)
 	return err
 }
 
@@ -38,7 +38,7 @@ WHERE module_uuid = $1
 `
 
 func (q *Queries) ModulePkgs(ctx context.Context, moduleUuid uuid.UUID) ([]Package, error) {
-	rows, err := q.db.QueryContext(ctx, modulePkgs, moduleUuid)
+	rows, err := q.query(ctx, q.modulePkgsStmt, modulePkgs, moduleUuid)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ WHERE uuid = $1 LIMIT 1
 `
 
 func (q *Queries) Pkg(ctx context.Context, uuid uuid.UUID) (Package, error) {
-	row := q.db.QueryRowContext(ctx, pkg, uuid)
+	row := q.queryRow(ctx, q.pkgStmt, pkg, uuid)
 	var i Package
 	err := row.Scan(&i.UUID, &i.ModuleUUID, &i.RelativePath)
 	return i, err

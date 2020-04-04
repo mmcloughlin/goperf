@@ -1,6 +1,7 @@
 version: "1"
 packages:
   - name: "db"
+    emit_prepared_queries: true
     path: internal/db
     queries: query
     schema: schema

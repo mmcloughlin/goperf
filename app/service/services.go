@@ -32,7 +32,7 @@ func DB(ctx context.Context) (*db.DB, error) {
 	conn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
 		sock, params["SQL_DATABASE"], params["SQL_USER"], password)
 
-	return db.Open(conn)
+	return db.Open(ctx, conn)
 }
 
 func secret(ctx context.Context, name string) (string, error) {

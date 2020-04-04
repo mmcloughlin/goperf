@@ -15,7 +15,7 @@ WHERE uuid = $1 LIMIT 1
 `
 
 func (q *Queries) DataFile(ctx context.Context, uuid uuid.UUID) (Datafile, error) {
-	row := q.db.QueryRowContext(ctx, dataFile, uuid)
+	row := q.queryRow(ctx, q.dataFileStmt, dataFile, uuid)
 	var i Datafile
 	err := row.Scan(&i.UUID, &i.Name, &i.SHA256)
 	return i, err
@@ -40,6 +40,6 @@ type InsertDataFileParams struct {
 }
 
 func (q *Queries) InsertDataFile(ctx context.Context, arg InsertDataFileParams) error {
-	_, err := q.db.ExecContext(ctx, insertDataFile, arg.UUID, arg.Name, arg.SHA256)
+	_, err := q.exec(ctx, q.insertDataFileStmt, insertDataFile, arg.UUID, arg.Name, arg.SHA256)
 	return err
 }

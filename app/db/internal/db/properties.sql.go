@@ -26,7 +26,7 @@ type InsertPropertiesParams struct {
 }
 
 func (q *Queries) InsertProperties(ctx context.Context, arg InsertPropertiesParams) error {
-	_, err := q.db.ExecContext(ctx, insertProperties, arg.UUID, arg.Fields)
+	_, err := q.exec(ctx, q.insertPropertiesStmt, insertProperties, arg.UUID, arg.Fields)
 	return err
 }
 
@@ -36,7 +36,7 @@ WHERE uuid = $1 LIMIT 1
 `
 
 func (q *Queries) Properties(ctx context.Context, uuid uuid.UUID) (Property, error) {
-	row := q.db.QueryRowContext(ctx, properties, uuid)
+	row := q.queryRow(ctx, q.propertiesStmt, properties, uuid)
 	var i Property
 	err := row.Scan(&i.UUID, &i.Fields)
 	return i, err

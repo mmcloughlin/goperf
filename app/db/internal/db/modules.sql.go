@@ -28,7 +28,7 @@ type InsertModuleParams struct {
 }
 
 func (q *Queries) InsertModule(ctx context.Context, arg InsertModuleParams) error {
-	_, err := q.db.ExecContext(ctx, insertModule, arg.UUID, arg.Path, arg.Version)
+	_, err := q.exec(ctx, q.insertModuleStmt, insertModule, arg.UUID, arg.Path, arg.Version)
 	return err
 }
 
@@ -38,7 +38,7 @@ WHERE uuid = $1 LIMIT 1
 `
 
 func (q *Queries) Module(ctx context.Context, uuid uuid.UUID) (Module, error) {
-	row := q.db.QueryRowContext(ctx, module, uuid)
+	row := q.queryRow(ctx, q.moduleStmt, module, uuid)
 	var i Module
 	err := row.Scan(&i.UUID, &i.Path, &i.Version)
 	return i, err
@@ -49,7 +49,7 @@ SELECT uuid, path, version FROM modules
 `
 
 func (q *Queries) Modules(ctx context.Context) ([]Module, error) {
-	rows, err := q.db.QueryContext(ctx, modules)
+	rows, err := q.query(ctx, q.modulesStmt, modules)
 	if err != nil {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ WHERE sha = $1 LIMIT 1
 `
 
 func (q *Queries) Commit(ctx context.Context, sha []byte) (Commit, error) {
-	row := q.db.QueryRowContext(ctx, commit, sha)
+	row := q.queryRow(ctx, q.commitStmt, commit, sha)
 	var i Commit
 	err := row.Scan(
 		&i.SHA,
@@ -73,7 +73,7 @@ type InsertCommitParams struct {
 }
 
 func (q *Queries) InsertCommit(ctx context.Context, arg InsertCommitParams) error {
-	_, err := q.db.ExecContext(ctx, insertCommit,
+	_, err := q.exec(ctx, q.insertCommitStmt, insertCommit,
 		arg.SHA,
 		arg.Tree,
 		arg.Parents,

@@ -45,7 +45,10 @@ func (cmd *Ingest) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{
 		return cmd.Error(err)
 	}
 
-	d := db.New(sqldb)
+	d, err := db.New(ctx, sqldb)
+	if err != nil {
+		return cmd.Error(err)
+	}
 	defer d.Close()
 
 	// Open filesystem.
