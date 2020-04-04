@@ -44,6 +44,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		log.Printf("returned %d commits", len(commits))
 
 		// Store in database.
@@ -55,6 +56,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 		// Look to see if we've hit the latest one.
 		if containsCommit(commits, latest) {
+			log.Printf("done: found commit %s", latest.SHA)
 			break
 		}
 
