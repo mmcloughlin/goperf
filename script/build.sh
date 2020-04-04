@@ -9,5 +9,6 @@ go build ./...
 for dir in fn/*; do
     cd ${dir}
     go build
+    go mod tidy
     cd -
 done

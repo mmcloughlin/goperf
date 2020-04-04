@@ -4,17 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
-	"cloud.google.com/go/firestore"
-
-	"github.com/mmcloughlin/cb/app/mapper"
-	"github.com/mmcloughlin/cb/app/obj"
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/repo"
+	"github.com/mmcloughlin/cb/app/service"
 )
-
-// Parameters.
-var project = os.Getenv("CB_PROJECT_ID")
 
 // Services.
 var repository = repo.Go(http.DefaultClient)
@@ -23,34 +17,60 @@ var repository = repo.Go(http.DefaultClient)
 func Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	// Fetch commits.
-	commits, err := repository.Log(ctx, "master")
+	// Open database connection.
+	d, err := service.DB(ctx)
 	if err != nil {
-		log.Printf("recent commits: %s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer d.Close()
 
-	// Create Firestore client.
-	fsc, err := firestore.NewClient(ctx, project)
+	// Get most recent commit in the database.
+	latest, err := d.MostRecentCommit(ctx)
 	if err != nil {
-		log.Printf("firestore new client: %s", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	defer fsc.Close()
+	log.Printf("latest commit in database: %s", latest.SHA)
 
-	// Write commits to store.
-	s := obj.NewFirestore(fsc)
-	for _, c := range commits {
-		m := mapper.CommitModel(c)
-		if err := s.Set(ctx, m); err != nil {
-			log.Printf("upsert commit %s: %s", c.SHA, err)
+	// Fetch commits until we get to the latest one.
+	start := "master"
+	for {
+		// Fetch commits.
+		log.Printf("git log %s", start)
+		commits, err := repository.Log(ctx, start)
+		if err != nil {
+			log.Printf("recent commits: %s", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		log.Printf("upserted commit %s", c.SHA)
+		log.Printf("returned %d commits", len(commits))
+
+		// Store in database.
+		if err := d.StoreCommits(ctx, commits); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		log.Printf("inserted %d commits", len(commits))
+
+		// Look to see if we've hit the latest one.
+		if containsCommit(commits, latest) {
+			break
+		}
+
+		// Update log starting point.
+		start = commits[len(commits)-1].SHA
 	}
 
 	// Report ok.
 	fmt.Fprintln(w, "ok")
+}
+
+func containsCommit(commits []*entity.Commit, target *entity.Commit) bool {
+	for _, c := range commits {
+		if c.SHA == target.SHA {
+			return true
+		}
+	}
+	return false
 }
