@@ -19,7 +19,7 @@ func Database(t *testing.T) *DB {
 		t.Skip("no database connection string provided")
 	}
 
-	db, err := Open(*conn)
+	db, err := Open(context.Background(), *conn)
 	if err != nil {
 		t.Fatal(err)
 	}
