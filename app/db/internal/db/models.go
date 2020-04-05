@@ -4,11 +4,51 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
+
+type TaskStatus string
+
+const (
+	TaskStatusCreated         TaskStatus = "created"
+	TaskStatusInProgress      TaskStatus = "in_progress"
+	TaskStatusCompleteSuccess TaskStatus = "complete_success"
+	TaskStatusCompleteError   TaskStatus = "complete_error"
+)
+
+func (e *TaskStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TaskStatus(s)
+	case string:
+		*e = TaskStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TaskStatus: %T", src)
+	}
+	return nil
+}
+
+type TaskType string
+
+const (
+	TaskTypeModule TaskType = "module"
+)
+
+func (e *TaskType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TaskType(s)
+	case string:
+		*e = TaskType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TaskType: %T", src)
+	}
+	return nil
+}
 
 type Benchmark struct {
 	UUID        uuid.UUID
@@ -65,4 +105,15 @@ type Result struct {
 	MetadataUUID    uuid.UUID
 	Iterations      int64
 	Value           float64
+}
+
+type Task struct {
+	UUID             uuid.UUID
+	Worker           string
+	CommitSHA        []byte
+	Type             TaskType
+	TargetUuid       uuid.UUID
+	Status           TaskStatus
+	LastStatusUpdate time.Time
+	DatafileUUID     uuid.UUID
 }
