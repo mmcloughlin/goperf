@@ -3,6 +3,7 @@ package httputil
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,6 +13,11 @@ import (
 
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
+
+// OK responds with an ok response. Intended for serverless handlers.
+func OK(w http.ResponseWriter) {
+	fmt.Fprintln(w, "ok")
+}
 
 // InternalServerError responds with an internal server error.
 func InternalServerError(w http.ResponseWriter, err error) {
