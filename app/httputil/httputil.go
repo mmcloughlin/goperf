@@ -1,4 +1,4 @@
-package main
+package httputil
 
 import (
 	"bytes"
@@ -13,6 +13,12 @@ import (
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
+// InternalServerError responds with an internal server error.
+func InternalServerError(w http.ResponseWriter, err error) {
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+}
+
+// NewStatic serves static content from the supplied filesystem.
 func NewStatic(filesys fs.Readable) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -20,22 +26,18 @@ func NewStatic(filesys fs.Readable) http.Handler {
 
 		info, err := filesys.Stat(ctx, name)
 		if err != nil {
-			Error(w, err)
+			InternalServerError(w, err)
 			return
 		}
 
 		b, err := fs.ReadFile(ctx, filesys, name)
 		if err != nil {
-			Error(w, err)
+			InternalServerError(w, err)
 			return
 		}
 
 		http.ServeContent(w, r, name, info.ModTime, bytes.NewReader(b))
 	})
-}
-
-func Error(w http.ResponseWriter, err error) {
-	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
 type proxysingleurl struct {
@@ -64,7 +66,7 @@ func (p *proxysingleurl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Fetch if necessary.
 	if !p.fetched() {
 		if err := p.fetch(r.Context()); err != nil {
-			Error(w, err)
+			InternalServerError(w, err)
 			return
 		}
 	}

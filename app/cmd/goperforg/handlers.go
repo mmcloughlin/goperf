@@ -14,6 +14,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/brand"
 	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/units"
 )
@@ -64,10 +65,10 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.HandleFunc("/commit/", h.Commit)
 
 	// Static assets.
-	static := NewStatic(h.static)
+	static := httputil.NewStatic(h.static)
 	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
 
-	h.mux.Handle("/favicon.ico", ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"}))
+	h.mux.Handle("/favicon.ico", httputil.ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"}))
 
 	return h
 }
@@ -87,7 +88,7 @@ func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
 	// Fetch modules.
 	mods, err := h.db.ListModules(ctx)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -103,20 +104,20 @@ func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/mod/")
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	// Fetch module.
 	mod, err := h.db.FindModuleByUUID(ctx, id)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	pkgs, err := h.db.ListModulePackages(ctx, mod)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -133,20 +134,20 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/pkg/")
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	// Fetch package.
 	pkg, err := h.db.FindPackageByUUID(ctx, id)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	benchs, err := h.db.ListPackageBenchmarks(ctx, pkg)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -163,20 +164,20 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/bench/")
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	// Fetch benchmark.
 	bench, err := h.db.FindBenchmarkByUUID(ctx, id)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	points, err := h.db.ListBenchmarkPoints(ctx, bench, 256)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -197,14 +198,14 @@ func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/result/")
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	// Fetch result.
 	result, err := h.db.FindResultByUUID(ctx, id)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -226,7 +227,7 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/file/")
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -239,14 +240,14 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	// Fetch file.
 	file, err := h.db.FindDataFileByUUID(ctx, id)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	// Fetch raw data.
 	rdr, err := h.datafs.Open(ctx, file.Name)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 	defer rdr.Close()
@@ -268,7 +269,7 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	if err := s.Err(); err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -285,14 +286,14 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) {
 	// Extract commit SHA.
 	sha, err := stripprefix(r.URL.Path, "/commit/")
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
 	// Fetch commit.
 	commit, err := h.db.FindCommitBySHA(ctx, sha)
 	if err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 
@@ -304,7 +305,7 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
 	if err := h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data); err != nil {
-		Error(w, err)
+		httputil.InternalServerError(w, err)
 		return
 	}
 }
