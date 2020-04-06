@@ -44,6 +44,9 @@ func listWorkerTasksWithSpecAndStatus(ctx context.Context, q *db.Queries, worker
 		CommitSHA:  sha,
 		Statuses:   taskStatuses,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	output := make([]*entity.Task, len(ts))
 	for i, t := range ts {

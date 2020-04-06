@@ -16,6 +16,7 @@ import (
 
 // OK responds with an ok response. Intended for serverless handlers.
 func OK(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "ok")
 }
 
