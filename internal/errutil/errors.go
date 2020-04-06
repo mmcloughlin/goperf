@@ -15,6 +15,11 @@ func UnexpectedType(t interface{}) error {
 	return AssertionFailure("unexpected type %T", t)
 }
 
+// UnhandledCase builds an error for an unexpected value in a switch.
+func UnhandledCase(v interface{}) error {
+	return AssertionFailure("unhandled case %v", v)
+}
+
 // Errors is a collection of errors.
 type Errors []error
 

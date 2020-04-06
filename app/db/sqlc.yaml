@@ -17,6 +17,7 @@ rename:
   environment_uuid: EnvironmentUUID
   metadata_uuid: MetadataUUID
   result_uuid: ResultUUID
+  target_uuid: TargetUUID
 overrides:
   - go_type: github.com/lib/pq.ByteaArray
     column: commits.parents

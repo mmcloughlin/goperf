@@ -112,7 +112,7 @@ type Task struct {
 	Worker           string
 	CommitSHA        []byte
 	Type             TaskType
-	TargetUuid       uuid.UUID
+	TargetUUID       uuid.UUID
 	Status           TaskStatus
 	LastStatusUpdate time.Time
 	DatafileUUID     uuid.UUID

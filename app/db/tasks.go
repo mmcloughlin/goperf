@@ -1,0 +1,147 @@
+package db
+
+import (
+	"context"
+	"encoding/hex"
+	"fmt"
+
+	"github.com/mmcloughlin/cb/app/db/internal/db"
+	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/internal/errutil"
+)
+
+// ListWorkerTasksWithSpecAndStatus returns tasks assigned to the given worker, matching the spec and in one of the allowed statuses.
+func (d *DB) ListWorkerTasksWithSpecAndStatus(ctx context.Context, worker string, s entity.TaskSpec, statuses []entity.TaskStatus) ([]*entity.Task, error) {
+	var ts []*entity.Task
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		ts, err = listWorkerTasksWithSpecAndStatus(ctx, q, worker, s, statuses)
+		return err
+	})
+	return ts, err
+}
+
+func listWorkerTasksWithSpecAndStatus(ctx context.Context, q *db.Queries, worker string, s entity.TaskSpec, statuses []entity.TaskStatus) ([]*entity.Task, error) {
+	sha, err := hex.DecodeString(s.CommitSHA)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sha: %w", err)
+	}
+
+	typ, err := toTaskType(s.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	taskStatuses, err := toTaskStatuses(statuses)
+	if err != nil {
+		return nil, err
+	}
+
+	ts, err := q.WorkerTasksWithSpecAndStatus(ctx, db.WorkerTasksWithSpecAndStatusParams{
+		Worker:     worker,
+		Type:       typ,
+		TargetUUID: s.TargetUUID,
+		CommitSHA:  sha,
+		Statuses:   taskStatuses,
+	})
+
+	output := make([]*entity.Task, len(ts))
+	for i, t := range ts {
+		output[i], err = mapTask(t)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return output, nil
+}
+
+// toTaskType maps a task type to the corresponding database enum value.
+func toTaskType(t entity.TaskType) (db.TaskType, error) {
+	if !t.IsATaskType() {
+		return "", errutil.AssertionFailure("invalid task type")
+	}
+	switch t {
+	case entity.TaskTypeModule:
+		return db.TaskTypeModule, nil
+	default:
+		return "", errutil.UnhandledCase(t)
+	}
+}
+
+func toTaskStatuses(statuses []entity.TaskStatus) ([]db.TaskStatus, error) {
+	ss := make([]db.TaskStatus, 0, len(statuses))
+	for _, status := range statuses {
+		s, err := toTaskStatus(status)
+		if err != nil {
+			return nil, err
+		}
+		ss = append(ss, s)
+	}
+	return ss, nil
+}
+
+func toTaskStatus(status entity.TaskStatus) (db.TaskStatus, error) {
+	if !status.IsATaskStatus() {
+		return "", errutil.AssertionFailure("invalid task status")
+	}
+	switch status {
+	case entity.TaskStatusCreated:
+		return db.TaskStatusCreated, nil
+	case entity.TaskStatusInProgress:
+		return db.TaskStatusInProgress, nil
+	case entity.TaskStatusCompleteSuccess:
+		return db.TaskStatusCompleteSuccess, nil
+	case entity.TaskStatusCompleteError:
+		return db.TaskStatusCompleteError, nil
+	default:
+		return "", errutil.UnhandledCase(status)
+	}
+}
+
+func mapTask(t db.Task) (*entity.Task, error) {
+	typ, err := mapTaskType(t.Type)
+	if err != nil {
+		return nil, err
+	}
+	status, err := mapTaskStatus(t.Status)
+	if err != nil {
+		return nil, err
+	}
+	return &entity.Task{
+		UUID:   t.UUID,
+		Worker: t.Worker,
+		Spec: entity.TaskSpec{
+			Type:       typ,
+			TargetUUID: t.TargetUUID,
+			CommitSHA:  hex.EncodeToString(t.CommitSHA),
+		},
+		Status:           status,
+		LastStatusUpdate: t.LastStatusUpdate,
+		DatafileUUID:     t.DatafileUUID,
+	}, nil
+}
+
+func mapTaskType(t db.TaskType) (entity.TaskType, error) {
+	switch t {
+	case db.TaskTypeModule:
+		return entity.TaskTypeModule, nil
+	default:
+		return 0, errutil.UnhandledCase(t)
+	}
+}
+
+func mapTaskStatus(status db.TaskStatus) (entity.TaskStatus, error) {
+	switch status {
+	case db.TaskStatusCreated:
+		return entity.TaskStatusCreated, nil
+	case db.TaskStatusInProgress:
+		return entity.TaskStatusInProgress, nil
+	case db.TaskStatusCompleteSuccess:
+		return entity.TaskStatusCompleteSuccess, nil
+	case db.TaskStatusCompleteError:
+		return entity.TaskStatusCompleteError, nil
+	default:
+		return 0, errutil.UnhandledCase(status)
+	}
+}
