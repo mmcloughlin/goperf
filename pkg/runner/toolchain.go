@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"golang.org/x/build/buildenv"
+	"golang.org/x/build/dashboard"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/lg"
@@ -174,6 +175,22 @@ func (s *snapshot) Install(w *Workspace, root string) {
 
 	// Extract.
 	w.Uncompress(archive, root)
+}
+
+// SnapshotBuilderType looks for a suitable builder type to download snapshots
+// for the given GOOS/GOARCH.
+func SnapshotBuilderType(goos, goarch string) (string, bool) {
+	builder, found := "", false
+	for name, conf := range dashboard.Builders {
+		if conf.SkipSnapshot || conf.GOOS() != goos || conf.GOARCH() != goarch || conf.IsRace() {
+			continue
+		}
+		if !found || len(name) < len(builder) {
+			builder = name
+			found = true
+		}
+	}
+	return builder, found
 }
 
 type release struct {

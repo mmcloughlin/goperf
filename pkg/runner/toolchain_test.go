@@ -1,9 +1,14 @@
 package runner
 
 import (
+	"net/http"
 	"reflect"
 	"runtime"
 	"testing"
+
+	"golang.org/x/build/buildenv"
+
+	"github.com/mmcloughlin/cb/internal/test"
 )
 
 func TestNewToolchain(t *testing.T) {
@@ -103,6 +108,43 @@ func TestNewToolchainErrors(t *testing.T) {
 			if err.Error() != c.ErrorMessage {
 				t.Fatalf("got error %q; expect %q", err.Error(), c.ErrorMessage)
 			}
+		})
+	}
+}
+
+func TestSnapshotBuilderTypeDownload(t *testing.T) {
+	test.RequiresNetwork(t)
+
+	rev := "5f3354d1bf2e6a61e4b9e1e31ee04b99dfe7de35"
+	cases := []struct {
+		GOOS   string
+		GOARCH string
+	}{
+		{"linux", "386"},
+		{"linux", "amd64"},
+		{"linux", "arm"},
+		{"linux", "arm64"},
+		{"windows", "386"},
+		{"windows", "amd64"},
+	}
+
+	for _, c := range cases {
+		t.Run(c.GOOS+"-"+c.GOARCH, func(t *testing.T) {
+			builder, ok := SnapshotBuilderType(c.GOOS, c.GOARCH)
+			if !ok {
+				t.Fatal("could not identify builder type")
+			}
+			t.Logf("builder type: %s", builder)
+
+			u := buildenv.Production.SnapshotURL(builder, rev)
+			t.Logf("snapshot url: %s", u)
+
+			resp, err := http.DefaultClient.Head(u)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Logf("%d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 		})
 	}
 }
