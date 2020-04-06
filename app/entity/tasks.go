@@ -29,6 +29,30 @@ const (
 
 //go:generate enumer -type TaskStatus -output taskstatus_enum.go -trimprefix TaskStatus -transform snake
 
+// IsComplete reports whether this task is finished.
+func (s TaskStatus) IsComplete() bool {
+	return s == TaskStatusCompleteSuccess || s == TaskStatusCompleteError
+}
+
+// IsPending reports whether this task is in a pending state.
+func (s TaskStatus) IsPending() bool {
+	return !s.IsComplete()
+}
+
+// TaskStatusCompleteValues returns all complete task states.
+func TaskStatusCompleteValues() []TaskStatus { return filterTaskStatusValues(TaskStatus.IsComplete) }
+
+// TaskStatusPendingValues returns all pending task states.
+func TaskStatusPendingValues() []TaskStatus { return filterTaskStatusValues(TaskStatus.IsPending) }
+
+func filterTaskStatusValues(predicate func(TaskStatus) bool) []TaskStatus {
+	filtered := []TaskStatus{}
+	for _, status := range TaskStatusValues() {
+		filtered = append(filtered, status)
+	}
+	return filtered
+}
+
 // TaskSpec specifies work required by a task.
 type TaskSpec struct {
 	Type       TaskType

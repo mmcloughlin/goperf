@@ -3,46 +3,37 @@ package db
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
-// ListWorkerTasksWithSpecAndStatus returns tasks assigned to the given worker, matching the spec and in one of the allowed statuses.
-func (d *DB) ListWorkerTasksWithSpecAndStatus(ctx context.Context, worker string, s entity.TaskSpec, statuses []entity.TaskStatus) ([]*entity.Task, error) {
+// ListWorkerTasksPending returns tasks assigned to a worker in a pending state.
+func (d *DB) ListWorkerTasksPending(ctx context.Context, worker string) ([]*entity.Task, error) {
+	return d.ListWorkerTasksWithStatus(ctx, worker, entity.TaskStatusPendingValues())
+}
+
+// ListWorkerTasksWithStatus returns tasks assigned to a worker in the given states.
+func (d *DB) ListWorkerTasksWithStatus(ctx context.Context, worker string, statuses []entity.TaskStatus) ([]*entity.Task, error) {
 	var ts []*entity.Task
 	err := d.tx(ctx, func(q *db.Queries) error {
 		var err error
-		ts, err = listWorkerTasksWithSpecAndStatus(ctx, q, worker, s, statuses)
+		ts, err = listWorkerTasksWithSpecAndStatus(ctx, q, worker, statuses)
 		return err
 	})
 	return ts, err
 }
 
-func listWorkerTasksWithSpecAndStatus(ctx context.Context, q *db.Queries, worker string, s entity.TaskSpec, statuses []entity.TaskStatus) ([]*entity.Task, error) {
-	sha, err := hex.DecodeString(s.CommitSHA)
-	if err != nil {
-		return nil, fmt.Errorf("invalid sha: %w", err)
-	}
-
-	typ, err := toTaskType(s.Type)
-	if err != nil {
-		return nil, err
-	}
-
+func listWorkerTasksWithSpecAndStatus(ctx context.Context, q *db.Queries, worker string, statuses []entity.TaskStatus) ([]*entity.Task, error) {
 	taskStatuses, err := toTaskStatuses(statuses)
 	if err != nil {
 		return nil, err
 	}
 
-	ts, err := q.WorkerTasksWithSpecAndStatus(ctx, db.WorkerTasksWithSpecAndStatusParams{
-		Worker:     worker,
-		Type:       typ,
-		TargetUUID: s.TargetUUID,
-		CommitSHA:  sha,
-		Statuses:   taskStatuses,
+	ts, err := q.WorkerTasksWithStatus(ctx, db.WorkerTasksWithStatusParams{
+		Worker:   worker,
+		Statuses: taskStatuses,
 	})
 	if err != nil {
 		return nil, err
