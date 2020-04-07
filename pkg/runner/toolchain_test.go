@@ -129,6 +129,7 @@ func TestSnapshotBuilderTypeDownload(t *testing.T) {
 	}
 
 	for _, c := range cases {
+		c := c // scopelint
 		t.Run(c.GOOS+"-"+c.GOARCH, func(t *testing.T) {
 			builder, ok := SnapshotBuilderType(c.GOOS, c.GOARCH)
 			if !ok {
@@ -143,6 +144,7 @@ func TestSnapshotBuilderTypeDownload(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			defer resp.Body.Close()
 
 			t.Logf("%d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 		})

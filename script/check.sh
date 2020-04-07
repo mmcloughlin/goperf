@@ -3,3 +3,4 @@
 ./script/fmt.sh
 ./script/generate.sh
 ./script/build.sh
+./script/lint.sh

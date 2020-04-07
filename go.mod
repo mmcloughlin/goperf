@@ -15,6 +15,7 @@ require (
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.0.0
 	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/golang/gddo v0.0.0-20200324184333-3c2cc9a6329d
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac // indirect

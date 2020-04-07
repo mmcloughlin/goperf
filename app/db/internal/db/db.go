@@ -34,6 +34,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.commitStmt, err = db.PrepareContext(ctx, commit); err != nil {
 		return nil, fmt.Errorf("error preparing query Commit: %w", err)
 	}
+	if q.createTaskStmt, err = db.PrepareContext(ctx, createTask); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateTask: %w", err)
+	}
 	if q.dataFileStmt, err = db.PrepareContext(ctx, dataFile); err != nil {
 		return nil, fmt.Errorf("error preparing query DataFile: %w", err)
 	}
@@ -82,8 +85,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.resultStmt, err = db.PrepareContext(ctx, result); err != nil {
 		return nil, fmt.Errorf("error preparing query Result: %w", err)
 	}
-	if q.workerTasksWithSpecAndStatusStmt, err = db.PrepareContext(ctx, workerTasksWithSpecAndStatus); err != nil {
-		return nil, fmt.Errorf("error preparing query WorkerTasksWithSpecAndStatus: %w", err)
+	if q.workerTasksWithStatusStmt, err = db.PrepareContext(ctx, workerTasksWithStatus); err != nil {
+		return nil, fmt.Errorf("error preparing query WorkerTasksWithStatus: %w", err)
 	}
 	return &q, nil
 }
@@ -108,6 +111,11 @@ func (q *Queries) Close() error {
 	if q.commitStmt != nil {
 		if cerr := q.commitStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing commitStmt: %w", cerr)
+		}
+	}
+	if q.createTaskStmt != nil {
+		if cerr := q.createTaskStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createTaskStmt: %w", cerr)
 		}
 	}
 	if q.dataFileStmt != nil {
@@ -190,9 +198,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing resultStmt: %w", cerr)
 		}
 	}
-	if q.workerTasksWithSpecAndStatusStmt != nil {
-		if cerr := q.workerTasksWithSpecAndStatusStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing workerTasksWithSpecAndStatusStmt: %w", cerr)
+	if q.workerTasksWithStatusStmt != nil {
+		if cerr := q.workerTasksWithStatusStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing workerTasksWithStatusStmt: %w", cerr)
 		}
 	}
 	return err
@@ -232,55 +240,57 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                               DBTX
-	tx                               *sql.Tx
-	benchmarkStmt                    *sql.Stmt
-	benchmarkPointsStmt              *sql.Stmt
-	benchmarkResultsStmt             *sql.Stmt
-	commitStmt                       *sql.Stmt
-	dataFileStmt                     *sql.Stmt
-	insertBenchmarkStmt              *sql.Stmt
-	insertCommitStmt                 *sql.Stmt
-	insertDataFileStmt               *sql.Stmt
-	insertModuleStmt                 *sql.Stmt
-	insertPkgStmt                    *sql.Stmt
-	insertPropertiesStmt             *sql.Stmt
-	insertResultStmt                 *sql.Stmt
-	moduleStmt                       *sql.Stmt
-	modulePkgsStmt                   *sql.Stmt
-	modulesStmt                      *sql.Stmt
-	mostRecentCommitStmt             *sql.Stmt
-	packageBenchmarksStmt            *sql.Stmt
-	pkgStmt                          *sql.Stmt
-	propertiesStmt                   *sql.Stmt
-	resultStmt                       *sql.Stmt
-	workerTasksWithSpecAndStatusStmt *sql.Stmt
+	db                        DBTX
+	tx                        *sql.Tx
+	benchmarkStmt             *sql.Stmt
+	benchmarkPointsStmt       *sql.Stmt
+	benchmarkResultsStmt      *sql.Stmt
+	commitStmt                *sql.Stmt
+	createTaskStmt            *sql.Stmt
+	dataFileStmt              *sql.Stmt
+	insertBenchmarkStmt       *sql.Stmt
+	insertCommitStmt          *sql.Stmt
+	insertDataFileStmt        *sql.Stmt
+	insertModuleStmt          *sql.Stmt
+	insertPkgStmt             *sql.Stmt
+	insertPropertiesStmt      *sql.Stmt
+	insertResultStmt          *sql.Stmt
+	moduleStmt                *sql.Stmt
+	modulePkgsStmt            *sql.Stmt
+	modulesStmt               *sql.Stmt
+	mostRecentCommitStmt      *sql.Stmt
+	packageBenchmarksStmt     *sql.Stmt
+	pkgStmt                   *sql.Stmt
+	propertiesStmt            *sql.Stmt
+	resultStmt                *sql.Stmt
+	workerTasksWithStatusStmt *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                               tx,
-		tx:                               tx,
-		benchmarkStmt:                    q.benchmarkStmt,
-		benchmarkPointsStmt:              q.benchmarkPointsStmt,
-		benchmarkResultsStmt:             q.benchmarkResultsStmt,
-		commitStmt:                       q.commitStmt,
-		dataFileStmt:                     q.dataFileStmt,
-		insertBenchmarkStmt:              q.insertBenchmarkStmt,
-		insertCommitStmt:                 q.insertCommitStmt,
-		insertDataFileStmt:               q.insertDataFileStmt,
-		insertModuleStmt:                 q.insertModuleStmt,
-		insertPkgStmt:                    q.insertPkgStmt,
-		insertPropertiesStmt:             q.insertPropertiesStmt,
-		insertResultStmt:                 q.insertResultStmt,
-		moduleStmt:                       q.moduleStmt,
-		modulePkgsStmt:                   q.modulePkgsStmt,
-		modulesStmt:                      q.modulesStmt,
-		mostRecentCommitStmt:             q.mostRecentCommitStmt,
-		packageBenchmarksStmt:            q.packageBenchmarksStmt,
-		pkgStmt:                          q.pkgStmt,
-		propertiesStmt:                   q.propertiesStmt,
-		resultStmt:                       q.resultStmt,
-		workerTasksWithSpecAndStatusStmt: q.workerTasksWithSpecAndStatusStmt,
+		db:                        tx,
+		tx:                        tx,
+		benchmarkStmt:             q.benchmarkStmt,
+		benchmarkPointsStmt:       q.benchmarkPointsStmt,
+		benchmarkResultsStmt:      q.benchmarkResultsStmt,
+		commitStmt:                q.commitStmt,
+		createTaskStmt:            q.createTaskStmt,
+		dataFileStmt:              q.dataFileStmt,
+		insertBenchmarkStmt:       q.insertBenchmarkStmt,
+		insertCommitStmt:          q.insertCommitStmt,
+		insertDataFileStmt:        q.insertDataFileStmt,
+		insertModuleStmt:          q.insertModuleStmt,
+		insertPkgStmt:             q.insertPkgStmt,
+		insertPropertiesStmt:      q.insertPropertiesStmt,
+		insertResultStmt:          q.insertResultStmt,
+		moduleStmt:                q.moduleStmt,
+		modulePkgsStmt:            q.modulePkgsStmt,
+		modulesStmt:               q.modulesStmt,
+		mostRecentCommitStmt:      q.mostRecentCommitStmt,
+		packageBenchmarksStmt:     q.packageBenchmarksStmt,
+		pkgStmt:                   q.pkgStmt,
+		propertiesStmt:            q.propertiesStmt,
+		resultStmt:                q.resultStmt,
+		workerTasksWithStatusStmt: q.workerTasksWithStatusStmt,
 	}
 }
