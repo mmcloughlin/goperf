@@ -48,7 +48,9 @@ func TaskStatusPendingValues() []TaskStatus { return filterTaskStatusValues(Task
 func filterTaskStatusValues(predicate func(TaskStatus) bool) []TaskStatus {
 	filtered := []TaskStatus{}
 	for _, status := range TaskStatusValues() {
-		filtered = append(filtered, status)
+		if predicate(status) {
+			filtered = append(filtered, status)
+		}
 	}
 	return filtered
 }

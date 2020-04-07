@@ -54,7 +54,7 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 	}
 
 	// Map to a job definition.
-	j, err := c.job(ctx, req, selected.Spec)
+	j, err := c.job(ctx, selected.Spec)
 	if err != nil {
 		return nil, err
 	}
@@ -72,20 +72,20 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 }
 
 // job expands a task specification to a job definition.
-func (c *Coordinator) job(ctx context.Context, req *JobsRequest, s entity.TaskSpec) (*Job, error) {
+func (c *Coordinator) job(ctx context.Context, s entity.TaskSpec) (*Job, error) {
 	if !s.Type.IsATaskType() {
 		return nil, errutil.AssertionFailure("invalid task type")
 	}
 	switch s.Type {
 	case entity.TaskTypeModule:
-		return c.modulejob(ctx, req, s)
+		return c.modulejob(ctx, s)
 	default:
 		return nil, errutil.UnhandledCase(s.Type)
 	}
 }
 
 // modulejob maps a TaskTypeModule task to a job definition.
-func (c *Coordinator) modulejob(ctx context.Context, req *JobsRequest, s entity.TaskSpec) (*Job, error) {
+func (c *Coordinator) modulejob(ctx context.Context, s entity.TaskSpec) (*Job, error) {
 	// Lookup the module.
 	m, err := c.db.FindModuleByUUID(ctx, s.TargetUUID)
 	if err != nil {
