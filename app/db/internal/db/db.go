@@ -34,6 +34,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.commitStmt, err = db.PrepareContext(ctx, commit); err != nil {
 		return nil, fmt.Errorf("error preparing query Commit: %w", err)
 	}
+	if q.createTaskStmt, err = db.PrepareContext(ctx, createTask); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateTask: %w", err)
+	}
 	if q.dataFileStmt, err = db.PrepareContext(ctx, dataFile); err != nil {
 		return nil, fmt.Errorf("error preparing query DataFile: %w", err)
 	}
@@ -108,6 +111,11 @@ func (q *Queries) Close() error {
 	if q.commitStmt != nil {
 		if cerr := q.commitStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing commitStmt: %w", cerr)
+		}
+	}
+	if q.createTaskStmt != nil {
+		if cerr := q.createTaskStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createTaskStmt: %w", cerr)
 		}
 	}
 	if q.dataFileStmt != nil {
@@ -238,6 +246,7 @@ type Queries struct {
 	benchmarkPointsStmt       *sql.Stmt
 	benchmarkResultsStmt      *sql.Stmt
 	commitStmt                *sql.Stmt
+	createTaskStmt            *sql.Stmt
 	dataFileStmt              *sql.Stmt
 	insertBenchmarkStmt       *sql.Stmt
 	insertCommitStmt          *sql.Stmt
@@ -265,6 +274,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		benchmarkPointsStmt:       q.benchmarkPointsStmt,
 		benchmarkResultsStmt:      q.benchmarkResultsStmt,
 		commitStmt:                q.commitStmt,
+		createTaskStmt:            q.createTaskStmt,
 		dataFileStmt:              q.dataFileStmt,
 		insertBenchmarkStmt:       q.insertBenchmarkStmt,
 		insertCommitStmt:          q.insertCommitStmt,

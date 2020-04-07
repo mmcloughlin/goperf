@@ -6,8 +6,60 @@ package db
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
+
+const createTask = `-- name: CreateTask :one
+INSERT INTO tasks (
+    uuid,
+    worker,
+    commit_sha,
+    type,
+    target_uuid,
+    task_status,
+    last_status_update
+)VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    'created',
+    NOW()
+)
+RETURNING uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid
+`
+
+type CreateTaskParams struct {
+	UUID       uuid.UUID
+	Worker     string
+	CommitSHA  []byte
+	Type       TaskType
+	TargetUUID uuid.UUID
+}
+
+func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
+	row := q.queryRow(ctx, q.createTaskStmt, createTask,
+		arg.UUID,
+		arg.Worker,
+		arg.CommitSHA,
+		arg.Type,
+		arg.TargetUUID,
+	)
+	var i Task
+	err := row.Scan(
+		&i.UUID,
+		&i.Worker,
+		&i.CommitSHA,
+		&i.Type,
+		&i.TargetUUID,
+		&i.Status,
+		&i.LastStatusUpdate,
+		&i.DatafileUUID,
+	)
+	return i, err
+}
 
 const workerTasksWithStatus = `-- name: WorkerTasksWithStatus :many
 SELECT

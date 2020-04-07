@@ -3,11 +3,55 @@ package db
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
+
+	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
+
+// CreateTask creates a new task.
+func (d *DB) CreateTask(ctx context.Context, worker string, s entity.TaskSpec) (*entity.Task, error) {
+	var t *entity.Task
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		t, err = createTask(ctx, q, worker, s)
+		return err
+	})
+	return t, err
+}
+
+func createTask(ctx context.Context, q *db.Queries, worker string, s entity.TaskSpec) (*entity.Task, error) {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+
+	sha, err := hex.DecodeString(s.CommitSHA)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sha: %w", err)
+	}
+
+	typ, err := toTaskType(s.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := q.CreateTask(ctx, db.CreateTaskParams{
+		UUID:       id,
+		Worker:     worker,
+		CommitSHA:  sha,
+		Type:       typ,
+		TargetUUID: s.TargetUUID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return mapTask(t)
+}
 
 // ListWorkerTasksPending returns tasks assigned to a worker in a pending state.
 func (d *DB) ListWorkerTasksPending(ctx context.Context, worker string) ([]*entity.Task, error) {

@@ -19,6 +19,10 @@ type Coordinator struct {
 
 // Jobs requests next jobs for a worker.
 func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	// Determine pending tasks for the worker.
 	pending, err := c.db.ListWorkerTasksPending(ctx, req.Worker)
 	if err != nil {
@@ -55,7 +59,12 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 		return nil, err
 	}
 
-	// TODO(mbm): create the task
+	// Create the task and link it with the job.
+	t, err := c.db.CreateTask(ctx, req.Worker, selected.Spec)
+	if err != nil {
+		return nil, err
+	}
+	j.TaskUUID = t.UUID
 
 	return &JobsResponse{
 		Jobs: []*Job{j},
