@@ -1,62 +1,68 @@
 package watch
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/app/repo"
 	"github.com/mmcloughlin/cb/app/service"
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 // Services.
-var repository = repo.Go(http.DefaultClient)
+var (
+	repository = repo.Go(http.DefaultClient)
+	logger     = lg.Default()
+	handler    = httputil.ErrorHandler{
+		Handler: httputil.HandlerFunc(handle),
+		Logger:  logger,
+	}
+)
 
 // Handle HTTP trigger.
 func Handle(w http.ResponseWriter, r *http.Request) {
+	handler.ServeHTTP(w, r)
+}
+
+func handle(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Open database connection.
 	d, err := service.DB(ctx)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 	defer d.Close()
 
 	// Get most recent commit in the database.
 	latest, err := d.MostRecentCommit(ctx)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
-	log.Printf("latest commit in database: %s", latest.SHA)
+	logger.Printf("latest commit in database: %s", latest.SHA)
 
 	// Fetch commits until we get to the latest one.
 	start := "master"
 	for {
 		// Fetch commits.
-		log.Printf("git log %s", start)
+		logger.Printf("git log %s", start)
 		commits, err := repository.Log(ctx, start)
 		if err != nil {
-			log.Printf("recent commits: %s", err)
-			httputil.InternalServerError(w, err)
-			return
+			logger.Printf("recent commits: %s", err)
+			return err
 		}
 
-		log.Printf("returned %d commits", len(commits))
+		logger.Printf("returned %d commits", len(commits))
 
 		// Store in database.
 		if err := d.StoreCommits(ctx, commits); err != nil {
-			httputil.InternalServerError(w, err)
-			return
+			return err
 		}
-		log.Printf("inserted %d commits", len(commits))
+		logger.Printf("inserted %d commits", len(commits))
 
 		// Look to see if we've hit the latest one.
 		if containsCommit(commits, latest) {
-			httputil.InternalServerError(w, err)
 			break
 		}
 
@@ -66,6 +72,8 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 
 	// Report ok.
 	httputil.OK(w)
+
+	return nil
 }
 
 func containsCommit(commits []*entity.Commit, target *entity.Commit) bool {

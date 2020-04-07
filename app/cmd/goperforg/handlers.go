@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/units"
 )
 
@@ -26,6 +28,7 @@ type Handlers struct {
 
 	mux       *http.ServeMux
 	templates *Templates
+	logger    lg.Logger
 }
 
 type Option func(*Handlers)
@@ -42,6 +45,10 @@ func WithDataFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.datafs = r }
 }
 
+func WithLogger(l lg.Logger) Option {
+	return func(h *Handlers) { h.logger = l }
+}
+
 func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
@@ -50,28 +57,39 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 		datafs:    fs.Null,
 		mux:       http.NewServeMux(),
 		templates: NewTemplates(TemplateFileSystem),
+		logger:    lg.Noop(),
 	}
 	for _, opt := range opts {
 		opt(h)
 	}
 
 	// Setup mux.
-	h.mux.HandleFunc("/mods/", h.Modules)
-	h.mux.HandleFunc("/mod/", h.Module)
-	h.mux.HandleFunc("/pkg/", h.Package)
-	h.mux.HandleFunc("/bench/", h.Benchmark)
-	h.mux.HandleFunc("/result/", h.Result)
-	h.mux.HandleFunc("/file/", h.File)
-	h.mux.HandleFunc("/commit/", h.Commit)
+	h.mux.Handle("/mods/", h.handlerFunc(h.Modules))
+	h.mux.Handle("/mod/", h.handlerFunc(h.Module))
+	h.mux.Handle("/pkg/", h.handlerFunc(h.Package))
+	h.mux.Handle("/bench/", h.handlerFunc(h.Benchmark))
+	h.mux.Handle("/result/", h.handlerFunc(h.Result))
+	h.mux.Handle("/file/", h.handlerFunc(h.File))
+	h.mux.Handle("/commit/", h.handlerFunc(h.Commit))
 
 	// Static assets.
-	static := httputil.NewStatic(h.static)
+	static := h.handler(httputil.NewStatic(h.static))
 	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
 
-	h.mux.Handle("/favicon.ico", httputil.ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"}))
+	iconproxy := httputil.ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"})
+	h.mux.Handle("/favicon.ico", h.handler(iconproxy))
 
 	return h
 }
+
+func (h *Handlers) handler(handler httputil.Handler) http.Handler {
+	return httputil.ErrorHandler{
+		Handler: handler,
+		Logger:  h.logger,
+	}
+}
+
+func (h *Handlers) handlerFunc(handler httputil.HandlerFunc) http.Handler { return h.handler(handler) }
 
 func (h *Handlers) Init(ctx context.Context) error {
 	h.templates.Func("color", brand.Color)
@@ -82,131 +100,119 @@ func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
 
-func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Fetch modules.
 	mods, err := h.db.ListModules(ctx)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Write response.
-	h.render(ctx, w, "mods", map[string]interface{}{
+	return h.render(ctx, w, "mods", map[string]interface{}{
 		"Modules": mods,
 	})
 }
 
-func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Module(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/mod/")
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Fetch module.
 	mod, err := h.db.FindModuleByUUID(ctx, id)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	pkgs, err := h.db.ListModulePackages(ctx, mod)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Write response.
-	h.render(ctx, w, "mod", map[string]interface{}{
+	return h.render(ctx, w, "mod", map[string]interface{}{
 		"Module":   mod,
 		"Packages": pkgs,
 	})
 }
 
-func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/pkg/")
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Fetch package.
 	pkg, err := h.db.FindPackageByUUID(ctx, id)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	benchs, err := h.db.ListPackageBenchmarks(ctx, pkg)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Write response.
-	h.render(ctx, w, "pkg", map[string]interface{}{
+	return h.render(ctx, w, "pkg", map[string]interface{}{
 		"Package":    pkg,
 		"Benchmarks": benchs,
 	})
 }
 
-func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/bench/")
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Fetch benchmark.
 	bench, err := h.db.FindBenchmarkByUUID(ctx, id)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	points, err := h.db.ListBenchmarkPoints(ctx, bench, 256)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Apply KZA filter.
 	kza := analysis.AdaptiveKolmogorovZurbenko(points.Values(), 31, 5)
 
 	// Write response.
-	h.render(ctx, w, "bench", map[string]interface{}{
+	return h.render(ctx, w, "bench", map[string]interface{}{
 		"Benchmark": bench,
 		"Points":    points,
 		"Filtered":  kza,
 	})
 }
 
-func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/result/")
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Fetch result.
 	result, err := h.db.FindResultByUUID(ctx, id)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	quantity := units.Humanize(units.Quantity{
@@ -215,20 +221,19 @@ func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Write response.
-	h.render(ctx, w, "result", map[string]interface{}{
+	return h.render(ctx, w, "result", map[string]interface{}{
 		"Result":   result,
 		"Quantity": quantity,
 	})
 }
 
-func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) File(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Parse UUID.
 	id, err := parseuuid(r.URL.Path, "/file/")
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Was a line selection specified?
@@ -240,15 +245,13 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 	// Fetch file.
 	file, err := h.db.FindDataFileByUUID(ctx, id)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Fetch raw data.
 	rdr, err := h.datafs.Open(ctx, file.Name)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 	defer rdr.Close()
 
@@ -269,45 +272,39 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	if err := s.Err(); err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Write response.
-	h.render(ctx, w, "file", map[string]interface{}{
+	return h.render(ctx, w, "file", map[string]interface{}{
 		"File":  file,
 		"Lines": lines,
 	})
 }
 
-func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Extract commit SHA.
 	sha, err := stripprefix(r.URL.Path, "/commit/")
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Fetch commit.
 	commit, err := h.db.FindCommitBySHA(ctx, sha)
 	if err != nil {
-		httputil.InternalServerError(w, err)
-		return
+		return err
 	}
 
 	// Write response.
-	h.render(ctx, w, "commit", map[string]interface{}{
+	return h.render(ctx, w, "commit", map[string]interface{}{
 		"Commit": commit,
 	})
 }
 
-func (h *Handlers) render(ctx context.Context, w http.ResponseWriter, name string, data interface{}) {
-	if err := h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data); err != nil {
-		httputil.InternalServerError(w, err)
-		return
-	}
+func (h *Handlers) render(ctx context.Context, w io.Writer, name string, data interface{}) error {
+	return h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data)
 }
 
 func parseuuid(path, prefix string) (uuid.UUID, error) {

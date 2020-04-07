@@ -50,7 +50,7 @@ func mainerr(l lg.Logger) error {
 	defer d.Close()
 
 	// Build handlers.
-	var opts []Option
+	opts := []Option{WithLogger(l)}
 
 	if *bucket != "" {
 		datafs, err := gcs.New(ctx, *bucket)
