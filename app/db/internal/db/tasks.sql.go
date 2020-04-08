@@ -17,7 +17,7 @@ INSERT INTO tasks (
     commit_sha,
     type,
     target_uuid,
-    task_status,
+    status,
     last_status_update
 )VALUES (
     $1,

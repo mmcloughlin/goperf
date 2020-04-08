@@ -30,9 +30,9 @@ func (e Error) Error() string {
 // Status returns the associated HTTP status code.
 func (e Error) Status() int { return e.Code }
 
-// InternalServerError builds an error with StatusInternalServerError.
-func InternalServerError(err error) Error {
-	return Error{Code: http.StatusInternalServerError, Err: err}
+// BadRequest builds a 400 error with StatusBadRequest.
+func BadRequest(err error) Error {
+	return Error{Code: http.StatusBadRequest, Err: err}
 }
 
 // NotFound builds a 404 error.
@@ -40,9 +40,17 @@ func NotFound() Error {
 	return Error{Code: http.StatusNotFound}
 }
 
-// BadRequest builds an error with StatusBadRequest.
-func BadRequest(err error) Error {
-	return Error{Code: http.StatusBadRequest, Err: err}
+// MethodNotAllowed builds a 405 error.
+func MethodNotAllowed(method string) Error {
+	return Error{
+		Code: http.StatusMethodNotAllowed,
+		Err:  fmt.Errorf("method %s not allowed", method),
+	}
+}
+
+// InternalServerError builds a 500 error.
+func InternalServerError(err error) Error {
+	return Error{Code: http.StatusInternalServerError, Err: err}
 }
 
 // Handler handles a HTTP request and returns a possible error.

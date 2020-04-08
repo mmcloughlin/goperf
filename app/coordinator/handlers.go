@@ -3,6 +3,8 @@ package coordinator
 import (
 	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
@@ -10,8 +12,7 @@ import (
 type Handlers struct {
 	c *Coordinator
 
-	mux     *http.ServeMux
-	jsondec *httputil.JSONDecoder
+	router  *httprouter.Router
 	jsonenc *httputil.JSONEncoder
 	logger  lg.Logger
 }
@@ -20,14 +21,14 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 	// Configure.
 	h := &Handlers{
 		c:       c,
-		jsondec: &httputil.JSONDecoder{MaxRequestSize: 1 << 20},
-		mux:     http.NewServeMux(),
+		jsonenc: &httputil.JSONEncoder{Debug: true},
+		router:  httprouter.New(),
 		logger:  l,
 	}
 
 	// Setup mux.
-	h.mux.Handle("/jobs", httputil.ErrorHandler{
-		Handler: httputil.HandlerFunc(h.Jobs),
+	h.router.Handler(http.MethodPost, "/workers/:worker/jobs", httputil.ErrorHandler{
+		Handler: httputil.HandlerFunc(h.RequestJobs),
 		Logger:  h.logger,
 	})
 
@@ -35,16 +36,16 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 }
 
 func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.mux.ServeHTTP(w, r)
+	h.router.ServeHTTP(w, r)
 }
 
-func (h *Handlers) Jobs(w http.ResponseWriter, r *http.Request) error {
+func (h *Handlers) RequestJobs(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
+	params := httprouter.ParamsFromContext(r.Context())
 
-	// Decode request.
-	req := &JobsRequest{}
-	if err := h.jsondec.DecodeRequest(w, r, req); err != nil {
-		return httputil.BadRequest(err)
+	// Build jobs request.
+	req := &JobsRequest{
+		Worker: params.ByName("worker"),
 	}
 
 	// Delegate to Coordinator.
@@ -54,5 +55,8 @@ func (h *Handlers) Jobs(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Encode response.
+	if len(res.Jobs) > 0 {
+		w.WriteHeader(http.StatusCreated)
+	}
 	return h.jsonenc.EncodeResponse(w, res)
 }

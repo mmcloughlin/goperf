@@ -27,6 +27,7 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.1.1
+	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lib/pq v1.3.0
 	github.com/lucasb-eyer/go-colorful v1.0.3
 	github.com/mholt/archiver v3.1.1+incompatible

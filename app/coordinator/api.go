@@ -30,7 +30,7 @@ func NoJobsAvailable() *JobsResponse {
 }
 
 type Job struct {
-	TaskUUID  uuid.UUID
-	CommitSHA string
-	Suite     job.Suite
+	TaskUUID  uuid.UUID `json:"task_uuid"`
+	CommitSHA string    `json:"commit_sha"`
+	job.Suite `json:"suite"`
 }

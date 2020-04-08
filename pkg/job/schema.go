@@ -17,11 +17,11 @@ type Toolchain struct {
 
 type Suite struct {
 	Module     Module        `json:"module"`
-	Tests      string        `json:"tests"`
-	Short      bool          `json:"short"`
-	Benchmarks string        `json:"benchmarks"`
-	BenchTime  time.Duration `json:"benchtime_ns"`
-	Timeout    time.Duration `json:"timeout_ns"`
+	Tests      string        `json:"tests,omitempty"`
+	Short      bool          `json:"short,omitempty"`
+	Benchmarks string        `json:"benchmarks,omitempty"`
+	BenchTime  time.Duration `json:"benchtime_ns,omitempty"`
+	Timeout    time.Duration `json:"timeout_ns,omitempty"`
 }
 
 // TestRegex returns the regular expression controlling which tests are run.

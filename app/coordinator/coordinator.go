@@ -10,11 +10,26 @@ import (
 	"github.com/mmcloughlin/cb/app/sched"
 	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/job"
+	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Coordinator struct {
-	db    *db.DB
-	sched sched.Scheduler
+	db     *db.DB
+	sched  sched.Scheduler
+	logger lg.Logger
+}
+
+func New(d *db.DB, s sched.Scheduler) *Coordinator {
+	return &Coordinator{
+		db:     d,
+		sched:  s,
+		logger: lg.Noop(),
+	}
+}
+
+// SetLogger sets the logger used by the Coordinator.
+func (c *Coordinator) SetLogger(l lg.Logger) {
+	c.logger = l
 }
 
 // Jobs requests next jobs for a worker.
@@ -23,11 +38,15 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 		return nil, err
 	}
 
+	c.logger.Printf("jobs request for worker %s", req.Worker)
+
 	// Determine pending tasks for the worker.
 	pending, err := c.db.ListWorkerTasksPending(ctx, req.Worker)
 	if err != nil {
 		return nil, err
 	}
+
+	c.logger.Printf("found %d pending tasks", len(pending))
 
 	// Fetch proposed work.
 	proposed, err := c.sched.Tasks(ctx, &sched.Request{
@@ -37,6 +56,8 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 	if err != nil {
 		return nil, err
 	}
+
+	c.logger.Printf("scheduler proposed %d tasks", len(proposed))
 
 	// Select the highest priority task that is not still in a pending state.
 	sort.Stable(sort.Reverse(sched.TasksByPriority(proposed)))
