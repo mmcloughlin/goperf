@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/app/coordinator"
 	"github.com/mmcloughlin/cb/app/db/dbtest"
@@ -79,6 +80,25 @@ func TestIntegration(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(expect, j); diff != "" {
-		t.Fatalf("mismatch\n%s", diff)
+		t.Fatalf("job mismatch\n%s", diff)
+	}
+
+	// Verify the task was added to the database.
+	got, err := db.FindTaskByUUID(ctx, j.TaskUUID)
+	if err != nil {
+		t.Fatalf("could not find task in the database: %v", err)
+	}
+
+	expecttask := &entity.Task{
+		UUID:             j.TaskUUID,
+		Worker:           worker,
+		Spec:             spec,
+		Status:           entity.TaskStatusCreated,
+		LastStatusUpdate: got.LastStatusUpdate,
+		DatafileUUID:     uuid.Nil,
+	}
+
+	if diff := cmp.Diff(expecttask, got); diff != "" {
+		t.Fatalf("task mismatch\n%s", diff)
 	}
 }

@@ -61,6 +61,27 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, e
 	return i, err
 }
 
+const task = `-- name: Task :one
+SELECT uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid FROM tasks
+WHERE uuid = $1 LIMIT 1
+`
+
+func (q *Queries) Task(ctx context.Context, uuid uuid.UUID) (Task, error) {
+	row := q.queryRow(ctx, q.taskStmt, task, uuid)
+	var i Task
+	err := row.Scan(
+		&i.UUID,
+		&i.Worker,
+		&i.CommitSHA,
+		&i.Type,
+		&i.TargetUUID,
+		&i.Status,
+		&i.LastStatusUpdate,
+		&i.DatafileUUID,
+	)
+	return i, err
+}
+
 const workerTasksWithStatus = `-- name: WorkerTasksWithStatus :many
 SELECT
     uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid

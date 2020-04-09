@@ -53,6 +53,26 @@ func createTask(ctx context.Context, q *db.Queries, worker string, s entity.Task
 	return mapTask(t)
 }
 
+// FindTaskByUUID looks up the given task in the database.
+func (d *DB) FindTaskByUUID(ctx context.Context, id uuid.UUID) (*entity.Task, error) {
+	var t *entity.Task
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		t, err = findTaskByUUID(ctx, q, id)
+		return err
+	})
+	return t, err
+}
+
+func findTaskByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.Task, error) {
+	t, err := q.Task(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapTask(t)
+}
+
 // ListWorkerTasksPending returns tasks assigned to a worker in a pending state.
 func (d *DB) ListWorkerTasksPending(ctx context.Context, worker string) ([]*entity.Task, error) {
 	return d.ListWorkerTasksWithStatus(ctx, worker, entity.TaskStatusPendingValues())

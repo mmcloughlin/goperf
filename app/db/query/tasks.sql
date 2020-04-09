@@ -1,3 +1,7 @@
+-- name: Task :one
+SELECT * FROM tasks
+WHERE uuid = $1 LIMIT 1;
+
 -- name: WorkerTasksWithStatus :many
 SELECT
     *
