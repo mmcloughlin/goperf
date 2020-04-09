@@ -3,10 +3,27 @@ package httputil
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/golang/gddo/httputil/header"
 )
+
+func DecodeJSON(r io.Reader, v interface{}) error {
+	d := json.NewDecoder(r)
+	d.DisallowUnknownFields()
+
+	if err := d.Decode(v); err != nil {
+		return err
+	}
+
+	// Should not have trailing data.
+	if d.More() {
+		return errors.New("unexpected extra data after JSON")
+	}
+
+	return nil
+}
 
 type JSONDecoder struct {
 	MaxRequestSize int64
@@ -25,19 +42,7 @@ func (j *JSONDecoder) DecodeRequest(w http.ResponseWriter, r *http.Request, v in
 	body := http.MaxBytesReader(w, r.Body, j.MaxRequestSize)
 
 	// Decode JSON.
-	d := json.NewDecoder(body)
-	d.DisallowUnknownFields()
-
-	if err := d.Decode(v); err != nil {
-		return err
-	}
-
-	// Should not have trailing data.
-	if d.More() {
-		return errors.New("unexpected extra data after JSON")
-	}
-
-	return nil
+	return DecodeJSON(body, v)
 }
 
 type JSONEncoder struct {

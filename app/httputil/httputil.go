@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,10 +12,28 @@ import (
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
+// ExpectStatus errors if code is not in the allowed list.
+func ExpectStatus(code int, allow ...int) error {
+	for _, a := range allow {
+		if code == a {
+			return nil
+		}
+	}
+	return StatusError(code)
+}
+
 // Error is an error with an associated HTTP status code.
 type Error struct {
 	Code int
 	Err  error
+}
+
+// StatusError builds an error for the given status code, with the standard status text.
+func StatusError(code int) Error {
+	return Error{
+		Code: code,
+		Err:  errors.New(http.StatusText(code)),
+	}
 }
 
 func (e Error) Error() string {

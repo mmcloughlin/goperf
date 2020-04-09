@@ -32,5 +32,5 @@ func NoJobsAvailable() *JobsResponse {
 type Job struct {
 	TaskUUID  uuid.UUID `json:"task_uuid"`
 	CommitSHA string    `json:"commit_sha"`
-	job.Suite `json:"suite"`
+	Suite     job.Suite `json:"suite"`
 }

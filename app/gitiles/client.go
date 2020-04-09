@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/mmcloughlin/cb/app/httputil"
 )
 
 type Client struct {
@@ -81,17 +81,5 @@ func decodejson(rd io.Reader, v interface{}) error {
 	}
 
 	// Decode as JSON.
-	d := json.NewDecoder(r)
-	d.DisallowUnknownFields()
-
-	if err := d.Decode(v); err != nil {
-		return err
-	}
-
-	// Should not have trailing data.
-	if d.More() {
-		return errors.New("unexpected extra data after JSON")
-	}
-
-	return nil
+	return httputil.DecodeJSON(r, v)
 }

@@ -2,6 +2,7 @@ package coordinator
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"time"
 
@@ -110,7 +111,7 @@ func (c *Coordinator) modulejob(ctx context.Context, s entity.TaskSpec) (*Job, e
 	// Lookup the module.
 	m, err := c.db.FindModuleByUUID(ctx, s.TargetUUID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("find module: %w", err)
 	}
 
 	// TODO(mbm): configurable job defaults

@@ -1,40 +1,18 @@
-package db
+package db_test
 
 import (
 	"context"
-	"flag"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/mmcloughlin/cb/app/db/dbtest"
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
 )
 
-var conn = flag.String("conn", "", "database connection string")
-
-// Database opens a database connection.
-func Database(t *testing.T) *DB {
-	if *conn == "" {
-		t.Skip("no database connection string provided")
-	}
-
-	db, err := Open(context.Background(), *conn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		if err := db.Close(); err != nil {
-			t.Fatal(err)
-		}
-	})
-
-	return db
-}
-
 func TestDBCommit(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	// Store.
 	ctx := context.Background()
@@ -55,7 +33,7 @@ func TestDBCommit(t *testing.T) {
 }
 
 func TestDBModule(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	// Store.
 	ctx := context.Background()
@@ -77,7 +55,7 @@ func TestDBModule(t *testing.T) {
 }
 
 func TestDBPackage(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	// Store.
 	ctx := context.Background()
@@ -99,7 +77,7 @@ func TestDBPackage(t *testing.T) {
 }
 
 func TestDBBenchmark(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	// Store.
 	ctx := context.Background()
@@ -121,7 +99,7 @@ func TestDBBenchmark(t *testing.T) {
 }
 
 func TestDBDataFile(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	// Store.
 	ctx := context.Background()
@@ -143,7 +121,7 @@ func TestDBDataFile(t *testing.T) {
 }
 
 func TestDBProperties(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	cases := []entity.Properties{
 		nil,
@@ -178,7 +156,7 @@ func TestDBProperties(t *testing.T) {
 }
 
 func TestDBResult(t *testing.T) {
-	db := Database(t)
+	db := dbtest.Open(t)
 
 	// Store.
 	ctx := context.Background()

@@ -3,6 +3,7 @@ package lg
 import (
 	"log"
 	"os"
+	"testing"
 	"time"
 )
 
@@ -19,6 +20,16 @@ type noop struct{}
 func (noop) Printf(format string, v ...interface{}) {}
 
 func Noop() Logger { return noop{} }
+
+type test struct {
+	t *testing.T
+}
+
+func Test(t *testing.T) Logger { return test{t} }
+
+func (t test) Printf(format string, v ...interface{}) {
+	t.t.Logf(format, v...)
+}
 
 func Param(l Logger, key string, value interface{}) {
 	l.Printf("%s = %v\n", key, value)
