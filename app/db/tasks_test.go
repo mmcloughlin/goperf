@@ -22,7 +22,7 @@ func TestDBTransitionTaskStatus(t *testing.T) {
 	}
 
 	// Transition to in_progress status.
-	err = db.TransitionTaskStatus(ctx, task.UUID, entity.TaskStatusCreated, entity.TaskStatusInProgress)
+	err = db.TransitionTaskStatus(ctx, task.UUID, []entity.TaskStatus{entity.TaskStatusCreated}, entity.TaskStatusInProgress)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestDBTransitionTaskStatusNoChange(t *testing.T) {
 	}
 
 	// Transition from completed_success to in_progress. This should fail since it's in created state.
-	err = db.TransitionTaskStatus(ctx, task.UUID, entity.TaskStatusCompleteSuccess, entity.TaskStatusInProgress)
+	err = db.TransitionTaskStatus(ctx, task.UUID, []entity.TaskStatus{entity.TaskStatusCompleteSuccess}, entity.TaskStatusInProgress)
 	if err == nil {
 		t.Fatal("expected error; got nil")
 	}

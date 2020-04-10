@@ -15,6 +15,7 @@ import (
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/sched"
 	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
@@ -54,7 +55,8 @@ func mainerr(l lg.Logger) error {
 		TargetUUID: uuid.MustParse("8508c428-f951-5636-846f-7dfdb4544cf0"),
 		CommitSHA:  "9131f08a23bd5923d135df15da30b322748ffa12",
 	}))
-	c := coordinator.New(d, scheduler)
+	datafs := fs.NewLocal("/tmp")
+	c := coordinator.New(d, scheduler, datafs)
 	c.SetLogger(l)
 
 	// Build coordinator handlers.

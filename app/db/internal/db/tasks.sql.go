@@ -61,6 +61,25 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, e
 	return i, err
 }
 
+const setTaskDataFile = `-- name: SetTaskDataFile :exec
+UPDATE
+    tasks
+SET
+    datafile_uuid = $1
+WHERE
+    uuid = $2
+`
+
+type SetTaskDataFileParams struct {
+	DatafileUUID uuid.UUID
+	UUID         uuid.UUID
+}
+
+func (q *Queries) SetTaskDataFile(ctx context.Context, arg SetTaskDataFileParams) error {
+	_, err := q.exec(ctx, q.setTaskDataFileStmt, setTaskDataFile, arg.DatafileUUID, arg.UUID)
+	return err
+}
+
 const task = `-- name: Task :one
 SELECT uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid FROM tasks
 WHERE uuid = $1 LIMIT 1
@@ -86,8 +105,8 @@ const transitionTaskStatus = `-- name: TransitionTaskStatus :one
 UPDATE
     tasks
 SET
-    status = CASE WHEN status = $1 THEN $2 ELSE status END,
-    last_status_update = CASE WHEN status = $1 THEN NOW() ELSE last_status_update END
+    status = CASE WHEN status = ANY ($1::task_status[]) THEN $2 ELSE status END,
+    last_status_update = CASE WHEN status = ANY ($1::task_status[]) THEN NOW() ELSE last_status_update END
 WHERE 1=1
     AND uuid=$3
 RETURNING
@@ -95,13 +114,13 @@ RETURNING
 `
 
 type TransitionTaskStatusParams struct {
-	StatusFrom TaskStatus
-	StatusTo   TaskStatus
-	UUID       uuid.UUID
+	FromStatuses []TaskStatus
+	ToStatus     TaskStatus
+	UUID         uuid.UUID
 }
 
 func (q *Queries) TransitionTaskStatus(ctx context.Context, arg TransitionTaskStatusParams) (TaskStatus, error) {
-	row := q.queryRow(ctx, q.transitionTaskStatusStmt, transitionTaskStatus, arg.StatusFrom, arg.StatusTo, arg.UUID)
+	row := q.queryRow(ctx, q.transitionTaskStatusStmt, transitionTaskStatus, pq.Array(arg.FromStatuses), arg.ToStatus, arg.UUID)
 	var status TaskStatus
 	err := row.Scan(&status)
 	return status, err

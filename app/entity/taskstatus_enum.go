@@ -7,9 +7,9 @@ import (
 	"fmt"
 )
 
-const _TaskStatusName = "createdin_progresscomplete_successcomplete_error"
+const _TaskStatusName = "createdin_progressresult_upload_startedresult_uploadedcomplete_successcomplete_error"
 
-var _TaskStatusIndex = [...]uint8{0, 7, 18, 34, 48}
+var _TaskStatusIndex = [...]uint8{0, 7, 18, 39, 54, 70, 84}
 
 func (i TaskStatus) String() string {
 	i -= 1
@@ -19,13 +19,15 @@ func (i TaskStatus) String() string {
 	return _TaskStatusName[_TaskStatusIndex[i]:_TaskStatusIndex[i+1]]
 }
 
-var _TaskStatusValues = []TaskStatus{1, 2, 3, 4}
+var _TaskStatusValues = []TaskStatus{1, 2, 3, 4, 5, 6}
 
 var _TaskStatusNameToValueMap = map[string]TaskStatus{
 	_TaskStatusName[0:7]:   1,
 	_TaskStatusName[7:18]:  2,
-	_TaskStatusName[18:34]: 3,
-	_TaskStatusName[34:48]: 4,
+	_TaskStatusName[18:39]: 3,
+	_TaskStatusName[39:54]: 4,
+	_TaskStatusName[54:70]: 5,
+	_TaskStatusName[70:84]: 6,
 }
 
 // TaskStatusString retrieves an enum value from the enum constants string name.

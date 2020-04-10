@@ -14,10 +14,12 @@ import (
 type TaskStatus string
 
 const (
-	TaskStatusCreated         TaskStatus = "created"
-	TaskStatusInProgress      TaskStatus = "in_progress"
-	TaskStatusCompleteSuccess TaskStatus = "complete_success"
-	TaskStatusCompleteError   TaskStatus = "complete_error"
+	TaskStatusCreated             TaskStatus = "created"
+	TaskStatusInProgress          TaskStatus = "in_progress"
+	TaskStatusCompleteSuccess     TaskStatus = "complete_success"
+	TaskStatusCompleteError       TaskStatus = "complete_error"
+	TaskStatusResultUploadStarted TaskStatus = "result_upload_started"
+	TaskStatusResultUploaded      TaskStatus = "result_uploaded"
 )
 
 func (e *TaskStatus) Scan(src interface{}) error {

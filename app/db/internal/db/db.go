@@ -85,6 +85,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.resultStmt, err = db.PrepareContext(ctx, result); err != nil {
 		return nil, fmt.Errorf("error preparing query Result: %w", err)
 	}
+	if q.setTaskDataFileStmt, err = db.PrepareContext(ctx, setTaskDataFile); err != nil {
+		return nil, fmt.Errorf("error preparing query SetTaskDataFile: %w", err)
+	}
 	if q.taskStmt, err = db.PrepareContext(ctx, task); err != nil {
 		return nil, fmt.Errorf("error preparing query Task: %w", err)
 	}
@@ -204,6 +207,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing resultStmt: %w", cerr)
 		}
 	}
+	if q.setTaskDataFileStmt != nil {
+		if cerr := q.setTaskDataFileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing setTaskDataFileStmt: %w", cerr)
+		}
+	}
 	if q.taskStmt != nil {
 		if cerr := q.taskStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing taskStmt: %w", cerr)
@@ -279,6 +287,7 @@ type Queries struct {
 	pkgStmt                   *sql.Stmt
 	propertiesStmt            *sql.Stmt
 	resultStmt                *sql.Stmt
+	setTaskDataFileStmt       *sql.Stmt
 	taskStmt                  *sql.Stmt
 	transitionTaskStatusStmt  *sql.Stmt
 	workerTasksWithStatusStmt *sql.Stmt
@@ -309,6 +318,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		pkgStmt:                   q.pkgStmt,
 		propertiesStmt:            q.propertiesStmt,
 		resultStmt:                q.resultStmt,
+		setTaskDataFileStmt:       q.setTaskDataFileStmt,
 		taskStmt:                  q.taskStmt,
 		transitionTaskStatusStmt:  q.transitionTaskStatusStmt,
 		workerTasksWithStatusStmt: q.workerTasksWithStatusStmt,

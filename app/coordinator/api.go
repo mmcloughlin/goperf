@@ -2,6 +2,8 @@ package coordinator
 
 import (
 	"errors"
+	"io"
+	"regexp"
 
 	"github.com/google/uuid"
 
@@ -13,10 +15,7 @@ type JobsRequest struct {
 }
 
 func (r *JobsRequest) Validate() error {
-	if r.Worker == "" {
-		return errors.New("missing worker name")
-	}
-	return nil
+	return validateWorker(r.Worker)
 }
 
 type JobsResponse struct {
@@ -41,11 +40,30 @@ type StartRequest struct {
 }
 
 func (r *StartRequest) Validate() error {
-	if r.Worker == "" {
-		return errors.New("missing worker name")
-	}
-	return nil
+	return validateWorker(r.Worker)
 }
 
-type StartResponse struct {
+type ResultRequest struct {
+	io.Reader // data file
+
+	Worker string
+	UUID   uuid.UUID
+}
+
+func (r *ResultRequest) Validate() error {
+	return validateWorker(r.Worker)
+}
+
+var workerRegexp = regexp.MustCompile(`^[a-z][a-z0-9\-]*$`)
+
+func validateWorker(worker string) error {
+	if worker == "" {
+		return errors.New("empty worker name")
+	}
+
+	if match := workerRegexp.FindString(worker); match == "" {
+		return errors.New("worker must contain only lowercase letters, numbers and hyphens, and start with a letter")
+	}
+
+	return nil
 }

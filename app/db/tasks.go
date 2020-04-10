@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -55,29 +54,65 @@ func createTask(ctx context.Context, q *db.Queries, worker string, s entity.Task
 }
 
 // TransitionTaskStatus performs the given task status transition.
-func (d *DB) TransitionTaskStatus(ctx context.Context, id uuid.UUID, from, to entity.TaskStatus) error {
+func (d *DB) TransitionTaskStatus(ctx context.Context, id uuid.UUID, from []entity.TaskStatus, to entity.TaskStatus) error {
 	return d.tx(ctx, func(q *db.Queries) error {
 		return transitionTaskStatus(ctx, q, id, from, to)
 	})
 }
 
-func transitionTaskStatus(ctx context.Context, q *db.Queries, id uuid.UUID, from, to entity.TaskStatus) error {
-	statuses, err := toTaskStatuses([]entity.TaskStatus{from, to})
+func transitionTaskStatus(ctx context.Context, q *db.Queries, id uuid.UUID, from []entity.TaskStatus, to entity.TaskStatus) error {
+	fromStatuses, err := toTaskStatuses(from)
 	if err != nil {
 		return err
 	}
 
-	newstatus, err := q.TransitionTaskStatus(ctx, db.TransitionTaskStatusParams{
-		UUID:       id,
-		StatusFrom: statuses[0],
-		StatusTo:   statuses[1],
+	toStatus, err := toTaskStatus(to)
+	if err != nil {
+		return err
+	}
+
+	newStatus, err := q.TransitionTaskStatus(ctx, db.TransitionTaskStatusParams{
+		UUID:         id,
+		FromStatuses: fromStatuses,
+		ToStatus:     toStatus,
 	})
 	if err != nil {
 		return err
 	}
 
-	if newstatus != statuses[1] {
-		return errors.New("not in expected state")
+	if newStatus != toStatus {
+		return fmt.Errorf("task transition failed: task has status %q", newStatus)
+	}
+
+	return nil
+}
+
+// RecordTaskDataUpload inserts the given datafile and associates it with the supplied task ID.
+func (d *DB) RecordTaskDataUpload(ctx context.Context, id uuid.UUID, f *entity.DataFile) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return recordTaskDataUpload(ctx, q, id, f)
+	})
+}
+
+func recordTaskDataUpload(ctx context.Context, q *db.Queries, id uuid.UUID, f *entity.DataFile) error {
+	// Insert the datafile.
+	if err := storeDataFile(ctx, q, f); err != nil {
+		return err
+	}
+
+	// Set datafile UUID.
+	if err := q.SetTaskDataFile(ctx, db.SetTaskDataFileParams{
+		UUID:         id,
+		DatafileUUID: f.UUID(),
+	}); err != nil {
+		return err
+	}
+
+	// Change task status.
+	from := []entity.TaskStatus{entity.TaskStatusResultUploadStarted}
+	to := entity.TaskStatusResultUploaded
+	if err := transitionTaskStatus(ctx, q, id, from, to); err != nil {
+		return err
 	}
 
 	return nil
@@ -178,6 +213,10 @@ func toTaskStatus(status entity.TaskStatus) (db.TaskStatus, error) {
 		return db.TaskStatusCreated, nil
 	case entity.TaskStatusInProgress:
 		return db.TaskStatusInProgress, nil
+	case entity.TaskStatusResultUploadStarted:
+		return db.TaskStatusResultUploadStarted, nil
+	case entity.TaskStatusResultUploaded:
+		return db.TaskStatusResultUploaded, nil
 	case entity.TaskStatusCompleteSuccess:
 		return db.TaskStatusCompleteSuccess, nil
 	case entity.TaskStatusCompleteError:
@@ -225,6 +264,10 @@ func mapTaskStatus(status db.TaskStatus) (entity.TaskStatus, error) {
 		return entity.TaskStatusCreated, nil
 	case db.TaskStatusInProgress:
 		return entity.TaskStatusInProgress, nil
+	case db.TaskStatusResultUploadStarted:
+		return entity.TaskStatusResultUploadStarted, nil
+	case db.TaskStatusResultUploaded:
+		return entity.TaskStatusResultUploaded, nil
 	case db.TaskStatusCompleteSuccess:
 		return entity.TaskStatusCompleteSuccess, nil
 	case db.TaskStatusCompleteError:

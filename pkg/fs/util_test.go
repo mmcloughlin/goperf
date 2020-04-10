@@ -8,8 +8,7 @@ import (
 )
 
 func FilesystemTest(t *testing.T, f func(ctx context.Context, t *testing.T, fs Interface)) {
-	d, clean := test.TempDir(t)
-	defer clean()
+	d := test.TempDir(t)
 
 	filesystems := map[string]Interface{
 		"mem":   NewMem(),

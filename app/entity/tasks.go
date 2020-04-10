@@ -21,10 +21,12 @@ type TaskStatus uint
 
 // Supported task status values.
 const (
-	TaskStatusCreated         TaskStatus = iota + 1 // initial state
-	TaskStatusInProgress                            // task has been sent to a worker and is in progress
-	TaskStatusCompleteSuccess                       // completed successfully
-	TaskStatusCompleteError                         // completed with error
+	TaskStatusCreated             TaskStatus = iota + 1 // initial state
+	TaskStatusInProgress                                // task has been sent to a worker and is in progress
+	TaskStatusResultUploadStarted                       // result upload has begun
+	TaskStatusResultUploaded                            // result upload complete
+	TaskStatusCompleteSuccess                           // completed successfully
+	TaskStatusCompleteError                             // completed with error
 )
 
 //go:generate enumer -type TaskStatus -output taskstatus_enum.go -trimprefix TaskStatus -transform snake

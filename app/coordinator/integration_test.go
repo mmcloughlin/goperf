@@ -16,6 +16,8 @@ import (
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
 	"github.com/mmcloughlin/cb/app/sched"
+	"github.com/mmcloughlin/cb/internal/test"
+	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
@@ -43,11 +45,13 @@ func NewIntegration(t *testing.T) *Integration {
 
 	// Create coordinator server.
 	scheduler := sched.SingleTaskScheduler(sched.NewTask(0, fixture.TaskSpec))
-	c := coordinator.New(db, scheduler)
+	dir := test.TempDir(t)
+	datafs := fs.NewLocal(dir)
+	c := coordinator.New(db, scheduler, datafs)
 	c.SetLogger(l)
 	h := coordinator.NewHandlers(c, l)
-
 	s := httptest.NewServer(h)
+	t.Cleanup(s.Close)
 
 	return &Integration{
 		DB:     db,
@@ -58,10 +62,6 @@ func NewIntegration(t *testing.T) *Integration {
 
 func (i *Integration) Context() context.Context { return i.ctx }
 
-func (i *Integration) Close() {
-	i.server.Close()
-}
-
 func (i *Integration) NewClient(worker string) *coordinator.Client {
 	return coordinator.NewClient(http.DefaultClient, i.server.URL, worker)
 }
@@ -69,7 +69,7 @@ func (i *Integration) NewClient(worker string) *coordinator.Client {
 func TestIntegrationJobCreation(t *testing.T) {
 	i := NewIntegration(t)
 	ctx := i.Context()
-	worker := "test_job_creation"
+	worker := "test-job-creation"
 	client := i.NewClient(worker)
 
 	// Request work.
@@ -130,7 +130,7 @@ func TestIntegrationJobCreation(t *testing.T) {
 func TestIntegrationJobStart(t *testing.T) {
 	i := NewIntegration(t)
 	ctx := i.Context()
-	worker := "test_job_start"
+	worker := "test-job-start"
 	client := i.NewClient(worker)
 
 	// Request work.

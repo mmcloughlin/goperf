@@ -39,6 +39,11 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 		Logger:  h.logger,
 	})
 
+	h.router.Handler(http.MethodPost, "/workers/:worker/jobs/:job/result", httputil.ErrorHandler{
+		Handler: httputil.HandlerFunc(h.result),
+		Logger:  h.logger,
+	})
+
 	return h
 }
 
@@ -85,6 +90,32 @@ func (h *Handlers) start(w http.ResponseWriter, r *http.Request) error {
 
 	// Delegate to Coordinator.
 	if err := h.c.Start(ctx, req); err != nil {
+		return err
+	}
+
+	// Return success with no body.
+	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (h *Handlers) result(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	params := httprouter.ParamsFromContext(r.Context())
+
+	// Build result request.
+	id, err := uuid.Parse(params.ByName("job"))
+	if err != nil {
+		return httputil.BadRequest(fmt.Errorf("bad job uuid: %w", err))
+	}
+
+	req := &ResultRequest{
+		Reader: r.Body,
+		Worker: params.ByName("worker"),
+		UUID:   id,
+	}
+
+	// Delegate to Coordinator.
+	if err := h.c.Result(ctx, req); err != nil {
 		return err
 	}
 
