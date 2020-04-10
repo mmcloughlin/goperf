@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/app/coordinator"
+	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/db/dbtest"
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
@@ -19,7 +20,18 @@ import (
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
-func TestIntegration(t *testing.T) {
+type Integration struct {
+	DB *db.DB
+
+	ctx    context.Context
+	server *httptest.Server
+}
+
+func NewIntegration(t *testing.T) *Integration {
+	// Run in parallel to confirm multiple workers act on the database
+	// independently.
+	t.Parallel()
+
 	ctx := context.Background()
 	db := dbtest.Open(t)
 	l := lg.Test(t)
@@ -36,10 +48,29 @@ func TestIntegration(t *testing.T) {
 	h := coordinator.NewHandlers(c, l)
 
 	s := httptest.NewServer(h)
-	defer s.Close()
 
-	// Create a worker client.
-	client := coordinator.NewClient(http.DefaultClient, s.URL, fixture.Worker)
+	return &Integration{
+		DB:     db,
+		ctx:    ctx,
+		server: s,
+	}
+}
+
+func (i *Integration) Context() context.Context { return i.ctx }
+
+func (i *Integration) Close() {
+	i.server.Close()
+}
+
+func (i *Integration) NewClient(worker string) *coordinator.Client {
+	return coordinator.NewClient(http.DefaultClient, i.server.URL, worker)
+}
+
+func TestIntegrationJobCreation(t *testing.T) {
+	i := NewIntegration(t)
+	ctx := i.Context()
+	worker := "test_job_creation"
+	client := i.NewClient(worker)
 
 	// Request work.
 	jobs := []*coordinator.Job{}
@@ -77,14 +108,14 @@ func TestIntegration(t *testing.T) {
 	}
 
 	// Verify the task was added to the database.
-	got, err := db.FindTaskByUUID(ctx, j.UUID)
+	got, err := i.DB.FindTaskByUUID(ctx, j.UUID)
 	if err != nil {
 		t.Fatalf("could not find task in the database: %v", err)
 	}
 
 	expecttask := &entity.Task{
 		UUID:             j.UUID,
-		Worker:           fixture.Worker,
+		Worker:           worker,
 		Spec:             fixture.TaskSpec,
 		Status:           entity.TaskStatusCreated,
 		LastStatusUpdate: got.LastStatusUpdate,
@@ -93,5 +124,38 @@ func TestIntegration(t *testing.T) {
 
 	if diff := cmp.Diff(expecttask, got); diff != "" {
 		t.Fatalf("task mismatch\n%s", diff)
+	}
+}
+
+func TestIntegrationJobStart(t *testing.T) {
+	i := NewIntegration(t)
+	ctx := i.Context()
+	worker := "test_job_start"
+	client := i.NewClient(worker)
+
+	// Request work.
+	res, err := client.Jobs(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(res.Jobs) != 1 {
+		t.Fatalf("expected 1 job; got %d", len(res.Jobs))
+	}
+	j := res.Jobs[0]
+
+	// Start it.
+	if err := client.Start(ctx, j.UUID); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify the task has the right status.
+	task, err := i.DB.FindTaskByUUID(ctx, j.UUID)
+	if err != nil {
+		t.Fatalf("could not find task in the database: %v", err)
+	}
+
+	if task.Status != entity.TaskStatusInProgress {
+		t.Fatalf("expected task to be in progress; got %s", task.Status)
 	}
 }
