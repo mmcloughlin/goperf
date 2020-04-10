@@ -2,6 +2,7 @@ package coordinator
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -86,7 +87,7 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 	if err != nil {
 		return nil, err
 	}
-	j.TaskUUID = t.UUID
+	j.UUID = t.UUID
 
 	return &JobsResponse{
 		Jobs: []*Job{j},
@@ -136,4 +137,30 @@ func tasksContainSpec(tasks []*entity.Task, s entity.TaskSpec) bool {
 		}
 	}
 	return false
+}
+
+// Start a job.
+func (c *Coordinator) Start(ctx context.Context, req *StartRequest) error {
+	if err := req.Validate(); err != nil {
+		return err
+	}
+
+	c.logger.Printf("start request for worker %s job %s", req.Worker, req.UUID)
+
+	// Find the task.
+	task, err := c.db.FindTaskByUUID(ctx, req.UUID)
+	if err != nil {
+		return err
+	}
+
+	if task.Worker != req.Worker {
+		return errors.New("job does not belong to worker")
+	}
+
+	// Update the state.
+	if err := c.db.TransitionTaskStatus(ctx, task.UUID, entity.TaskStatusCreated, entity.TaskStatusInProgress); err != nil {
+		return err
+	}
+
+	return nil
 }

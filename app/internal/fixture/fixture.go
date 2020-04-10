@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/pkg/mod"
 )
@@ -76,6 +78,23 @@ var (
 		},
 		Iterations: 4096,
 		Value:      123.45,
+	}
+
+	Worker = "gopher"
+
+	TaskSpec = entity.TaskSpec{
+		Type:       entity.TaskTypeModule,
+		TargetUUID: Module.UUID(),
+		CommitSHA:  Commit.SHA,
+	}
+
+	Task = &entity.Task{
+		UUID:             uuid.MustParse("6e68e764-e3fd-4e86-b122-e07382dd57b0"),
+		Worker:           Worker,
+		Spec:             TaskSpec,
+		Status:           entity.TaskStatusCreated,
+		LastStatusUpdate: time.Date(2020, 4, 7, 20, 50, 13, 0, time.UTC),
+		DatafileUUID:     uuid.Nil,
 	}
 )
 

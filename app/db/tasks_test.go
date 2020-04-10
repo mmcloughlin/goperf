@@ -1,45 +1,70 @@
-package db
+package db_test
 
 import (
+	"context"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
+	"github.com/mmcloughlin/cb/app/db/dbtest"
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/app/internal/fixture"
 )
 
-func TestTaskTypeMapping(t *testing.T) {
-	for _, typ := range entity.TaskTypeValues() {
-		typ := typ // scopelint
-		t.Run(typ.String(), func(t *testing.T) {
-			dbtyp, err := toTaskType(typ)
-			if err != nil {
-				t.Fatal(err)
-			}
-			roundtrip, err := mapTaskType(dbtyp)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if roundtrip != typ {
-				t.Fatal("roundtrip mismatch")
-			}
-		})
+func TestDBTransitionTaskStatus(t *testing.T) {
+	db := dbtest.Open(t)
+
+	// Create task.
+	ctx := context.Background()
+	task, err := db.CreateTask(ctx, fixture.Worker, fixture.TaskSpec)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Transition to in_progress status.
+	err = db.TransitionTaskStatus(ctx, task.UUID, entity.TaskStatusCreated, entity.TaskStatusInProgress)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Fetch the task.
+	updated, err := db.FindTaskByUUID(ctx, task.UUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if updated.Status != entity.TaskStatusInProgress {
+		t.Error("uncorrect status")
+	}
+
+	if !updated.LastStatusUpdate.After(task.LastStatusUpdate) {
+		t.Error("last update timestamp was not changed")
 	}
 }
 
-func TestTaskStatusMapping(t *testing.T) {
-	for _, status := range entity.TaskStatusValues() {
-		status := status // scopelint
-		t.Run(status.String(), func(t *testing.T) {
-			dbstatus, err := toTaskStatus(status)
-			if err != nil {
-				t.Fatal(err)
-			}
-			roundtrip, err := mapTaskStatus(dbstatus)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if roundtrip != status {
-				t.Fatal("roundtrip mismatch")
-			}
-		})
+func TestDBTransitionTaskStatusNoChange(t *testing.T) {
+	db := dbtest.Open(t)
+
+	// Create task.
+	ctx := context.Background()
+	task, err := db.CreateTask(ctx, fixture.Worker, fixture.TaskSpec)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Transition from completed_success to in_progress. This should fail since it's in created state.
+	err = db.TransitionTaskStatus(ctx, task.UUID, entity.TaskStatusCompleteSuccess, entity.TaskStatusInProgress)
+	if err == nil {
+		t.Fatal("expected error; got nil")
+	}
+
+	// Fetch the task. We expect it to be unchanged.
+	unchanged, err := db.FindTaskByUUID(ctx, task.UUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(task, unchanged); diff != "" {
+		t.Fatalf("expected task to be unchanged\n%s", diff)
 	}
 }

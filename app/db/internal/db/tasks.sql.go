@@ -82,6 +82,31 @@ func (q *Queries) Task(ctx context.Context, uuid uuid.UUID) (Task, error) {
 	return i, err
 }
 
+const transitionTaskStatus = `-- name: TransitionTaskStatus :one
+UPDATE
+    tasks
+SET
+    status = CASE WHEN status = $1 THEN $2 ELSE status END,
+    last_status_update = CASE WHEN status = $1 THEN NOW() ELSE last_status_update END
+WHERE 1=1
+    AND uuid=$3
+RETURNING
+    status
+`
+
+type TransitionTaskStatusParams struct {
+	StatusFrom TaskStatus
+	StatusTo   TaskStatus
+	UUID       uuid.UUID
+}
+
+func (q *Queries) TransitionTaskStatus(ctx context.Context, arg TransitionTaskStatusParams) (TaskStatus, error) {
+	row := q.queryRow(ctx, q.transitionTaskStatusStmt, transitionTaskStatus, arg.StatusFrom, arg.StatusTo, arg.UUID)
+	var status TaskStatus
+	err := row.Scan(&status)
+	return status, err
+}
+
 const workerTasksWithStatus = `-- name: WorkerTasksWithStatus :many
 SELECT
     uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid

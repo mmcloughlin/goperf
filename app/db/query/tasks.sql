@@ -32,3 +32,15 @@ INSERT INTO tasks (
 )
 RETURNING *
 ;
+
+-- name: TransitionTaskStatus :one
+UPDATE
+    tasks
+SET
+    status = CASE WHEN status = sqlc.arg(status_from) THEN sqlc.arg(status_to) ELSE status END,
+    last_status_update = CASE WHEN status = sqlc.arg(status_from) THEN NOW() ELSE last_status_update END
+WHERE 1=1
+    AND uuid=sqlc.arg(uuid)
+RETURNING
+    status
+;

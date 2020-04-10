@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -51,6 +52,35 @@ func createTask(ctx context.Context, q *db.Queries, worker string, s entity.Task
 	}
 
 	return mapTask(t)
+}
+
+// TransitionTaskStatus performs the given task status transition.
+func (d *DB) TransitionTaskStatus(ctx context.Context, id uuid.UUID, from, to entity.TaskStatus) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return transitionTaskStatus(ctx, q, id, from, to)
+	})
+}
+
+func transitionTaskStatus(ctx context.Context, q *db.Queries, id uuid.UUID, from, to entity.TaskStatus) error {
+	statuses, err := toTaskStatuses([]entity.TaskStatus{from, to})
+	if err != nil {
+		return err
+	}
+
+	newstatus, err := q.TransitionTaskStatus(ctx, db.TransitionTaskStatusParams{
+		UUID:       id,
+		StatusFrom: statuses[0],
+		StatusTo:   statuses[1],
+	})
+	if err != nil {
+		return err
+	}
+
+	if newstatus != statuses[1] {
+		return errors.New("not in expected state")
+	}
+
+	return nil
 }
 
 // FindTaskByUUID looks up the given task in the database.

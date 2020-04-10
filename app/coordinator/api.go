@@ -9,7 +9,7 @@ import (
 )
 
 type JobsRequest struct {
-	Worker string `json:"worker"`
+	Worker string
 }
 
 func (r *JobsRequest) Validate() error {
@@ -30,7 +30,22 @@ func NoJobsAvailable() *JobsResponse {
 }
 
 type Job struct {
-	TaskUUID  uuid.UUID `json:"task_uuid"`
+	UUID      uuid.UUID `json:"uuid"`
 	CommitSHA string    `json:"commit_sha"`
 	Suite     job.Suite `json:"suite"`
+}
+
+type StartRequest struct {
+	Worker string
+	UUID   uuid.UUID
+}
+
+func (r *StartRequest) Validate() error {
+	if r.Worker == "" {
+		return errors.New("missing worker name")
+	}
+	return nil
+}
+
+type StartResponse struct {
 }

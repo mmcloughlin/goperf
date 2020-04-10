@@ -24,20 +24,13 @@ func TestIntegration(t *testing.T) {
 	db := dbtest.Open(t)
 	l := lg.Test(t)
 
-	// Fixtures.
-	worker := "gopher"
-	spec := entity.TaskSpec{
-		Type:       entity.TaskTypeModule,
-		TargetUUID: fixture.Module.UUID(),
-		CommitSHA:  fixture.Commit.SHA,
-	}
-
+	// Ensure the module is in the database.
 	if err := db.StoreModule(ctx, fixture.Module); err != nil {
 		t.Fatal(err)
 	}
 
 	// Create coordinator server.
-	scheduler := sched.SingleTaskScheduler(sched.NewTask(0, spec))
+	scheduler := sched.SingleTaskScheduler(sched.NewTask(0, fixture.TaskSpec))
 	c := coordinator.New(db, scheduler)
 	c.SetLogger(l)
 	h := coordinator.NewHandlers(c, l)
@@ -46,7 +39,7 @@ func TestIntegration(t *testing.T) {
 	defer s.Close()
 
 	// Create a worker client.
-	client := coordinator.NewClient(http.DefaultClient, s.URL, worker)
+	client := coordinator.NewClient(http.DefaultClient, s.URL, fixture.Worker)
 
 	// Request work.
 	jobs := []*coordinator.Job{}
@@ -67,8 +60,8 @@ func TestIntegration(t *testing.T) {
 
 	j := jobs[0]
 	expect := &coordinator.Job{
-		TaskUUID:  j.TaskUUID, // can't predict this
-		CommitSHA: spec.CommitSHA,
+		UUID:      j.UUID, // can't predict this
+		CommitSHA: fixture.TaskSpec.CommitSHA,
 		Suite: job.Suite{
 			Module: job.Module{
 				Path:    fixture.Module.Path,
@@ -84,15 +77,15 @@ func TestIntegration(t *testing.T) {
 	}
 
 	// Verify the task was added to the database.
-	got, err := db.FindTaskByUUID(ctx, j.TaskUUID)
+	got, err := db.FindTaskByUUID(ctx, j.UUID)
 	if err != nil {
 		t.Fatalf("could not find task in the database: %v", err)
 	}
 
 	expecttask := &entity.Task{
-		UUID:             j.TaskUUID,
-		Worker:           worker,
-		Spec:             spec,
+		UUID:             j.UUID,
+		Worker:           fixture.Worker,
+		Spec:             fixture.TaskSpec,
 		Status:           entity.TaskStatusCreated,
 		LastStatusUpdate: got.LastStatusUpdate,
 		DatafileUUID:     uuid.Nil,
