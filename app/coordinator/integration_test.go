@@ -24,6 +24,7 @@ import (
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/cb/pkg/parse"
 )
 
 type Integration struct {
@@ -205,8 +206,12 @@ func TestIntegrationJobResultUpload(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !bytes.Equal(expect, got) {
+	if !bytes.HasSuffix(got, expect) {
 		t.Fatal("upload mismatch")
+	}
+
+	if _, err := parse.Bytes(got); err != nil {
+		t.Fatalf("parse upload: %v", err)
 	}
 
 	// Confirm database bookeeping.
@@ -228,7 +233,7 @@ func TestIntegrationJobResultUpload(t *testing.T) {
 		t.Fatal("could not find corresponding datafile")
 	}
 
-	expecthash := sha256.Sum256(expect)
+	expecthash := sha256.Sum256(got)
 	if f.SHA256 != expecthash {
 		t.Fatal("sha256 mismatch")
 	}

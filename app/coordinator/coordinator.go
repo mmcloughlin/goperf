@@ -1,6 +1,7 @@
 package coordinator
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -15,6 +16,7 @@ import (
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/sched"
 	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/job"
 	"github.com/mmcloughlin/cb/pkg/lg"
@@ -210,6 +212,15 @@ func (c *Coordinator) Result(ctx context.Context, req *ResultRequest) error {
 
 // write results file to filesystem.
 func (c *Coordinator) write(ctx context.Context, r io.Reader, task *entity.Task) (_ *entity.DataFile, err error) {
+	// Create config header.
+	config := taskConfig(task)
+	hdr := bytes.NewBuffer(nil)
+	if err := cfg.Write(hdr, config); err != nil {
+		return nil, err
+	}
+
+	r = io.MultiReader(hdr, r)
+
 	// Create the file.
 	name := task.UUID.String()
 	w, err := c.datafs.Create(ctx, name)
@@ -244,4 +255,19 @@ func (c *Coordinator) findWorkerTask(ctx context.Context, worker string, id uuid
 	}
 
 	return task, nil
+}
+
+// taskConfig generates configuration lines with metadata about the task.
+func taskConfig(t *entity.Task) cfg.Configuration {
+	return cfg.Configuration{
+		cfg.Section(
+			"task",
+			"task properties",
+			cfg.Property("uuid", "task unique identifier", t.UUID),
+			cfg.Property("worker", "name of worker that executed the task", cfg.StringValue(t.Worker)),
+			cfg.Property("type", "task type", t.Spec.Type),
+			cfg.Property("target", "unique identifier of target under test", t.Spec.TargetUUID),
+			cfg.Property("commitsha", "commit sha the task was for", cfg.StringValue(t.Spec.CommitSHA)),
+		),
+	}
 }
