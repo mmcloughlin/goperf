@@ -95,3 +95,47 @@ func (c *Client) UploadResult(ctx context.Context, id uuid.UUID, r io.Reader) er
 
 	return nil
 }
+
+func (c *Client) Fail(ctx context.Context, id uuid.UUID) error {
+	// Build request.
+	u := c.url + "/workers/" + c.worker + "/jobs/" + id.String() + "/fail"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u, nil)
+	if err != nil {
+		return err
+	}
+
+	// Execute the request.
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if err := httputil.ExpectStatus(res.StatusCode, http.StatusNoContent); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) Halt(ctx context.Context, id uuid.UUID) error {
+	// Build request.
+	u := c.url + "/workers/" + c.worker + "/jobs/" + id.String() + "/halt"
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, u, nil)
+	if err != nil {
+		return err
+	}
+
+	// Execute the request.
+	res, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if err := httputil.ExpectStatus(res.StatusCode, http.StatusNoContent); err != nil {
+		return err
+	}
+
+	return nil
+}

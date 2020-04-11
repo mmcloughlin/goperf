@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -134,10 +136,10 @@ func TestIntegrationJobCreation(t *testing.T) {
 	}
 }
 
-func TestIntegrationJobStart(t *testing.T) {
+func VerifyStatusChange(t *testing.T, expect entity.TaskStatus, op func(context.Context, *coordinator.Client, *coordinator.Job) error) {
 	i := NewIntegration(t)
 	ctx := i.Context()
-	worker := "test-job-start"
+	worker := fmt.Sprintf("test-job-%s", strings.ReplaceAll(expect.String(), "_", "-"))
 	client := i.NewClient(worker)
 
 	// Request work.
@@ -151,8 +153,8 @@ func TestIntegrationJobStart(t *testing.T) {
 	}
 	j := res.Jobs[0]
 
-	// Start it.
-	if err := client.Start(ctx, j.UUID); err != nil {
+	// Perform operation.
+	if err := op(ctx, client, j); err != nil {
 		t.Fatal(err)
 	}
 
@@ -162,9 +164,47 @@ func TestIntegrationJobStart(t *testing.T) {
 		t.Fatalf("could not find task in the database: %v", err)
 	}
 
-	if task.Status != entity.TaskStatusInProgress {
-		t.Fatalf("expected task to be in progress; got %s", task.Status)
+	if task.Status != expect {
+		t.Fatalf("expected task status %s; got %s", expect, task.Status)
 	}
+}
+
+func TestIntegrationJobStart(t *testing.T) {
+	VerifyStatusChange(t, entity.TaskStatusInProgress, func(ctx context.Context, client *coordinator.Client, j *coordinator.Job) error {
+		return client.Start(ctx, j.UUID)
+	})
+}
+
+func TestIntegrationJobFail(t *testing.T) {
+	VerifyStatusChange(t, entity.TaskStatusCompleteError, func(ctx context.Context, client *coordinator.Client, j *coordinator.Job) error {
+		// Start it.
+		if err := client.Start(ctx, j.UUID); err != nil {
+			return err
+		}
+
+		// Report failure.
+		if err := client.Fail(ctx, j.UUID); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func TestIntegrationJobHalt(t *testing.T) {
+	VerifyStatusChange(t, entity.TaskStatusHalted, func(ctx context.Context, client *coordinator.Client, j *coordinator.Job) error {
+		// Start it.
+		if err := client.Start(ctx, j.UUID); err != nil {
+			return err
+		}
+
+		// Halt processing.
+		if err := client.Halt(ctx, j.UUID); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func TestIntegrationJobResultUpload(t *testing.T) {

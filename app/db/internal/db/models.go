@@ -20,6 +20,7 @@ const (
 	TaskStatusCompleteError       TaskStatus = "complete_error"
 	TaskStatusResultUploadStarted TaskStatus = "result_upload_started"
 	TaskStatusResultUploaded      TaskStatus = "result_uploaded"
+	TaskStatusHalted              TaskStatus = "halted"
 )
 
 func (e *TaskStatus) Scan(src interface{}) error {

@@ -148,13 +148,13 @@ func tasksContainSpec(tasks []*entity.Task, s entity.TaskSpec) bool {
 	return false
 }
 
-// Start a job.
-func (c *Coordinator) Start(ctx context.Context, req *StartRequest) error {
+// StatusChange records a job status change.
+func (c *Coordinator) StatusChange(ctx context.Context, req *StatusChangeRequest) error {
 	if err := req.Validate(); err != nil {
 		return err
 	}
 
-	c.logger.Printf("start request for worker %s job %s", req.Worker, req.UUID)
+	c.logger.Printf("stus change for worker %s job %s", req.Worker, req.UUID)
 
 	// Find the task.
 	task, err := c.findWorkerTask(ctx, req.Worker, req.UUID)
@@ -163,9 +163,7 @@ func (c *Coordinator) Start(ctx context.Context, req *StartRequest) error {
 	}
 
 	// Update the state.
-	from := []entity.TaskStatus{entity.TaskStatusCreated}
-	to := entity.TaskStatusInProgress
-	if err := c.db.TransitionTaskStatus(ctx, task.UUID, from, to); err != nil {
+	if err := c.db.TransitionTaskStatus(ctx, task.UUID, req.From, req.To); err != nil {
 		return err
 	}
 

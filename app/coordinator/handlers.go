@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
@@ -35,13 +36,32 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 	})
 
 	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/start", httputil.ErrorHandler{
-		Handler: httputil.HandlerFunc(h.start),
-		Logger:  h.logger,
+		Handler: h.statusChange(
+			[]entity.TaskStatus{entity.TaskStatusCreated},
+			entity.TaskStatusInProgress,
+		),
+		Logger: h.logger,
 	})
 
 	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/result", httputil.ErrorHandler{
 		Handler: httputil.HandlerFunc(h.result),
 		Logger:  h.logger,
+	})
+
+	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/fail", httputil.ErrorHandler{
+		Handler: h.statusChange(
+			[]entity.TaskStatus{entity.TaskStatusInProgress},
+			entity.TaskStatusCompleteError,
+		),
+		Logger: h.logger,
+	})
+
+	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/halt", httputil.ErrorHandler{
+		Handler: h.statusChange(
+			entity.TaskStatusPendingValues(),
+			entity.TaskStatusHalted,
+		),
+		Logger: h.logger,
 	})
 
 	return h
@@ -73,29 +93,33 @@ func (h *Handlers) requestJobs(w http.ResponseWriter, r *http.Request) error {
 	return h.jsonenc.EncodeResponse(w, res)
 }
 
-func (h *Handlers) start(w http.ResponseWriter, r *http.Request) error {
-	ctx := r.Context()
-	params := httprouter.ParamsFromContext(r.Context())
+func (h *Handlers) statusChange(from []entity.TaskStatus, to entity.TaskStatus) httputil.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		ctx := r.Context()
+		params := httprouter.ParamsFromContext(r.Context())
 
-	// Build start request.
-	id, err := uuid.Parse(params.ByName("job"))
-	if err != nil {
-		return httputil.BadRequest(fmt.Errorf("bad job uuid: %w", err))
+		// Build start request.
+		id, err := uuid.Parse(params.ByName("job"))
+		if err != nil {
+			return httputil.BadRequest(fmt.Errorf("bad job uuid: %w", err))
+		}
+
+		req := &StatusChangeRequest{
+			Worker: params.ByName("worker"),
+			UUID:   id,
+			From:   from,
+			To:     to,
+		}
+
+		// Delegate to Coordinator.
+		if err := h.c.StatusChange(ctx, req); err != nil {
+			return err
+		}
+
+		// Return success with no body.
+		w.WriteHeader(http.StatusNoContent)
+		return nil
 	}
-
-	req := &StartRequest{
-		Worker: params.ByName("worker"),
-		UUID:   id,
-	}
-
-	// Delegate to Coordinator.
-	if err := h.c.Start(ctx, req); err != nil {
-		return err
-	}
-
-	// Return success with no body.
-	w.WriteHeader(http.StatusNoContent)
-	return nil
 }
 
 func (h *Handlers) result(w http.ResponseWriter, r *http.Request) error {

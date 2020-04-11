@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/pkg/job"
 )
 
@@ -34,12 +35,14 @@ type Job struct {
 	Suite     job.Suite `json:"suite"`
 }
 
-type StartRequest struct {
+type StatusChangeRequest struct {
 	Worker string
 	UUID   uuid.UUID
+	From   []entity.TaskStatus
+	To     entity.TaskStatus
 }
 
-func (r *StartRequest) Validate() error {
+func (r *StatusChangeRequest) Validate() error {
 	return validateWorker(r.Worker)
 }
 

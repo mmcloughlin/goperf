@@ -9,6 +9,7 @@ linters:
     - wsl
     - prealloc
     - godox
+    - interfacer
 
 issues:
   exclude-rules:
@@ -18,7 +19,3 @@ issues:
       linters:
         - golint
         - stylecheck
-    # Avoid suggestions for uuid.UUID types such as "`id` can be `fmt.Stringer`".
-    - text: "`id` can be"
-      linters:
-        - interfacer

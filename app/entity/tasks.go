@@ -27,6 +27,7 @@ const (
 	TaskStatusResultUploaded                            // result upload complete
 	TaskStatusCompleteSuccess                           // completed successfully
 	TaskStatusCompleteError                             // completed with error
+	TaskStatusHalted                                    // worker stopped processing the task
 )
 
 //go:generate enumer -type TaskStatus -output taskstatus_enum.go -trimprefix TaskStatus -transform snake

@@ -221,6 +221,8 @@ func toTaskStatus(status entity.TaskStatus) (db.TaskStatus, error) {
 		return db.TaskStatusCompleteSuccess, nil
 	case entity.TaskStatusCompleteError:
 		return db.TaskStatusCompleteError, nil
+	case entity.TaskStatusHalted:
+		return db.TaskStatusHalted, nil
 	default:
 		return "", errutil.UnhandledCase(status)
 	}
@@ -272,6 +274,8 @@ func mapTaskStatus(status db.TaskStatus) (entity.TaskStatus, error) {
 		return entity.TaskStatusCompleteSuccess, nil
 	case db.TaskStatusCompleteError:
 		return entity.TaskStatusCompleteError, nil
+	case db.TaskStatusHalted:
+		return entity.TaskStatusHalted, nil
 	default:
 		return 0, errutil.UnhandledCase(status)
 	}
