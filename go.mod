@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.56.0
-	cloud.google.com/go/pubsub v1.2.0
 	cloud.google.com/go/storage v1.6.0
 	github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20200325185443-f6b3391c52cf
 	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
