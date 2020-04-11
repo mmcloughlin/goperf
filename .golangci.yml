@@ -18,7 +18,7 @@ issues:
       linters:
         - golint
         - stylecheck
-    # Avoid suggestions like "`id` can be `fmt.Stringer`".
-    - text: fmt.Stringer
+    # Avoid suggestions for uuid.UUID types such as "`id` can be `fmt.Stringer`".
+    - text: "`id` can be"
       linters:
         - interfacer
