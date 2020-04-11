@@ -3,30 +3,24 @@ package main
 import (
 	"context"
 	"flag"
+	"io"
 	"net/http"
 
 	"github.com/google/subcommands"
 
-	"github.com/mmcloughlin/cb/app/consumer"
-	"github.com/mmcloughlin/cb/app/gce"
-	"github.com/mmcloughlin/cb/app/gcs"
+	"github.com/mmcloughlin/cb/app/coordinator"
+	"github.com/mmcloughlin/cb/app/worker"
+	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/job"
-	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/platform"
-	"github.com/mmcloughlin/cb/pkg/runner"
-)
-
-var (
-	// TODO(mbm): remove hardcoded subscription
-	subscription = "projects/contbench/subscriptions/worker_jobs"
-	// TODO(mbm): remove hardcoded bucket
-	bucket = "contbench_results"
 )
 
 type Run struct {
 	command.Base
 	*platform.Platform
+
+	name           string
+	coordinatorURL string
 }
 
 func NewRun(b command.Base, p *platform.Platform) *Run {
@@ -39,7 +33,7 @@ func NewRun(b command.Base, p *platform.Platform) *Run {
 func (*Run) Name() string { return "run" }
 
 func (*Run) Synopsis() string {
-	return "run benchmark job subscriber and executor"
+	return "run benchmark worker"
 }
 
 func (*Run) Usage() string {
@@ -48,75 +42,20 @@ func (*Run) Usage() string {
 
 func (cmd *Run) SetFlags(f *flag.FlagSet) {
 	cmd.Platform.SetFlags(f)
+
+	f.StringVar(&cmd.name, "name", "", "worker name")
+	f.StringVar(&cmd.coordinatorURL, "coordinator", "", "coordinator address")
 }
 
 func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	h := &Handler{
-		Logger:   cmd.Log,
-		Platform: cmd.Platform,
-	}
-	c, err := consumer.New(ctx, subscription, h, consumer.WithLogger(cmd.Log))
-	if err != nil {
-		return cmd.Error(err)
-	}
-	defer c.Close()
-	return cmd.Status(c.Receive(ctx))
+	c := coordinator.NewClient(http.DefaultClient, cmd.coordinatorURL, cmd.name)
+	p := &Processor{}
+	w := worker.New(c, p, worker.WithLogger(cmd.Log))
+	return cmd.Status(w.Run(ctx))
 }
 
-type Handler struct {
-	lg.Logger
-	*platform.Platform
-}
+type Processor struct{}
 
-func (h *Handler) Handle(ctx context.Context, data []byte) error {
-	// TODO(mbm): make runner context aware
-	// TODO(mbm): reduce duplication with cmd/benchrun
-
-	// Parse job.
-	j, err := job.Unmarshal(data)
-	if err != nil {
-		return err
-	}
-
-	// Build toolchain.
-	tc, err := runner.NewToolchain(j.Toolchain.Type, j.Toolchain.Params)
-	if err != nil {
-		return err
-	}
-	lg.Param(h, "toolchain", tc.String())
-
-	// GCS filesystem.
-	store, err := gcs.New(ctx, bucket)
-	if err != nil {
-		return err
-	}
-
-	// Construct workspace.
-	w, err := runner.NewWorkspace(
-		runner.WithLogger(h),
-		runner.WithArtifactStore(store),
-	)
-	if err != nil {
-		return err
-	}
-
-	// Initialize runner.
-	r := runner.NewRunner(w, tc)
-	r.AddConfigurationProvider(gce.NewMetadata(http.DefaultClient))
-
-	if err := h.ConfigureRunner(r); err != nil {
-		return err
-	}
-
-	r.Init(ctx)
-
-	// Run benchmarks.
-	for _, s := range j.Suites {
-		r.Benchmark(ctx, s)
-	}
-
-	// Cleanup.
-	r.Clean(ctx)
-
-	return w.Error()
+func (p *Processor) Process(ctx context.Context, j *coordinator.Job) (io.ReadCloser, error) {
+	return nil, errutil.ErrNotImplemented
 }

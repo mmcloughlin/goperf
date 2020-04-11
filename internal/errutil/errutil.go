@@ -3,7 +3,12 @@ package errutil
 import (
 	"fmt"
 	"io"
+
+	"golang.org/x/xerrors"
 )
+
+// ErrNotImplemented is returned when feature is currently not implemented.
+var ErrNotImplemented = xerrors.New("not implemented")
 
 // AssertionFailure is used for an error resulting from the failure of an
 // expected invariant.

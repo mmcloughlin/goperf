@@ -9,14 +9,10 @@ infra="${root}/infra"
 
 __cleanup ()
 {
-    rm -rf ${root}/fn/*/vendor ${infra}/{fn,tmp,dist.tar.gz}
+    rm -rf ${root}/fn/*/vendor ${infra}/{fn,tmp}
 }
 
 trap __cleanup EXIT
-
-# Build Distribution --------------------------------------------------------
-
-GOOS=linux GOARCH=amd64 ./script/dist.sh ${infra}/dist.tar.gz
 
 # Update Vendor Directories -------------------------------------------------
 

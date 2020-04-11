@@ -21,3 +21,7 @@ terraform {
 data "google_service_account" "bot" {
   account_id = var.service_account_id
 }
+
+resource "google_compute_project_default_network_tier" "default" {
+  network_tier = var.network_tier
+}

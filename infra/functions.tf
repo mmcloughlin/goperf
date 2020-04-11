@@ -20,7 +20,6 @@ resource "google_storage_bucket_object" "function_zip" {
 
 locals {
   environment_variables = {
-    CB_JOBS_TOPIC               = google_pubsub_topic.jobs.id
     CB_SQL_CONNECTION_NAME      = google_sql_database_instance.primary.connection_name
     CB_SQL_DATABASE             = google_sql_database.database.name
     CB_SQL_USER                 = google_sql_user.admin.name
@@ -39,21 +38,6 @@ resource "google_cloudfunctions_function" "http_function" {
   trigger_http          = true
   runtime               = var.functions_runtime
   environment_variables = local.environment_variables
-}
-
-resource "google_cloudfunctions_function" "enqueue_function" {
-  name                  = "enqueue"
-  available_memory_mb   = 128
-  source_archive_bucket = google_storage_bucket.functions_bucket.name
-  source_archive_object = google_storage_bucket_object.function_zip["enqueue"].name
-  entry_point           = "Handle"
-  runtime               = var.functions_runtime
-  environment_variables = local.environment_variables
-
-  event_trigger {
-    event_type = "providers/cloud.firestore/eventTypes/document.create"
-    resource   = "${var.commits_collection}/{sha}"
-  }
 }
 
 resource "google_cloud_scheduler_job" "watch_schedule" {
