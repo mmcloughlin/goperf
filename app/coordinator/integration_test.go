@@ -1,9 +1,13 @@
 package coordinator_test
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -23,7 +27,8 @@ import (
 )
 
 type Integration struct {
-	DB *db.DB
+	DB      *db.DB
+	DataDir string
 
 	ctx    context.Context
 	server *httptest.Server
@@ -54,9 +59,10 @@ func NewIntegration(t *testing.T) *Integration {
 	t.Cleanup(s.Close)
 
 	return &Integration{
-		DB:     db,
-		ctx:    ctx,
-		server: s,
+		DB:      db,
+		DataDir: dir,
+		ctx:     ctx,
+		server:  s,
 	}
 }
 
@@ -157,5 +163,73 @@ func TestIntegrationJobStart(t *testing.T) {
 
 	if task.Status != entity.TaskStatusInProgress {
 		t.Fatalf("expected task to be in progress; got %s", task.Status)
+	}
+}
+
+func TestIntegrationJobResultUpload(t *testing.T) {
+	i := NewIntegration(t)
+	ctx := i.Context()
+	worker := "test-result-upload"
+	client := i.NewClient(worker)
+
+	// Request work.
+	res, err := client.Jobs(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(res.Jobs) != 1 {
+		t.Fatalf("expected 1 job; got %d", len(res.Jobs))
+	}
+	j := res.Jobs[0]
+
+	// Start it.
+	if err := client.Start(ctx, j.UUID); err != nil {
+		t.Fatal(err)
+	}
+
+	// Upload result.
+	expect, err := ioutil.ReadFile("testdata/result.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	buf := bytes.NewBuffer(expect)
+	if err := client.UploadResult(ctx, j.UUID, buf); err != nil {
+		t.Fatal(err)
+	}
+
+	// Check it was written to the filesystem.
+	got, err := ioutil.ReadFile(filepath.Join(i.DataDir, j.UUID.String()))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(expect, got) {
+		t.Fatal("upload mismatch")
+	}
+
+	// Confirm database bookeeping.
+	task, err := i.DB.FindTaskByUUID(ctx, j.UUID)
+	if err != nil {
+		t.Fatalf("could not find task in the database: %v", err)
+	}
+
+	if task.Status != entity.TaskStatusResultUploaded {
+		t.Fatalf("expected task to have result uploaded status; got %s", task.Status)
+	}
+
+	if task.DatafileUUID == uuid.Nil {
+		t.Fatal("nil data file id")
+	}
+
+	f, err := i.DB.FindDataFileByUUID(ctx, task.DatafileUUID)
+	if err != nil {
+		t.Fatal("could not find corresponding datafile")
+	}
+
+	expecthash := sha256.Sum256(expect)
+	if f.SHA256 != expecthash {
+		t.Fatal("sha256 mismatch")
 	}
 }

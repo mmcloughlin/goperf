@@ -187,7 +187,7 @@ func (c *Coordinator) Result(ctx context.Context, req *ResultRequest) error {
 	// Record start of upload.
 	to := entity.TaskStatusResultUploadStarted
 	from := []entity.TaskStatus{
-		entity.TaskStatusCreated,
+		entity.TaskStatusInProgress,
 		to, // allow repeat attempts
 	}
 	if err := c.db.TransitionTaskStatus(ctx, task.UUID, from, to); err != nil {

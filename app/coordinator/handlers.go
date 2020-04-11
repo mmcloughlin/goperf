@@ -39,7 +39,7 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 		Logger:  h.logger,
 	})
 
-	h.router.Handler(http.MethodPost, "/workers/:worker/jobs/:job/result", httputil.ErrorHandler{
+	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/result", httputil.ErrorHandler{
 		Handler: httputil.HandlerFunc(h.result),
 		Logger:  h.logger,
 	})
