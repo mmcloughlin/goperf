@@ -34,7 +34,11 @@ const (
 
 // IsComplete reports whether this task is finished.
 func (s TaskStatus) IsComplete() bool {
-	return s == TaskStatusCompleteSuccess || s == TaskStatusCompleteError
+	switch s {
+	case TaskStatusCompleteSuccess, TaskStatusCompleteError, TaskStatusHalted:
+		return true
+	}
+	return false
 }
 
 // IsPending reports whether this task is in a pending state.
