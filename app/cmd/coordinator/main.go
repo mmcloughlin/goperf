@@ -7,12 +7,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/coordinator"
 	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/sched"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
@@ -39,11 +37,7 @@ func run(ctx context.Context, l *zap.Logger) error {
 	defer d.Close()
 
 	// Build coordinator.
-	scheduler := sched.SingleTaskScheduler(sched.NewTask(0, entity.TaskSpec{
-		Type:       entity.TaskTypeModule,
-		TargetUUID: uuid.MustParse("8508c428-f951-5636-846f-7dfdb4544cf0"),
-		CommitSHA:  "9131f08a23bd5923d135df15da30b322748ffa12",
-	}))
+	scheduler := sched.NewRecentCommits(d, 30*24*time.Hour)
 	datafs := fs.NewLocal(*data)
 	c := coordinator.New(d, scheduler, datafs)
 	c.SetLogger(l)
