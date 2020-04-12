@@ -64,6 +64,8 @@ func NewHandlers(c *Coordinator, l *zap.Logger) *Handlers {
 		Log: h.log,
 	})
 
+	h.router.HandlerFunc(http.MethodGet, "/health", h.health)
+
 	return h
 }
 
@@ -146,4 +148,9 @@ func (h *Handlers) result(w http.ResponseWriter, r *http.Request) error {
 	// Return success with no body.
 	w.WriteHeader(http.StatusNoContent)
 	return nil
+}
+
+func (h *Handlers) health(w http.ResponseWriter, r *http.Request) {
+	h.log.Debug("respond to health request")
+	httputil.OK(w)
 }
