@@ -2,6 +2,15 @@
 SELECT * FROM tasks
 WHERE uuid = $1 LIMIT 1;
 
+-- name: TasksWithStatus :many
+SELECT
+    *
+FROM
+    tasks
+WHERE 1=1
+    AND status = ANY (sqlc.arg(statuses)::task_status[])
+;
+
 -- name: WorkerTasksWithStatus :many
 SELECT
     *

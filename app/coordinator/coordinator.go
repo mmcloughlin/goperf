@@ -232,7 +232,8 @@ func (c *Coordinator) write(ctx context.Context, r io.Reader, task *entity.Task)
 
 	r = io.MultiReader(hdr, r)
 
-	// Create the file.
+	// Create the file. Note other parts of the system assume the task UUID can
+	// be deduced from the name, so change this with care.
 	name := task.UUID.String()
 	w, err := c.datafs.Create(ctx, name)
 	if err != nil {

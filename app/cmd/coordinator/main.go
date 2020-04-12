@@ -25,6 +25,7 @@ func main() {
 var (
 	addr = flag.String("http", "localhost:5050", "http address")
 	conn = flag.String("conn", "", "database connection string")
+	data = flag.String("data", "", "data directory")
 )
 
 func run(ctx context.Context, l *zap.Logger) error {
@@ -43,7 +44,7 @@ func run(ctx context.Context, l *zap.Logger) error {
 		TargetUUID: uuid.MustParse("8508c428-f951-5636-846f-7dfdb4544cf0"),
 		CommitSHA:  "9131f08a23bd5923d135df15da30b322748ffa12",
 	}))
-	datafs := fs.NewLocal("/tmp")
+	datafs := fs.NewLocal(*data)
 	c := coordinator.New(d, scheduler, datafs)
 	c.SetLogger(l)
 

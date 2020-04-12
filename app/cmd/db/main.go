@@ -31,7 +31,6 @@ func run(ctx context.Context, l *zap.Logger) int {
 	// Database commands.
 	subcommands.Register(NewMigrate(base), "database admin")
 
-	subcommands.Register(NewIngest(base), "data ingestion")
 	subcommands.Register(NewCommits(base), "data ingestion")
 
 	// Help.

@@ -91,6 +91,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.taskStmt, err = db.PrepareContext(ctx, task); err != nil {
 		return nil, fmt.Errorf("error preparing query Task: %w", err)
 	}
+	if q.tasksWithStatusStmt, err = db.PrepareContext(ctx, tasksWithStatus); err != nil {
+		return nil, fmt.Errorf("error preparing query TasksWithStatus: %w", err)
+	}
 	if q.transitionTaskStatusStmt, err = db.PrepareContext(ctx, transitionTaskStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query TransitionTaskStatus: %w", err)
 	}
@@ -217,6 +220,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing taskStmt: %w", cerr)
 		}
 	}
+	if q.tasksWithStatusStmt != nil {
+		if cerr := q.tasksWithStatusStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing tasksWithStatusStmt: %w", cerr)
+		}
+	}
 	if q.transitionTaskStatusStmt != nil {
 		if cerr := q.transitionTaskStatusStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing transitionTaskStatusStmt: %w", cerr)
@@ -289,6 +297,7 @@ type Queries struct {
 	resultStmt                *sql.Stmt
 	setTaskDataFileStmt       *sql.Stmt
 	taskStmt                  *sql.Stmt
+	tasksWithStatusStmt       *sql.Stmt
 	transitionTaskStatusStmt  *sql.Stmt
 	workerTasksWithStatusStmt *sql.Stmt
 }
@@ -320,6 +329,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		resultStmt:                q.resultStmt,
 		setTaskDataFileStmt:       q.setTaskDataFileStmt,
 		taskStmt:                  q.taskStmt,
+		tasksWithStatusStmt:       q.tasksWithStatusStmt,
 		transitionTaskStatusStmt:  q.transitionTaskStatusStmt,
 		workerTasksWithStatusStmt: q.workerTasksWithStatusStmt,
 	}

@@ -2,12 +2,37 @@ package ingest
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"path"
 
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+
+	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/gcs"
+	"github.com/mmcloughlin/cb/app/ingest"
 	"github.com/mmcloughlin/cb/app/results"
 	"github.com/mmcloughlin/cb/app/service"
 )
+
+// Initialization.
+var (
+	logger   *zap.Logger
+	database *db.DB
+)
+
+func init() {
+	var err error
+	ctx := context.Background()
+
+	logger, err = service.Logger()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	database, err = service.DB(ctx, logger)
+}
 
 // GCSEvent is the payload of a GCS event.
 type GCSEvent struct {
@@ -17,41 +42,35 @@ type GCSEvent struct {
 
 // Handle GCS event.
 func Handle(ctx context.Context, e GCSEvent) error {
-	log.Printf("bucket: %v\n", e.Bucket)
-	log.Printf("file: %v\n", e.Name)
+	logger.Info("received cloud storage trigger",
+		zap.String("bucket", e.Bucket),
+		zap.String("name", e.Name),
+	)
 
-	// Load results.
+	// Extract task ID from the object name.
+	id, err := uuid.Parse(path.Base(e.Name))
+	if err != nil {
+		return fmt.Errorf("parse task uuid from name: %w", err)
+	}
+
+	// Construct Ingester.
 	bucket, err := gcs.New(ctx, e.Bucket)
 	if err != nil {
 		return err
 	}
 
-	l, err := results.NewLoader(results.WithFilesystem(bucket))
+	loader, err := results.NewLoader(results.WithFilesystem(bucket))
 	if err != nil {
 		return err
 	}
 
-	rs, err := l.Load(ctx, e.Name)
-	if err != nil {
-		return err
-	}
+	i := ingest.New(database, loader)
+	i.SetLogger(logger)
 
-	// Open database connection.
-	d, err := service.DB(ctx)
-	if err != nil {
-		return err
+	// Ingest task.
+	if err := i.Task(ctx, id); err != nil {
+		return fmt.Errorf("task ingest: %w", err)
 	}
-	defer d.Close()
-
-	// Write to object storage.
-	for _, r := range rs {
-		if err := d.StoreResult(ctx, r); err != nil {
-			return err
-		}
-		log.Printf("inserted result: %s %v %s", r.Benchmark.FullName, r.Value, r.Benchmark.Unit)
-	}
-
-	log.Printf("inserted %d results", len(rs))
 
 	return nil
 }

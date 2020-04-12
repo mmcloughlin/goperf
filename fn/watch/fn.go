@@ -44,7 +44,7 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	// Open database connection.
-	d, err := service.DB(ctx)
+	d, err := service.DB(ctx, logger)
 	if err != nil {
 		return err
 	}

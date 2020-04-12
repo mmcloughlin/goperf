@@ -101,6 +101,47 @@ func (q *Queries) Task(ctx context.Context, uuid uuid.UUID) (Task, error) {
 	return i, err
 }
 
+const tasksWithStatus = `-- name: TasksWithStatus :many
+SELECT
+    uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid
+FROM
+    tasks
+WHERE 1=1
+    AND status = ANY ($1::task_status[])
+`
+
+func (q *Queries) TasksWithStatus(ctx context.Context, statuses []TaskStatus) ([]Task, error) {
+	rows, err := q.query(ctx, q.tasksWithStatusStmt, tasksWithStatus, pq.Array(statuses))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Task
+	for rows.Next() {
+		var i Task
+		if err := rows.Scan(
+			&i.UUID,
+			&i.Worker,
+			&i.CommitSHA,
+			&i.Type,
+			&i.TargetUUID,
+			&i.Status,
+			&i.LastStatusUpdate,
+			&i.DatafileUUID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const transitionTaskStatus = `-- name: TransitionTaskStatus :one
 UPDATE
     tasks

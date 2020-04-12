@@ -138,6 +138,31 @@ func findTaskByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.T
 	return mapTask(t)
 }
 
+// ListTasksWithStatus returns tasks in the given states.
+func (d *DB) ListTasksWithStatus(ctx context.Context, statuses []entity.TaskStatus) ([]*entity.Task, error) {
+	var ts []*entity.Task
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		ts, err = listTasksWithStatus(ctx, q, statuses)
+		return err
+	})
+	return ts, err
+}
+
+func listTasksWithStatus(ctx context.Context, q *db.Queries, statuses []entity.TaskStatus) ([]*entity.Task, error) {
+	taskStatuses, err := toTaskStatuses(statuses)
+	if err != nil {
+		return nil, err
+	}
+
+	ts, err := q.TasksWithStatus(ctx, taskStatuses)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapTasks(ts)
+}
+
 // ListWorkerTasksPending returns tasks assigned to a worker in a pending state.
 func (d *DB) ListWorkerTasksPending(ctx context.Context, worker string) ([]*entity.Task, error) {
 	return d.ListWorkerTasksWithStatus(ctx, worker, entity.TaskStatusPendingValues())
@@ -148,13 +173,13 @@ func (d *DB) ListWorkerTasksWithStatus(ctx context.Context, worker string, statu
 	var ts []*entity.Task
 	err := d.tx(ctx, func(q *db.Queries) error {
 		var err error
-		ts, err = listWorkerTasksWithSpecAndStatus(ctx, q, worker, statuses)
+		ts, err = listWorkerTasksWithStatus(ctx, q, worker, statuses)
 		return err
 	})
 	return ts, err
 }
 
-func listWorkerTasksWithSpecAndStatus(ctx context.Context, q *db.Queries, worker string, statuses []entity.TaskStatus) ([]*entity.Task, error) {
+func listWorkerTasksWithStatus(ctx context.Context, q *db.Queries, worker string, statuses []entity.TaskStatus) ([]*entity.Task, error) {
 	taskStatuses, err := toTaskStatuses(statuses)
 	if err != nil {
 		return nil, err
@@ -168,15 +193,7 @@ func listWorkerTasksWithSpecAndStatus(ctx context.Context, q *db.Queries, worker
 		return nil, err
 	}
 
-	output := make([]*entity.Task, len(ts))
-	for i, t := range ts {
-		output[i], err = mapTask(t)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return output, nil
+	return mapTasks(ts)
 }
 
 // toTaskType maps a task type to the corresponding database enum value.
@@ -249,6 +266,18 @@ func mapTask(t db.Task) (*entity.Task, error) {
 		LastStatusUpdate: t.LastStatusUpdate,
 		DatafileUUID:     t.DatafileUUID,
 	}, nil
+}
+
+func mapTasks(ts []db.Task) ([]*entity.Task, error) {
+	output := make([]*entity.Task, len(ts))
+	for i, t := range ts {
+		var err error
+		output[i], err = mapTask(t)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return output, nil
 }
 
 func mapTaskType(t db.TaskType) (entity.TaskType, error) {

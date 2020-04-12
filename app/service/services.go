@@ -18,7 +18,7 @@ func Logger() (*zap.Logger, error) {
 }
 
 // DB opens a database connection to the Cloud SQL instance.
-func DB(ctx context.Context) (*db.DB, error) {
+func DB(ctx context.Context, l *zap.Logger) (*db.DB, error) {
 	params, err := envs(
 		"SQL_CONNECTION_NAME",
 		"SQL_DATABASE",
@@ -38,7 +38,12 @@ func DB(ctx context.Context) (*db.DB, error) {
 	conn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
 		sock, params["SQL_DATABASE"], params["SQL_USER"], password)
 
-	return db.Open(ctx, conn)
+	d, err := db.Open(ctx, conn)
+	if err != nil {
+		return nil, err
+	}
+	d.SetLogger(l)
+	return d, nil
 }
 
 func secret(ctx context.Context, name string) (string, error) {
