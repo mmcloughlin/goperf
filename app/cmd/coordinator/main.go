@@ -37,7 +37,11 @@ func run(ctx context.Context, l *zap.Logger) error {
 	defer d.Close()
 
 	// Build coordinator.
-	scheduler := sched.NewRecentCommits(d)
+	pri := sched.TimeSinceSmoothStep(
+		60*24*time.Hour, sched.PriorityHigh,
+		365*24*time.Hour, sched.PriorityIdle,
+	)
+	scheduler := sched.NewRecentCommits(d, pri)
 	datafs := fs.NewLocal(*data)
 	c := coordinator.New(d, scheduler, datafs)
 	c.SetLogger(l)

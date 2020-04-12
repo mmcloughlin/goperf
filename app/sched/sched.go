@@ -13,6 +13,15 @@ type Request struct {
 	Num    int    // request this many proposed tasks
 }
 
+// Suggested priority values.
+const (
+	PriorityMax    float64 = 1
+	PriorityHigh   float64 = 0.9
+	PriorityNormal float64 = 0
+	PriorityIdle   float64 = -0.9
+	PriorityMin    float64 = -1
+)
+
 // Task is prioritized work proposed by a scheduler.
 type Task struct {
 	Priority float64
