@@ -161,6 +161,11 @@ func (s *Shield) apply() error {
 		return err
 	}
 
+	// Exclusive.
+	if err := shield.EnableCPUExclusive(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
