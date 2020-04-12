@@ -82,8 +82,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.propertiesStmt, err = db.PrepareContext(ctx, properties); err != nil {
 		return nil, fmt.Errorf("error preparing query Properties: %w", err)
 	}
-	if q.recentCommitModulePairsWithoutWorkerResultsStmt, err = db.PrepareContext(ctx, recentCommitModulePairsWithoutWorkerResults); err != nil {
-		return nil, fmt.Errorf("error preparing query RecentCommitModulePairsWithoutWorkerResults: %w", err)
+	if q.recentCommitModulePairsWithoutWorkerTasksStmt, err = db.PrepareContext(ctx, recentCommitModulePairsWithoutWorkerTasks); err != nil {
+		return nil, fmt.Errorf("error preparing query RecentCommitModulePairsWithoutWorkerTasks: %w", err)
 	}
 	if q.resultStmt, err = db.PrepareContext(ctx, result); err != nil {
 		return nil, fmt.Errorf("error preparing query Result: %w", err)
@@ -208,9 +208,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing propertiesStmt: %w", cerr)
 		}
 	}
-	if q.recentCommitModulePairsWithoutWorkerResultsStmt != nil {
-		if cerr := q.recentCommitModulePairsWithoutWorkerResultsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing recentCommitModulePairsWithoutWorkerResultsStmt: %w", cerr)
+	if q.recentCommitModulePairsWithoutWorkerTasksStmt != nil {
+		if cerr := q.recentCommitModulePairsWithoutWorkerTasksStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing recentCommitModulePairsWithoutWorkerTasksStmt: %w", cerr)
 		}
 	}
 	if q.resultStmt != nil {
@@ -280,35 +280,35 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                                              DBTX
-	tx                                              *sql.Tx
-	benchmarkStmt                                   *sql.Stmt
-	benchmarkPointsStmt                             *sql.Stmt
-	benchmarkResultsStmt                            *sql.Stmt
-	commitStmt                                      *sql.Stmt
-	createTaskStmt                                  *sql.Stmt
-	dataFileStmt                                    *sql.Stmt
-	insertBenchmarkStmt                             *sql.Stmt
-	insertCommitStmt                                *sql.Stmt
-	insertDataFileStmt                              *sql.Stmt
-	insertModuleStmt                                *sql.Stmt
-	insertPkgStmt                                   *sql.Stmt
-	insertPropertiesStmt                            *sql.Stmt
-	insertResultStmt                                *sql.Stmt
-	moduleStmt                                      *sql.Stmt
-	modulePkgsStmt                                  *sql.Stmt
-	modulesStmt                                     *sql.Stmt
-	mostRecentCommitStmt                            *sql.Stmt
-	packageBenchmarksStmt                           *sql.Stmt
-	pkgStmt                                         *sql.Stmt
-	propertiesStmt                                  *sql.Stmt
-	recentCommitModulePairsWithoutWorkerResultsStmt *sql.Stmt
-	resultStmt                                      *sql.Stmt
-	setTaskDataFileStmt                             *sql.Stmt
-	taskStmt                                        *sql.Stmt
-	tasksWithStatusStmt                             *sql.Stmt
-	transitionTaskStatusStmt                        *sql.Stmt
-	workerTasksWithStatusStmt                       *sql.Stmt
+	db                                            DBTX
+	tx                                            *sql.Tx
+	benchmarkStmt                                 *sql.Stmt
+	benchmarkPointsStmt                           *sql.Stmt
+	benchmarkResultsStmt                          *sql.Stmt
+	commitStmt                                    *sql.Stmt
+	createTaskStmt                                *sql.Stmt
+	dataFileStmt                                  *sql.Stmt
+	insertBenchmarkStmt                           *sql.Stmt
+	insertCommitStmt                              *sql.Stmt
+	insertDataFileStmt                            *sql.Stmt
+	insertModuleStmt                              *sql.Stmt
+	insertPkgStmt                                 *sql.Stmt
+	insertPropertiesStmt                          *sql.Stmt
+	insertResultStmt                              *sql.Stmt
+	moduleStmt                                    *sql.Stmt
+	modulePkgsStmt                                *sql.Stmt
+	modulesStmt                                   *sql.Stmt
+	mostRecentCommitStmt                          *sql.Stmt
+	packageBenchmarksStmt                         *sql.Stmt
+	pkgStmt                                       *sql.Stmt
+	propertiesStmt                                *sql.Stmt
+	recentCommitModulePairsWithoutWorkerTasksStmt *sql.Stmt
+	resultStmt                                    *sql.Stmt
+	setTaskDataFileStmt                           *sql.Stmt
+	taskStmt                                      *sql.Stmt
+	tasksWithStatusStmt                           *sql.Stmt
+	transitionTaskStatusStmt                      *sql.Stmt
+	workerTasksWithStatusStmt                     *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -335,7 +335,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		packageBenchmarksStmt: q.packageBenchmarksStmt,
 		pkgStmt:               q.pkgStmt,
 		propertiesStmt:        q.propertiesStmt,
-		recentCommitModulePairsWithoutWorkerResultsStmt: q.recentCommitModulePairsWithoutWorkerResultsStmt,
+		recentCommitModulePairsWithoutWorkerTasksStmt: q.recentCommitModulePairsWithoutWorkerTasksStmt,
 		resultStmt:                q.resultStmt,
 		setTaskDataFileStmt:       q.setTaskDataFileStmt,
 		taskStmt:                  q.taskStmt,

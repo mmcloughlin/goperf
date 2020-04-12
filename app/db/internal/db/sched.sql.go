@@ -8,28 +8,25 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
-const recentCommitModulePairsWithoutWorkerResults = `-- name: RecentCommitModulePairsWithoutWorkerResults :many
+const recentCommitModulePairsWithoutWorkerTasks = `-- name: RecentCommitModulePairsWithoutWorkerTasks :many
 SELECT
     c.sha AS commit_sha,
+    c.commit_time,
     m.uuid AS module_uuid
 FROM
     commits AS c,
     modules AS m
-WHERE 1=1
-    AND c.commit_time > $1
-    AND NOT EXISTS (
-        SELECT r.uuid, r.datafile_uuid, line, benchmark_uuid, r.commit_sha, environment_uuid, metadata_uuid, iterations, value, b.uuid, package_uuid, full_name, b.name, unit, parameters, p.uuid, module_uuid, relative_path, f.uuid, f.name, sha256, t.uuid, worker, t.commit_sha, type, target_uuid, status, last_status_update, t.datafile_uuid
-        FROM
-            results AS r
-            LEFT JOIN benchmarks AS b ON r.benchmark_uuid = b.uuid
-            LEFT JOIN packages AS p ON b.package_uuid = p.uuid
-            LEFT JOIN datafiles AS f ON r.datafile_uuid = f.uuid
-            LEFT JOIN tasks AS t ON f.uuid = t.datafile_uuid
+WHERE NOT EXISTS (
+        SELECT uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid
+        FROM tasks AS t
         WHERE 1=1
-            AND r.commit_sha = c.sha
-            AND p.module_uuid = m.uuid
+            AND t.commit_sha = c.sha
+            AND t.type = 'module'
+            AND t.target_uuid = m.uuid
+            AND t.status = ANY ($1::task_status[])
             AND t.worker = $2
     )
 ORDER BY
@@ -39,27 +36,28 @@ LIMIT
     $3
 `
 
-type RecentCommitModulePairsWithoutWorkerResultsParams struct {
-	Since  time.Time
-	Worker string
-	Num    int32
+type RecentCommitModulePairsWithoutWorkerTasksParams struct {
+	Statuses []TaskStatus
+	Worker   string
+	Num      int32
 }
 
-type RecentCommitModulePairsWithoutWorkerResultsRow struct {
+type RecentCommitModulePairsWithoutWorkerTasksRow struct {
 	CommitSHA  []byte
+	CommitTime time.Time
 	ModuleUUID uuid.UUID
 }
 
-func (q *Queries) RecentCommitModulePairsWithoutWorkerResults(ctx context.Context, arg RecentCommitModulePairsWithoutWorkerResultsParams) ([]RecentCommitModulePairsWithoutWorkerResultsRow, error) {
-	rows, err := q.query(ctx, q.recentCommitModulePairsWithoutWorkerResultsStmt, recentCommitModulePairsWithoutWorkerResults, arg.Since, arg.Worker, arg.Num)
+func (q *Queries) RecentCommitModulePairsWithoutWorkerTasks(ctx context.Context, arg RecentCommitModulePairsWithoutWorkerTasksParams) ([]RecentCommitModulePairsWithoutWorkerTasksRow, error) {
+	rows, err := q.query(ctx, q.recentCommitModulePairsWithoutWorkerTasksStmt, recentCommitModulePairsWithoutWorkerTasks, pq.Array(arg.Statuses), arg.Worker, arg.Num)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []RecentCommitModulePairsWithoutWorkerResultsRow
+	var items []RecentCommitModulePairsWithoutWorkerTasksRow
 	for rows.Next() {
-		var i RecentCommitModulePairsWithoutWorkerResultsRow
-		if err := rows.Scan(&i.CommitSHA, &i.ModuleUUID); err != nil {
+		var i RecentCommitModulePairsWithoutWorkerTasksRow
+		if err := rows.Scan(&i.CommitSHA, &i.CommitTime, &i.ModuleUUID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -5,39 +5,54 @@ import (
 	"encoding/hex"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
 )
 
-// ListTaskSpecsRecentCommitsWithoutWorkerResults searches for recent commits without results for a given worker.
-func (d *DB) ListTaskSpecsRecentCommitsWithoutWorkerResults(ctx context.Context, worker string, since time.Time, n int) ([]entity.TaskSpec, error) {
-	var specs []entity.TaskSpec
-	err := d.tx(ctx, func(q *db.Queries) error {
-		var err error
-		specs, err = listTaskSpecsRecentCommitsWithoutWorkerResults(ctx, q, worker, since, n)
-		return err
-	})
-	return specs, err
+// CommitModule represents a commit module pair.
+type CommitModule struct {
+	CommitSHA  string
+	CommitTime time.Time
+	ModuleUUID uuid.UUID
 }
 
-func listTaskSpecsRecentCommitsWithoutWorkerResults(ctx context.Context, q *db.Queries, worker string, since time.Time, n int) ([]entity.TaskSpec, error) {
-	rows, err := q.RecentCommitModulePairsWithoutWorkerResults(ctx, db.RecentCommitModulePairsWithoutWorkerResultsParams{
-		Worker: worker,
-		Since:  since,
-		Num:    int32(n),
+// ListCommitModulesWithoutCompleteTasks searches for n recent commit module
+// pairs without completed tasks for the given worker.
+func (d *DB) ListCommitModulesWithoutCompleteTasks(ctx context.Context, worker string, n int) ([]CommitModule, error) {
+	var cms []CommitModule
+	err := d.tx(ctx, func(q *db.Queries) error {
+		var err error
+		cms, err = listCommitModulesWithoutTasksInStatus(ctx, q, worker, entity.TaskStatusCompleteValues(), n)
+		return err
+	})
+	return cms, err
+}
+
+func listCommitModulesWithoutTasksInStatus(ctx context.Context, q *db.Queries, worker string, statuses []entity.TaskStatus, n int) ([]CommitModule, error) {
+	s, err := toTaskStatuses(statuses)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := q.RecentCommitModulePairsWithoutWorkerTasks(ctx, db.RecentCommitModulePairsWithoutWorkerTasksParams{
+		Worker:   worker,
+		Statuses: s,
+		Num:      int32(n),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	specs := make([]entity.TaskSpec, len(rows))
+	cms := make([]CommitModule, len(rows))
 	for i, row := range rows {
-		specs[i] = entity.TaskSpec{
+		cms[i] = CommitModule{
 			CommitSHA:  hex.EncodeToString(row.CommitSHA),
-			Type:       entity.TaskTypeModule,
-			TargetUUID: row.ModuleUUID,
+			CommitTime: row.CommitTime,
+			ModuleUUID: row.ModuleUUID,
 		}
 	}
 
-	return specs, nil
+	return cms, nil
 }

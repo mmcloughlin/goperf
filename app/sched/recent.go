@@ -2,35 +2,33 @@ package sched
 
 import (
 	"context"
-	"time"
 
 	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/cb/app/entity"
 )
 
 type recent struct {
-	db     *db.DB
-	window time.Duration
+	db *db.DB
 }
 
-func NewRecentCommits(d *db.DB, window time.Duration) Scheduler {
-	return &recent{
-		db:     d,
-		window: window,
-	}
+func NewRecentCommits(d *db.DB) Scheduler {
+	return &recent{db: d}
 }
 
 func (r *recent) Tasks(ctx context.Context, req *Request) ([]*Task, error) {
-	since := time.Now().Add(-r.window)
-	specs, err := r.db.ListTaskSpecsRecentCommitsWithoutWorkerResults(ctx, req.Worker, since, req.Num)
+	cms, err := r.db.ListCommitModulesWithoutCompleteTasks(ctx, req.Worker, req.Num)
 	if err != nil {
 		return nil, err
 	}
 
-	tasks := make([]*Task, len(specs))
-	for i, spec := range specs {
+	tasks := make([]*Task, len(cms))
+	for i, cm := range cms {
 		tasks[i] = &Task{
-			Priority: 1.0,
-			Spec:     spec,
+			Spec: entity.TaskSpec{
+				CommitSHA:  cm.CommitSHA,
+				Type:       entity.TaskTypeModule,
+				TargetUUID: cm.ModuleUUID,
+			},
 		}
 	}
 
