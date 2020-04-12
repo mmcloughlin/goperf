@@ -8,6 +8,8 @@ import (
 	"os"
 	"syscall"
 
+	"go.uber.org/zap/zapcore"
+
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
 
@@ -45,7 +47,10 @@ func RunError(m MainError) {
 
 // Logger initializes a logger suitable for command-line applications.
 func Logger() (*zap.Logger, error) {
-	return zap.NewDevelopment()
+	cfg := zap.NewDevelopmentConfig()
+	cfg.EncoderConfig.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	cfg.EncoderConfig.CallerKey = ""
+	return cfg.Build()
 }
 
 // BackgroundContext returns a context suitable for a command-line tool or service.
