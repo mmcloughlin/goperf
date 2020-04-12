@@ -102,13 +102,19 @@ func writelistfile(path string, s Set) error {
 	return writefile(path, []byte(data), 0644)
 }
 
-func writefile(path string, data []byte, perm uint32) error {
+func writefile(path string, data []byte, perm uint32) (err error) {
 	// Open.
 	mode := unix.O_WRONLY | unix.O_CREAT | unix.O_TRUNC
 	fd, err := unix.Open(path, mode, perm)
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		if errc := unix.Close(fd); errc != nil && err == nil {
+			err = errc
+		}
+	}()
 
 	// Write.
 	n, err := unix.Write(fd, data)
@@ -117,11 +123,6 @@ func writefile(path string, data []byte, perm uint32) error {
 	}
 	if n != len(data) {
 		return io.ErrShortWrite
-	}
-
-	// Close.
-	if err := unix.Close(fd); err != nil {
-		return err
 	}
 
 	return nil
