@@ -11,13 +11,13 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	analysis "golang.org/x/perf/analysis/app"
 
 	"github.com/mmcloughlin/cb/app/brand"
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/units"
 )
 
@@ -28,7 +28,7 @@ type Handlers struct {
 
 	mux       *http.ServeMux
 	templates *Templates
-	logger    lg.Logger
+	log       *zap.Logger
 }
 
 type Option func(*Handlers)
@@ -45,8 +45,8 @@ func WithDataFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.datafs = r }
 }
 
-func WithLogger(l lg.Logger) Option {
-	return func(h *Handlers) { h.logger = l }
+func WithLogger(l *zap.Logger) Option {
+	return func(h *Handlers) { h.log = l.Named("handlers") }
 }
 
 func NewHandlers(d *db.DB, opts ...Option) *Handlers {
@@ -57,7 +57,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 		datafs:    fs.Null,
 		mux:       http.NewServeMux(),
 		templates: NewTemplates(TemplateFileSystem),
-		logger:    lg.Noop(),
+		log:       zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(h)
@@ -85,7 +85,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 func (h *Handlers) handler(handler httputil.Handler) http.Handler {
 	return httputil.ErrorHandler{
 		Handler: handler,
-		Logger:  h.logger,
+		Log:     h.log,
 	}
 }
 

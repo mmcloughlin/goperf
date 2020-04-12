@@ -13,13 +13,14 @@ import (
 	"strings"
 
 	"github.com/mholt/archiver"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Workspace struct {
-	lg.Logger
+	Log *zap.Logger
 
 	client    *http.Client
 	artifacts fs.Writable
@@ -36,8 +37,8 @@ func WithHTTPClient(c *http.Client) Option {
 	return func(w *Workspace) { w.client = c }
 }
 
-func WithLogger(l lg.Logger) Option {
-	return func(w *Workspace) { w.Logger = l }
+func WithLogger(l *zap.Logger) Option {
+	return func(w *Workspace) { w.Log = l }
 }
 
 func WithWorkDir(d string) Option {
@@ -59,7 +60,7 @@ func WithArtifactStore(fs fs.Writable) Option {
 func NewWorkspace(opts ...Option) (*Workspace, error) {
 	// Defaults.
 	w := &Workspace{
-		Logger:    lg.Default(),
+		Log:       zap.NewNop(),
 		client:    http.DefaultClient,
 		artifacts: fs.Null,
 		env:       map[string]string{},
@@ -77,7 +78,7 @@ func NewWorkspace(opts ...Option) (*Workspace, error) {
 		w.root = dir
 	}
 
-	w.Printf("workspace intialized")
+	w.Log.Info("workspace intialized")
 
 	// Start working directory at root.
 	w.CdRoot()
@@ -116,7 +117,7 @@ func (w *Workspace) Clean() {
 
 // SetEnv sets an environment variable for all workspace operations.
 func (w *Workspace) SetEnv(key, value string) {
-	w.Logger.Printf("set env %s=%q", key, value)
+	w.Log.Info("set environment variable", zap.String(key, value))
 	w.env[key] = value
 }
 
@@ -228,9 +229,10 @@ func (w *Workspace) Download(url, path string) {
 		return
 	}
 
-	defer lg.Scope(w, "download")()
-	lg.Param(w, "download_url", url)
-	lg.Param(w, "download_path", path)
+	defer lg.Scope(w.Log, "download",
+		zap.String("url", url),
+		zap.String("path", path),
+	)()
 
 	// Open file for writing.
 	f, err := os.Create(path)
@@ -263,9 +265,10 @@ func (w *Workspace) Uncompress(src, dst string) {
 	if w.cancelled() {
 		return
 	}
-	defer lg.Scope(w, "uncompress")()
-	lg.Param(w, "source", src)
-	lg.Param(w, "destination", dst)
+	defer lg.Scope(w.Log, "uncompress",
+		zap.String("source", src),
+		zap.String("destination", dst),
+	)()
 	w.seterr(archiver.Unarchive(src, dst))
 }
 
@@ -275,9 +278,10 @@ func (w *Workspace) Move(src, dst string) {
 		return
 	}
 
-	defer lg.Scope(w, "move")()
-	lg.Param(w, "source", src)
-	lg.Param(w, "destination", dst)
+	defer lg.Scope(w.Log, "move",
+		zap.String("source", src),
+		zap.String("destination", dst),
+	)()
 
 	w.seterr(os.Rename(src, dst))
 }
@@ -285,7 +289,7 @@ func (w *Workspace) Move(src, dst string) {
 // Cd sets the working directory to path.
 func (w *Workspace) Cd(path string) {
 	w.cwd = path
-	lg.Param(w, "working directory", w.cwd)
+	w.Log.Debug("change working directory", zap.String("cwd", w.cwd))
 }
 
 // CdRoot sets the working directory to the root of the workspace.
@@ -297,7 +301,7 @@ func (w *Workspace) Exec(cmd *exec.Cmd) {
 		return
 	}
 
-	defer lg.Scope(w, "exec")()
+	defer lg.Scope(w.Log, "exec")()
 
 	// Set environment.
 	cmd.Env = append(cmd.Env, w.environ()...)
@@ -312,11 +316,13 @@ func (w *Workspace) Exec(cmd *exec.Cmd) {
 	cmd.Stdout = tee(cmd.Stdout, &stdout)
 	cmd.Stderr = tee(cmd.Stderr, &stderr)
 
-	lg.Param(w, "cmd", cmd)
+	w.Log.Info("command prepared", zap.Stringer("cmd", cmd))
 	err := cmd.Run()
 
-	lg.Param(w, "stdout", stdout.String())
-	lg.Param(w, "stderr", stderr.String())
+	w.Log.Info("command complete",
+		zap.ByteString("stdout", stdout.Bytes()),
+		zap.ByteString("stderr", stderr.Bytes()),
+	)
 
 	w.seterr(err)
 }
@@ -334,9 +340,10 @@ func (w *Workspace) Artifact(path, name string) {
 		return
 	}
 
-	defer lg.Scope(w, "artifact")()
-	lg.Param(w, "source", path)
-	lg.Param(w, "name", name)
+	defer lg.Scope(w.Log, "artifact",
+		zap.String("source", path),
+		zap.String("name", name),
+	)()
 
 	// Open file to be saved.
 	src, err := os.Open(path)

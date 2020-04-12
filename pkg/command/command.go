@@ -3,29 +3,65 @@ package command
 import (
 	"context"
 	"flag"
+	"fmt"
+	"log"
 	"os"
 	"syscall"
 
 	"github.com/google/subcommands"
+	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/sig"
 )
 
+// MainStatus is an entry point returnint an exit status.
+type MainStatus func(context.Context, *zap.Logger) int
+
+func Run(m MainStatus) {
+	// Initialize logger.
+	l, err := Logger()
+	if err != nil {
+		log.Fatalf("logger initialization: %s", err)
+	}
+
+	// Context.
+	ctx := BackgroundContext(l)
+
+	os.Exit(m(ctx, l))
+}
+
+// MainError is an entry point returning an error.
+type MainError func(context.Context, *zap.Logger) error
+
+func RunError(m MainError) {
+	Run(func(ctx context.Context, l *zap.Logger) int {
+		if err := m(ctx, l); err != nil {
+			l.Error("execution error", zap.Error(err))
+			return 1
+		}
+		return 0
+	})
+}
+
+// Logger initializes a logger suitable for command-line applications.
+func Logger() (*zap.Logger, error) {
+	return zap.NewDevelopment()
+}
+
 // BackgroundContext returns a context suitable for a command-line tool or service.
-func BackgroundContext(l lg.Logger) context.Context {
+func BackgroundContext(log *zap.Logger) context.Context {
 	return sig.ContextWithSignal(context.Background(), func(s os.Signal) {
-		l.Printf("received %s: cancelling", s)
+		log.Info("cancelling on signal", zap.Stringer("signal", s))
 	}, syscall.SIGINT, syscall.SIGTERM)
 }
 
 // Base is a base for all subcommands.
 type Base struct {
-	Log lg.Logger
+	Log *zap.Logger
 }
 
 // NewBase builds a new base command for the named tool.
-func NewBase(l lg.Logger) Base {
+func NewBase(l *zap.Logger) Base {
 	return Base{
 		Log: l,
 	}
@@ -36,13 +72,13 @@ func (Base) SetFlags(f *flag.FlagSet) {}
 
 // UsageError logs a usage error and returns a suitable exit code.
 func (b Base) UsageError(format string, args ...interface{}) subcommands.ExitStatus {
-	b.Log.Printf(format, args...)
+	b.Log.Info(fmt.Sprintf(format, args...))
 	return subcommands.ExitUsageError
 }
 
 // Fail logs an error message and returns a failing exit code.
 func (b Base) Fail(format string, args ...interface{}) subcommands.ExitStatus {
-	b.Log.Printf(format, args...)
+	b.Log.Error(fmt.Sprintf(format, args...))
 	return subcommands.ExitFailure
 }
 

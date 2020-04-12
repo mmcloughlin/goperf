@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/google/subcommands"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/entity"
@@ -84,7 +85,7 @@ func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 
 		// Insert if the batch is full.
 		if len(batch) == cmd.batch {
-			cmd.Log.Printf("inserting %d commits", len(batch))
+			cmd.Log.Info("inserting commits", zap.Int("num_commits", len(batch)))
 			if err := d.StoreCommits(ctx, batch); err != nil {
 				return cmd.Error(err)
 			}
@@ -94,11 +95,11 @@ func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 		// Add to batch.
 		batch = append(batch, c)
 		n++
-		cmd.Log.Printf("added %s total %d", c.SHA, n)
+		cmd.Log.Info("added commit", zap.String("sha", c.SHA), zap.Int("total", n))
 	}
 
 	// Final batch.
-	cmd.Log.Printf("inserting %d commits", len(batch))
+	cmd.Log.Info("inserting commits", zap.Int("num_commits", len(batch)))
 	if err := d.StoreCommits(ctx, batch); err != nil {
 		return cmd.Error(err)
 	}

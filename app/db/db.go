@@ -9,10 +9,10 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 //go:generate rm -rf internal/db
@@ -20,9 +20,9 @@ import (
 
 // DB provides a database storage layer.
 type DB struct {
-	db     *sql.DB
-	q      *db.Queries
-	logger lg.Logger
+	db  *sql.DB
+	q   *db.Queries
+	log *zap.Logger
 }
 
 // New builds a database layer backed by the given postgres connection.
@@ -32,9 +32,9 @@ func New(ctx context.Context, d *sql.DB) (*DB, error) {
 		return nil, err
 	}
 	return &DB{
-		db:     d,
-		q:      q,
-		logger: lg.Noop(),
+		db:  d,
+		q:   q,
+		log: zap.NewNop(),
 	}, nil
 }
 
@@ -53,9 +53,7 @@ func (d *DB) Close() error {
 }
 
 // SetLogger configures a logger.
-func (d *DB) SetLogger(l lg.Logger) {
-	d.logger = l
-}
+func (d *DB) SetLogger(l *zap.Logger) { d.log = l.Named("db") }
 
 // tx executes the given query function in a transaction.
 func (d *DB) tx(ctx context.Context, fn func(q *db.Queries) error) (err error) {
@@ -66,10 +64,14 @@ func (d *DB) tx(ctx context.Context, fn func(q *db.Queries) error) (err error) {
 	defer func() {
 		switch p := recover(); {
 		case p != nil:
-			lg.Error(d.logger, "rollback", tx.Rollback())
+			if err := tx.Rollback(); err != nil {
+				d.log.Error("transaction rollback error", zap.Error(err))
+			}
 			panic(p)
 		case err != nil:
-			lg.Error(d.logger, "rollback", tx.Rollback())
+			if err := tx.Rollback(); err != nil {
+				d.log.Error("transaction rollback error", zap.Error(err))
+			}
 		default:
 			err = tx.Commit()
 		}

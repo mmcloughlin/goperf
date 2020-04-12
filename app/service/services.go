@@ -6,10 +6,16 @@ import (
 	"os"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"go.uber.org/zap"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
 	"github.com/mmcloughlin/cb/app/db"
 )
+
+// Logger builds a logger for use in service code.
+func Logger() (*zap.Logger, error) {
+	return zap.NewProduction()
+}
 
 // DB opens a database connection to the Cloud SQL instance.
 func DB(ctx context.Context) (*db.DB, error) {

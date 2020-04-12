@@ -4,18 +4,19 @@ package shield
 import (
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/cpuset"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 // Shield uses cpusets to setup exclusive access to some CPUs.
 type Shield struct {
-	root   string    // root cpuset
-	shield string    // shield cpuset (relative to root)
-	sys    string    // system cpuset name (relative to root)
-	sysn   int       // number of cpus in system cpuset
-	l      lg.Logger // logger
+	root   string      // root cpuset
+	shield string      // shield cpuset (relative to root)
+	sys    string      // system cpuset name (relative to root)
+	sysn   int         // number of cpus in system cpuset
+	log    *zap.Logger // logger
 
 	deferred []func() error
 }
@@ -30,7 +31,7 @@ func NewShield(opts ...Option) *Shield {
 		shield: "shield",
 		sys:    "sys",
 		sysn:   1,
-		l:      lg.Noop(),
+		log:    zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -60,8 +61,8 @@ func WithSystemNumCPU(n int) Option {
 }
 
 // WithLogger configures the logger for CPU shield operations.
-func WithLogger(l lg.Logger) Option {
-	return func(s *Shield) { s.l = l }
+func WithLogger(l *zap.Logger) Option {
+	return func(s *Shield) { s.log = l.Named("shield") }
 }
 
 // ShieldName returns the name of the shield cpuset.
@@ -83,9 +84,10 @@ func (s *Shield) Apply() error {
 	err := s.apply()
 	// On error, attempt to cleanup.
 	if err != nil {
-		s.l.Printf("shield application failed: %s", err)
-		s.l.Printf("attempting reset")
-		_ = s.Reset()
+		s.log.Debug("attempting reset")
+		if err := s.Reset(); err != nil {
+			s.log.Error("reset failed", zap.Error(err))
+		}
 	}
 	return err
 }
@@ -97,8 +99,7 @@ func (s *Shield) apply() error {
 	if err != nil {
 		return err
 	}
-	lg.Param(s.l, "root_cpuset", root.Path())
-	lg.Param(s.l, "allcpu", allcpu)
+	s.log.Debug("fetched available cpus", zap.String("root", root.Path()), zap.Stringer("cpus", allcpu))
 
 	if len(allcpu) <= s.sysn {
 		return fmt.Errorf("not enough cpus: require %d for system but root has %d", s.sysn, len(allcpu))
@@ -109,7 +110,7 @@ func (s *Shield) apply() error {
 	if err != nil {
 		return fmt.Errorf("could not pick system cpus: %w", err)
 	}
-	lg.Param(s.l, "syscpu", syscpu)
+	s.log.Debug("selected system cpus", zap.Stringer("cpus", syscpu))
 
 	// Create system cpuset.
 	sys, err := cpuset.Create(s.sys)
@@ -153,7 +154,7 @@ func (s *Shield) apply() error {
 	if err := shield.SetCPUs(shieldcpu); err != nil {
 		return err
 	}
-	lg.Param(s.l, "shieldcpu", shieldcpu)
+	s.log.Debug("selected shield cpus", zap.Stringer("cpus", shieldcpu))
 
 	// Memory nodes.
 	if err := shield.SetMems(mems); err != nil {
@@ -182,14 +183,16 @@ func (s *Shield) Reset() error {
 
 // movetasks moves all tasks form src to dst, with additional logging.
 func (s *Shield) movetasks(src, dst *cpuset.CPUSet) error {
-	s.l.Printf("move tasks from %s to %s", src.Path(), dst.Path())
+	s.log.Debug("moving tasks", zap.String("src", src.Path()), zap.String("dst", dst.Path()))
 	m, err := cpuset.MoveTasks(src, dst)
 	if err != nil {
 		return err
 	}
-	lg.Param(s.l, "num_moved", len(m.Moved))
-	lg.Param(s.l, "num_nonexistent", len(m.Nonexistent))
-	lg.Param(s.l, "num_invalid", len(m.Invalid))
+	s.log.Debug("tasks moved",
+		zap.Int("num_moved", len(m.Moved)),
+		zap.Int("num_nonexistent", len(m.Nonexistent)),
+		zap.Int("num_invalid", len(m.Invalid)),
+	)
 	return nil
 }
 

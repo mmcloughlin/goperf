@@ -6,10 +6,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/httputil"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Handlers struct {
@@ -17,22 +17,22 @@ type Handlers struct {
 
 	router  *httprouter.Router
 	jsonenc *httputil.JSONEncoder
-	logger  lg.Logger
+	log     *zap.Logger
 }
 
-func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
+func NewHandlers(c *Coordinator, l *zap.Logger) *Handlers {
 	// Configure.
 	h := &Handlers{
 		c:       c,
 		jsonenc: &httputil.JSONEncoder{Debug: true},
 		router:  httprouter.New(),
-		logger:  l,
+		log:     l,
 	}
 
 	// Setup router.
 	h.router.Handler(http.MethodPost, "/workers/:worker/jobs", httputil.ErrorHandler{
 		Handler: httputil.HandlerFunc(h.requestJobs),
-		Logger:  h.logger,
+		Log:     h.log,
 	})
 
 	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/start", httputil.ErrorHandler{
@@ -40,12 +40,12 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 			[]entity.TaskStatus{entity.TaskStatusCreated},
 			entity.TaskStatusInProgress,
 		),
-		Logger: h.logger,
+		Log: h.log,
 	})
 
 	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/result", httputil.ErrorHandler{
 		Handler: httputil.HandlerFunc(h.result),
-		Logger:  h.logger,
+		Log:     h.log,
 	})
 
 	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/fail", httputil.ErrorHandler{
@@ -53,7 +53,7 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 			[]entity.TaskStatus{entity.TaskStatusInProgress},
 			entity.TaskStatusCompleteError,
 		),
-		Logger: h.logger,
+		Log: h.log,
 	})
 
 	h.router.Handler(http.MethodPut, "/workers/:worker/jobs/:job/halt", httputil.ErrorHandler{
@@ -61,7 +61,7 @@ func NewHandlers(c *Coordinator, l lg.Logger) *Handlers {
 			entity.TaskStatusPendingValues(),
 			entity.TaskStatusHalted,
 		),
-		Logger: h.logger,
+		Log: h.log,
 	})
 
 	return h

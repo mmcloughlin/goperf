@@ -5,27 +5,18 @@ import (
 	"flag"
 	"net"
 	"net/http"
-	"os"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/gcs"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 func main() {
-	os.Exit(main1())
-}
-
-func main1() int {
-	l := lg.Default()
-	if err := mainerr(l); err != nil {
-		l.Printf("error: %s", err)
-		return 1
-	}
-	return 0
+	command.RunError(run)
 }
 
 var (
@@ -37,10 +28,8 @@ var (
 	nocache = flag.Bool("nocache", false, "disable asset caches")
 )
 
-func mainerr(l lg.Logger) error {
+func run(ctx context.Context, l *zap.Logger) error {
 	flag.Parse()
-
-	ctx := command.BackgroundContext(l)
 
 	// Open database connection.
 	d, err := db.Open(ctx, *conn)
@@ -96,7 +85,7 @@ func mainerr(l lg.Logger) error {
 	}
 
 	// Shutdown server.
-	l.Printf("http server shutdown")
+	l.Info("http server shutdown")
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

@@ -3,20 +3,21 @@ package wrap
 import (
 	"flag"
 
-	"github.com/mmcloughlin/cb/pkg/lg"
+	"go.uber.org/zap"
+
 	"github.com/mmcloughlin/cb/pkg/proc"
 )
 
-func prioritizeactions(l lg.Logger) []action {
+func prioritizeactions(l *zap.Logger) []action {
 	return []action{
 		&niceaction{},
-		&rtaction{l: l},
+		&rtaction{log: l},
 	}
 }
 
 type rtaction struct {
 	prio int
-	l    lg.Logger
+	log  *zap.Logger
 }
 
 func (a *rtaction) SetFlags(f *flag.FlagSet) {
@@ -26,7 +27,7 @@ func (a *rtaction) SetFlags(f *flag.FlagSet) {
 func (a *rtaction) Apply() error {
 	err := proc.SetScheduler(0, proc.SCHED_RR, &proc.SchedParam{Priority: a.prio})
 	if err != nil {
-		a.l.Printf("failed to set realtime priority")
+		a.log.Error("failed to set realtime priority", zap.Error(err))
 	}
 	return nil
 }

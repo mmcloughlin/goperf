@@ -6,9 +6,10 @@ import (
 	"io"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/mmcloughlin/cb/app/coordinator"
 	"github.com/mmcloughlin/cb/internal/errutil"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 // Processor executes jobs, returning the output file.
@@ -40,7 +41,7 @@ type Worker struct {
 	client    *coordinator.Client
 	processor Processor
 	poll      PollingConfig
-	log       lg.Logger
+	log       *zap.Logger
 
 	queue []*coordinator.Job
 }
@@ -52,7 +53,7 @@ func New(c *coordinator.Client, p Processor, opts ...Option) *Worker {
 		client:    c,
 		processor: p,
 		poll:      DefaultPollingConfig,
-		log:       lg.Noop(),
+		log:       zap.NewNop(),
 	}
 }
 
@@ -60,8 +61,8 @@ func WithPollingConfig(poll PollingConfig) Option {
 	return func(w *Worker) { w.poll = poll }
 }
 
-func WithLogger(l lg.Logger) Option {
-	return func(w *Worker) { w.log = l }
+func WithLogger(l *zap.Logger) Option {
+	return func(w *Worker) { w.log = l.Named("worker") }
 }
 
 func (w *Worker) Run(ctx context.Context) error {
@@ -77,7 +78,7 @@ func (w *Worker) Run(ctx context.Context) error {
 		// Process the job. Errors are simply logged and we move onto the next
 		// one. The process function will report status to coordinator.
 		if err := w.process(ctx, j); err != nil {
-			lg.Error(w.log, "job processing", err)
+			w.log.Error("job processing error", zap.Error(err))
 		}
 	}
 }
@@ -93,7 +94,7 @@ func (w *Worker) next(ctx context.Context) (*coordinator.Job, error) {
 			break
 		}
 		if err != nil {
-			lg.Error(w.log, "jobs request", err)
+			w.log.Error("jobs request error", zap.Error(err))
 		}
 
 		// Sleep before polling again.
@@ -137,12 +138,12 @@ func (w *Worker) process(ctx context.Context, j *coordinator.Job) (err error) {
 
 func (w *Worker) fail(ctx context.Context, j *coordinator.Job) {
 	if err := w.client.Fail(ctx, j.UUID); err != nil {
-		lg.Error(w.log, "reporting job failure", err)
+		w.log.Error("error reporting job failure", zap.Error(err))
 	}
 }
 
 func (w *Worker) halt(ctx context.Context, j *coordinator.Job) {
 	if err := w.client.Halt(ctx, j.UUID); err != nil {
-		lg.Error(w.log, "halting job", err)
+		w.log.Error("error halting job", zap.Error(err))
 	}
 }

@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/mmcloughlin/cb/app/coordinator"
 	"github.com/mmcloughlin/cb/app/db"
@@ -25,7 +26,6 @@ import (
 	"github.com/mmcloughlin/cb/internal/test"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/job"
-	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/parse"
 )
 
@@ -44,7 +44,7 @@ func NewIntegration(t *testing.T) *Integration {
 
 	ctx := context.Background()
 	db := dbtest.Open(t)
-	l := lg.Test(t)
+	l := zaptest.NewLogger(t)
 
 	// Ensure the module is in the database.
 	if err := db.StoreModule(ctx, fixture.Module); err != nil {

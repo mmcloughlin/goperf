@@ -36,6 +36,7 @@ require (
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/shirou/gopsutil v2.20.1+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	go.uber.org/zap v1.14.1
 	golang.org/x/build v0.0.0-20200207163221-ab7b028cb90c
 	golang.org/x/mod v0.2.0
 	golang.org/x/perf v0.0.0-20180704124530-6e6d33e29852

@@ -1,19 +1,22 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"os"
 
 	"github.com/google/subcommands"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/lg"
 	"github.com/mmcloughlin/cb/pkg/platform"
 )
 
 func main() {
-	logger := lg.Default()
-	base := command.NewBase(logger)
+	command.Run(run)
+}
+
+func run(ctx context.Context, l *zap.Logger) int {
+	base := command.NewBase(l)
 
 	// Platform provides OS specific functionality.
 	p := platform.New(base)
@@ -33,6 +36,5 @@ func main() {
 
 	// Execute.
 	flag.Parse()
-	ctx := command.BackgroundContext(logger)
-	os.Exit(int(subcommands.Execute(ctx)))
+	return int(subcommands.Execute(ctx))
 }

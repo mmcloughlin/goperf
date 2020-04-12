@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/entity"
@@ -19,14 +20,13 @@ import (
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/job"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 type Coordinator struct {
 	db     *db.DB
 	sched  sched.Scheduler
 	datafs fs.Writable
-	logger lg.Logger
+	log    *zap.Logger
 }
 
 func New(d *db.DB, s sched.Scheduler, w fs.Writable) *Coordinator {
@@ -34,22 +34,23 @@ func New(d *db.DB, s sched.Scheduler, w fs.Writable) *Coordinator {
 		db:     d,
 		sched:  s,
 		datafs: w,
-		logger: lg.Noop(),
+		log:    zap.NewNop(),
 	}
 }
 
 // SetLogger sets the logger used by the Coordinator.
-func (c *Coordinator) SetLogger(l lg.Logger) {
-	c.logger = l
+func (c *Coordinator) SetLogger(l *zap.Logger) {
+	c.log = l.Named("coordinator")
 }
 
 // Jobs requests next jobs for a worker.
 func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse, error) {
+	log := c.log.With(zap.String("worker", req.Worker))
+	log.Debug("jobs request")
+
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-
-	c.logger.Printf("jobs request for worker %s", req.Worker)
 
 	// Determine pending tasks for the worker.
 	pending, err := c.db.ListWorkerTasksPending(ctx, req.Worker)
@@ -57,7 +58,7 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 		return nil, err
 	}
 
-	c.logger.Printf("found %d pending tasks", len(pending))
+	log.Debug("found pending tasks", zap.Int("num_pending", len(pending)))
 
 	// Fetch proposed work.
 	proposed, err := c.sched.Tasks(ctx, &sched.Request{
@@ -68,7 +69,7 @@ func (c *Coordinator) Jobs(ctx context.Context, req *JobsRequest) (*JobsResponse
 		return nil, err
 	}
 
-	c.logger.Printf("scheduler proposed %d tasks", len(proposed))
+	log.Debug("scheduler proposed tasks", zap.Int("num_proposed", len(proposed)))
 
 	// Select the highest priority task that is not still in a pending state.
 	sort.Stable(sort.Reverse(sched.TasksByPriority(proposed)))
@@ -150,11 +151,15 @@ func tasksContainSpec(tasks []*entity.Task, s entity.TaskSpec) bool {
 
 // StatusChange records a job status change.
 func (c *Coordinator) StatusChange(ctx context.Context, req *StatusChangeRequest) error {
+	log := c.log.With(
+		zap.String("worker", req.Worker),
+		zap.Stringer("job_uuid", req.UUID),
+	)
+	log.Debug("status change request")
+
 	if err := req.Validate(); err != nil {
 		return err
 	}
-
-	c.logger.Printf("stus change for worker %s job %s", req.Worker, req.UUID)
 
 	// Find the task.
 	task, err := c.findWorkerTask(ctx, req.Worker, req.UUID)
@@ -172,11 +177,15 @@ func (c *Coordinator) StatusChange(ctx context.Context, req *StatusChangeRequest
 
 // Result processes a datafile upload.
 func (c *Coordinator) Result(ctx context.Context, req *ResultRequest) error {
+	log := c.log.With(
+		zap.String("worker", req.Worker),
+		zap.Stringer("job_uuid", req.UUID),
+	)
+	log.Debug("result upload")
+
 	if err := req.Validate(); err != nil {
 		return err
 	}
-
-	c.logger.Printf("result upload for worker %s job %s", req.Worker, req.UUID)
 
 	// Find the task.
 	task, err := c.findWorkerTask(ctx, req.Worker, req.UUID)
@@ -195,12 +204,16 @@ func (c *Coordinator) Result(ctx context.Context, req *ResultRequest) error {
 	}
 
 	// Write the file.
+	log.Debug("writing to filesystem")
+
 	datafile, err := c.write(ctx, req, task)
 	if err != nil {
 		return fmt.Errorf("results upload: %w", err)
 	}
 
 	// Record successful upload.
+	log.Debug("record successful upload in database")
+
 	if err := c.db.RecordTaskDataUpload(ctx, task.UUID, datafile); err != nil {
 		return err
 	}

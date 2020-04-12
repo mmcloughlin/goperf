@@ -1,19 +1,23 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
-	"os"
 
 	"github.com/google/subcommands"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/lg"
 
 	// Register database drivers
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres" // cloudsqlpostgres
 	_ "github.com/lib/pq"                                                    // postgres
 )
+
+func main() {
+	command.Run(run)
+}
 
 // Top-level flags.
 var (
@@ -21,9 +25,8 @@ var (
 	conn   = flag.String("conn", "", "database connection string")
 )
 
-func main() {
-	logger := lg.Default()
-	base := command.NewBase(logger)
+func run(ctx context.Context, l *zap.Logger) int {
+	base := command.NewBase(l)
 
 	// Database commands.
 	subcommands.Register(NewMigrate(base), "database admin")
@@ -38,8 +41,7 @@ func main() {
 
 	// Execute.
 	flag.Parse()
-	ctx := command.BackgroundContext(logger)
-	os.Exit(int(subcommands.Execute(ctx)))
+	return int(subcommands.Execute(ctx))
 }
 
 // open database connection.

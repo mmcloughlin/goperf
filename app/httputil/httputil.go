@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/golang/gddo/httputil"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/lg"
 )
 
 // ExpectStatus errors if code is not in the allowed list.
@@ -88,7 +88,7 @@ func (h HandlerFunc) HandleRequest(w http.ResponseWriter, r *http.Request) error
 // ErrorHandler wraps a HandlerFunc with an error handling layer.
 type ErrorHandler struct {
 	Handler Handler
-	Logger  lg.Logger
+	Log     *zap.Logger
 }
 
 func (h ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func (h ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		err := buf.WriteTo(w)
 		if err != nil {
-			lg.Error(h.Logger, "write http response", err)
+			h.Log.Error("write http response", zap.Error(err))
 		}
 		return
 	}
@@ -111,7 +111,7 @@ func (h ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		e = InternalServerError(err)
 	}
 
-	lg.Error(h.Logger, "handle http request", e)
+	h.Log.Error("handle http request", zap.Error(e))
 	http.Error(w, e.Error(), e.Status())
 }
 

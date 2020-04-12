@@ -5,6 +5,7 @@ import (
 	"flag"
 
 	"github.com/google/subcommands"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/gcs"
@@ -70,21 +71,21 @@ func (cmd *Ingest) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{
 	}
 
 	for _, file := range files {
-		cmd.Log.Printf("file=%s mod=%s", file.Path, file.ModTime)
+		cmd.Log.Info("ingest file", zap.String("file", file.Path), zap.Time("modtime", file.ModTime))
 
 		rs, err := loader.Load(ctx, file.Path)
 		if err != nil {
-			cmd.Log.Printf("loading error: %s", err)
+			cmd.Log.Error("loading error", zap.Error(err))
 			continue
 		}
-		cmd.Log.Printf("loaded %d results", len(rs))
+		cmd.Log.Info("loaded results", zap.Int("num_results", len(rs)))
 
 		for _, r := range rs {
 			if err := d.StoreResult(ctx, r); err != nil {
 				return cmd.Error(err)
 			}
 		}
-		cmd.Log.Printf("inserted %d results", len(rs))
+		cmd.Log.Info("inserted results", zap.Int("num_results", len(rs)))
 	}
 
 	return subcommands.ExitSuccess

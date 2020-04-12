@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"go.uber.org/zap"
 	"golang.org/x/build/buildenv"
 	"golang.org/x/build/dashboard"
 
@@ -158,15 +159,16 @@ func (s *snapshot) Configuration() (cfg.Configuration, error) {
 }
 
 func (s *snapshot) Install(w *Workspace, root string) {
-	defer lg.Scope(w, "snapshot_install")()
-
-	// Log parameters.
-	lg.Param(w, "snapshot_builder_type", s.buildertype)
-	lg.Param(w, "snapshot_go_revision", s.rev)
+	defer lg.Scope(w.Log, "snapshot_install")()
 
 	// Determine download URL.
 	url := buildenv.Production.SnapshotURL(s.buildertype, s.rev)
-	lg.Param(w, "snapshot_url", url)
+
+	w.Log.Info("install snapshot",
+		zap.String("builder_type", s.buildertype),
+		zap.String("go_revision", s.rev),
+		zap.String("snapshot_url", url),
+	)
 
 	// Download.
 	dldir := w.Sandbox("dl")
@@ -228,19 +230,20 @@ func (r *release) Configuration() (cfg.Configuration, error) {
 }
 
 func (r *release) Install(w *Workspace, root string) {
-	defer lg.Scope(w, "release_install")()
-
-	// Log parameters.
-	lg.Param(w, "release_version", r.version)
-	lg.Param(w, "release_os", r.os)
-	lg.Param(w, "release_arch", r.arch)
+	defer lg.Scope(w.Log, "release_install")()
 
 	// Determine download URL.
 	// TODO(mbm): fetch files list in json format
 	const base = "https://golang.org/dl/"
 	filename := fmt.Sprintf("%s.%s-%s.tar.gz", r.version, r.os, r.arch)
 	url := base + filename
-	lg.Param(w, "release_url", url)
+
+	w.Log.Info("install release",
+		zap.String("version", r.version),
+		zap.String("os", r.os),
+		zap.String("arch", r.arch),
+		zap.String("url", url),
+	)
 
 	// Download.
 	dldir := w.Sandbox("dl")

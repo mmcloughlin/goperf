@@ -2,9 +2,9 @@
 
 package wrap
 
-import "github.com/mmcloughlin/cb/pkg/lg"
+import "go.uber.org/zap"
 
-func prioritizeactions(l lg.Logger) []action {
+func prioritizeactions(l *zap.Logger) []action {
 	return []action{
 		&niceaction{},
 	}

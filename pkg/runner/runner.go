@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/job"
@@ -34,10 +35,10 @@ func NewRunner(w *Workspace, tc Toolchain) *Runner {
 
 // Init initializes the runner.
 func (r *Runner) Init(ctx context.Context) {
-	defer lg.Scope(r.w, "initializing")()
+	defer lg.Scope(r.w.Log, "initializing")()
 
 	// Install toolchain.
-	lg.Param(r.w, "toolchain", r.tc.String())
+	r.w.Log.Info("install toolchain", zap.Stringer("toolchain", r.tc))
 	goroot := r.w.Path("goroot")
 	r.tc.Install(r.w, goroot)
 
@@ -60,7 +61,7 @@ func (r *Runner) Init(ctx context.Context) {
 
 // Clean up the runner.
 func (r *Runner) Clean(ctx context.Context) {
-	defer lg.Scope(r.w, "clean")()
+	defer lg.Scope(r.w.Log, "clean")()
 	r.GoExec(ctx, "clean", "-cache", "-testcache", "-modcache")
 	r.w.Clean()
 }
@@ -93,7 +94,7 @@ func (r *Runner) Wrap(w ...Wrapper) {
 
 // Benchmark runs the benchmark suite.
 func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
-	defer lg.Scope(r.w, "benchmark")()
+	defer lg.Scope(r.w.Log, "benchmark")()
 
 	// Apply tuners.
 	for _, t := range r.tuners {
