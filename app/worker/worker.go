@@ -49,12 +49,16 @@ type Worker struct {
 type Option func(*Worker)
 
 func New(c *coordinator.Client, p Processor, opts ...Option) *Worker {
-	return &Worker{
+	w := &Worker{
 		client:    c,
 		processor: p,
 		poll:      DefaultPollingConfig,
 		log:       zap.NewNop(),
 	}
+	for _, opt := range opts {
+		opt(w)
+	}
+	return w
 }
 
 func WithPollingConfig(poll PollingConfig) Option {
@@ -66,6 +70,8 @@ func WithLogger(l *zap.Logger) Option {
 }
 
 func (w *Worker) Run(ctx context.Context) error {
+	w.log.Info("starting worker loop")
+
 	for {
 		// Fetch next job. THe next function polls indefinitely for work, so an
 		// error here means the context was cancelled or something else
@@ -88,6 +94,8 @@ func (w *Worker) next(ctx context.Context) (*coordinator.Job, error) {
 	interval := w.poll.Initial
 
 	for len(w.queue) == 0 {
+		w.log.Debug("fetch jobs")
+
 		res, err := w.client.Jobs(ctx)
 		if err == nil && len(res.Jobs) > 0 {
 			w.queue = append(w.queue, res.Jobs...)
@@ -98,6 +106,8 @@ func (w *Worker) next(ctx context.Context) (*coordinator.Job, error) {
 		}
 
 		// Sleep before polling again.
+		w.log.Debug("wait", zap.Duration("interval", interval))
+
 		select {
 		case <-time.After(interval):
 		case <-ctx.Done():
@@ -137,12 +147,14 @@ func (w *Worker) process(ctx context.Context, j *coordinator.Job) (err error) {
 }
 
 func (w *Worker) fail(ctx context.Context, j *coordinator.Job) {
+	w.log.Info("reporting job failure", zap.Stringer("uuid", j.UUID))
 	if err := w.client.Fail(ctx, j.UUID); err != nil {
 		w.log.Error("error reporting job failure", zap.Error(err))
 	}
 }
 
 func (w *Worker) halt(ctx context.Context, j *coordinator.Job) {
+	w.log.Info("halt job", zap.Stringer("uuid", j.UUID))
 	if err := w.client.Halt(ctx, j.UUID); err != nil {
 		w.log.Error("error halting job", zap.Error(err))
 	}
