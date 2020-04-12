@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/coordinator"
-	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 // Processor executes jobs, returning the output file.
@@ -135,9 +134,8 @@ func (w *Worker) process(ctx context.Context, j *coordinator.Job) (err error) {
 		w.fail(ctx, j)
 		return fmt.Errorf("process job: %w", err)
 	}
-	defer errutil.CheckClose(&err, r)
 
-	// Upload.
+	// Upload. Note the upload will close the reader.
 	if err := w.client.UploadResult(ctx, j.UUID, r); err != nil {
 		w.halt(ctx, j)
 		return fmt.Errorf("upload result: %w", err)

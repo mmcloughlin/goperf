@@ -2,17 +2,20 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"io"
 	"net/http"
 
 	"github.com/google/subcommands"
+	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/coordinator"
 	"github.com/mmcloughlin/cb/app/worker"
-	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/platform"
+	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
 type Run struct {
@@ -21,6 +24,7 @@ type Run struct {
 
 	name           string
 	coordinatorURL string
+	artifacts      string
 }
 
 func NewRun(b command.Base, p *platform.Platform) *Run {
@@ -45,17 +49,73 @@ func (cmd *Run) SetFlags(f *flag.FlagSet) {
 
 	f.StringVar(&cmd.name, "name", "", "worker name")
 	f.StringVar(&cmd.coordinatorURL, "coordinator", "", "coordinator address")
+	f.StringVar(&cmd.artifacts, "artifacts", "", "artifacts storage directory")
 }
 
 func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	c := coordinator.NewClient(http.DefaultClient, cmd.coordinatorURL, cmd.name)
-	p := &Processor{}
+
+	artifacts := fs.NewLocal(cmd.artifacts)
+
+	p := &Processor{
+		platform:  cmd.Platform,
+		artifacts: artifacts,
+		log:       cmd.Log,
+	}
+
 	w := worker.New(c, p, worker.WithLogger(cmd.Log))
+
 	return cmd.Status(w.Run(ctx))
 }
 
-type Processor struct{}
+type Processor struct {
+	platform  *platform.Platform
+	artifacts fs.Interface
+	log       *zap.Logger
+}
 
 func (p *Processor) Process(ctx context.Context, j *coordinator.Job) (io.ReadCloser, error) {
-	return nil, errutil.ErrNotImplemented
+	// TODO(mbm): make runner context aware
+	// TODO(mbm): reduce duplication with cmd/benchrun
+
+	// Build toolchain.
+	builderType, ok := runner.HostSnapshotBuilderType()
+	if !ok {
+		return nil, errors.New("could not identify builder type")
+	}
+	tc := runner.NewSnapshot(builderType, j.CommitSHA)
+
+	p.log.Info("constructed toolchain", zap.Stringer("toolchain", tc))
+
+	// Construct workspace.
+	w, err := runner.NewWorkspace(
+		runner.WithLogger(p.log),
+		runner.WithArtifactStore(p.artifacts),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize runner.
+	r := runner.NewRunner(w, tc)
+	if err := p.platform.ConfigureRunner(r); err != nil {
+		return nil, err
+	}
+
+	r.Init(ctx)
+
+	// Run benchmark.
+	output := j.UUID.String()
+	r.Benchmark(ctx, j.Suite, output)
+
+	// Cleanup.
+	r.Clean(ctx)
+
+	// Bail if there was some error.
+	if err := w.Error(); err != nil {
+		return nil, err
+	}
+
+	// Otherwise return a handle to the output.
+	return p.artifacts.Open(ctx, output)
 }

@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"path"
 	"runtime"
 	"time"
 
 	"github.com/google/subcommands"
+	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/internal/flags"
 	"github.com/mmcloughlin/cb/pkg/command"
@@ -98,7 +100,8 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 		Short:     true,
 		BenchTime: 10 * time.Millisecond,
 	}
-	r.Benchmark(ctx, suite)
+	output := fmt.Sprintf("%s.out", uuid.New())
+	r.Benchmark(ctx, suite, output)
 
 	// Clean.
 	if !cmd.preserve {

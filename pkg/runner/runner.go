@@ -2,13 +2,11 @@ package runner
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
@@ -93,7 +91,7 @@ func (r *Runner) Wrap(w ...Wrapper) {
 }
 
 // Benchmark runs the benchmark suite.
-func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
+func (r *Runner) Benchmark(ctx context.Context, s job.Suite, output string) {
 	defer lg.Scope(r.w.Log, "benchmark")()
 
 	// Apply tuners.
@@ -123,7 +121,6 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 		r.w.seterr(err)
 		return
 	}
-	defer f.Close()
 
 	// Write static configuration.
 	providers := cfg.Providers{
@@ -155,9 +152,7 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite) {
 	r.w.Exec(cmd)
 
 	// Save the result.
-	filename := fmt.Sprintf("%s.out", uuid.New())
-	path := filepath.Join(r.tc.String(), s.Module.String(), filename)
-	r.w.Artifact(outputfile, path)
+	r.w.Artifact(outputfile, output)
 }
 
 func suiteconfig(s job.Suite) cfg.Provider {

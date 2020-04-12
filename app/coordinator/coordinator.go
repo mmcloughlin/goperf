@@ -134,7 +134,7 @@ func (c *Coordinator) modulejob(ctx context.Context, s entity.TaskSpec) (*Job, e
 				Version: m.Version,
 			},
 			Short:     true,
-			BenchTime: time.Second,
+			BenchTime: 10 * time.Millisecond,
 		},
 	}, nil
 }
@@ -155,7 +155,7 @@ func (c *Coordinator) StatusChange(ctx context.Context, req *StatusChangeRequest
 		zap.String("worker", req.Worker),
 		zap.Stringer("job_uuid", req.UUID),
 	)
-	log.Debug("status change request")
+	log.Debug(fmt.Sprintf("change status to %s", req.To))
 
 	if err := req.Validate(); err != nil {
 		return err

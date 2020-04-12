@@ -195,6 +195,11 @@ func SnapshotBuilderType(goos, goarch string) (string, bool) {
 	return builder, found
 }
 
+// HostSnapshotBuilderType gives looks for a builder type for host platform.
+func HostSnapshotBuilderType() (string, bool) {
+	return SnapshotBuilderType(runtime.GOOS, runtime.GOARCH)
+}
+
 type release struct {
 	os      string
 	arch    string

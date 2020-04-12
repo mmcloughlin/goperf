@@ -45,6 +45,8 @@ func (c *Client) Start(ctx context.Context, id uuid.UUID) error {
 	})
 }
 
+// UploadResult uploads a benchmark result file for the given job ID. Note the
+// reader will be closed if it is an io.ReadCloser.
 func (c *Client) UploadResult(ctx context.Context, id uuid.UUID, r io.Reader) error {
 	return c.request(ctx, params{
 		Method:         http.MethodPut,

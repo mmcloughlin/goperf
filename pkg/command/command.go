@@ -8,10 +8,9 @@ import (
 	"os"
 	"syscall"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/mmcloughlin/cb/pkg/sig"
 )
