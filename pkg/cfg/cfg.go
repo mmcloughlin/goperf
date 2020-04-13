@@ -62,7 +62,7 @@ func (t TimeValue) String() string { return time.Time(t).Format(time.RFC3339) }
 // TemperatureValue is a temperature in celsius.
 type TemperatureValue float64
 
-func (t TemperatureValue) String() string { return formatfloat(float64(t), 3) + "\u2103" }
+func (t TemperatureValue) String() string { return formatfloat(float64(t), 3) + " degC" }
 
 // BytesValue represents bytes.
 type BytesValue uint64
