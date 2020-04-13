@@ -59,6 +59,11 @@ type TimeValue time.Time
 
 func (t TimeValue) String() string { return time.Time(t).Format(time.RFC3339) }
 
+// TemperatureValue is a temperature in celsius.
+type TemperatureValue float64
+
+func (t TemperatureValue) String() string { return formatfloat(float64(t), 3) + "\u2103" }
+
 // BytesValue represents bytes.
 type BytesValue uint64
 
@@ -66,7 +71,7 @@ func (b BytesValue) String() string {
 	return formatquantity(units.BytesBinary(float64(b)), 2)
 }
 
-// BytesValue represents bytes.
+// FrequencyValue represents frequency in Hz.
 type FrequencyValue float64
 
 func (f FrequencyValue) String() string {

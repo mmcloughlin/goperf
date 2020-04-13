@@ -13,6 +13,7 @@ var DefaultProviders = cfg.Providers{
 	sys.Host,
 	sys.LoadAverage,
 	sys.VirtualMemory,
+	sys.Thermal{},
 	sys.CPU,
 	sys.AffineCPU,
 	sys.Caches{},

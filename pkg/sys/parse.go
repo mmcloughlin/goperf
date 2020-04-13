@@ -57,6 +57,14 @@ func parsekhz(s string) (cfg.Value, error) {
 	return cfg.FrequencyValue(n * 1000), nil
 }
 
+func parsemillicelsius(s string) (cfg.Value, error) {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return nil, err
+	}
+	return cfg.TemperatureValue(float64(n) / 1000), nil
+}
+
 func parsebool(s string) (cfg.Value, error) {
 	b, err := strconv.ParseBool(s)
 	if err != nil {
