@@ -3,7 +3,6 @@ package ingest
 import (
 	"context"
 	"fmt"
-	"log"
 	"path"
 
 	"github.com/google/uuid"
@@ -22,16 +21,21 @@ var (
 	database *db.DB
 )
 
-func init() {
+func initialize(ctx context.Context, l *zap.Logger) error {
 	var err error
-	ctx := context.Background()
 
-	logger, err = service.Logger()
-	if err != nil {
-		log.Fatal(err)
-	}
+	logger = l
 
 	database, err = service.DB(ctx, logger)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func init() {
+	service.Initialize(initialize)
 }
 
 // GCSEvent is the payload of a GCS event.

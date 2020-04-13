@@ -1,7 +1,7 @@
 package watch
 
 import (
-	"log"
+	"context"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -12,27 +12,28 @@ import (
 	"github.com/mmcloughlin/cb/app/service"
 )
 
-// Services.
+// Initialization.
 var (
-	repository repo.Repository
 	logger     *zap.Logger
+	repository repo.Repository
 	handler    http.Handler
 )
 
-func init() {
-	var err error
+func initialize(ctx context.Context, l *zap.Logger) error {
+	logger = l
 
 	repository = repo.Go(http.DefaultClient)
-
-	logger, err = service.Logger()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	handler = httputil.ErrorHandler{
 		Handler: httputil.HandlerFunc(handle),
 		Log:     logger,
 	}
+
+	return nil
+}
+
+func init() {
+	service.Initialize(initialize)
 }
 
 // Handle HTTP trigger.

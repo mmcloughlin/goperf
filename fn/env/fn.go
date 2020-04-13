@@ -1,10 +1,11 @@
 package env
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/mmcloughlin/cb/app/httputil"
 )
 
 // Handle HTTP trigger.
@@ -15,5 +16,5 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Report ok.
-	fmt.Fprintln(w, "ok")
+	httputil.OK(w)
 }

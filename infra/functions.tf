@@ -24,6 +24,7 @@ locals {
     CB_SQL_DATABASE             = google_sql_database.database.name
     CB_SQL_USER                 = google_sql_user.admin.name
     CB_SQL_PASSWORD_SECRET_NAME = google_secret_manager_secret_version.sql_admin_password_secret_version.name
+    CB_RESULTS_BUCKET           = google_storage_bucket.results_bucket.name
   }
 }
 
@@ -31,13 +32,22 @@ resource "google_cloudfunctions_function" "http_function" {
   for_each = toset([for f in var.functions : f.name if f.trigger_type == "http"])
 
   name                  = each.key
-  available_memory_mb   = 128
+  available_memory_mb   = 256
   source_archive_bucket = google_storage_bucket.functions_bucket.name
   source_archive_object = google_storage_bucket_object.function_zip[each.key].name
   entry_point           = "Handle"
   trigger_http          = true
   runtime               = var.functions_runtime
   environment_variables = local.environment_variables
+}
+
+resource "google_cloudfunctions_function_iam_member" "invoker" {
+  for_each = toset([for f in var.functions : f.name if f.trigger_type == "http"])
+
+  cloud_function = google_cloudfunctions_function.http_function[each.key].name
+
+  role   = "roles/cloudfunctions.invoker"
+  member = "allUsers"
 }
 
 resource "google_cloud_scheduler_job" "watch_schedule" {

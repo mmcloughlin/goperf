@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
@@ -10,11 +11,40 @@ import (
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
 	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/cb/app/gcs"
+	"github.com/mmcloughlin/cb/pkg/fs"
 )
+
+// Init is an initializaiton function.
+type Init func(ctx context.Context, l *zap.Logger) error
+
+// Initialize runs an initializaiton function.
+func Initialize(i Init) {
+	ctx := context.Background()
+
+	logger, err := Logger()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := i(ctx, logger); err != nil {
+		logger.Error("initialization error", zap.Error(err))
+		os.Exit(1)
+	}
+}
 
 // Logger builds a logger for use in service code.
 func Logger() (*zap.Logger, error) {
 	return zap.NewProduction()
+}
+
+// ResultsFileSystem builds filesystem access to results data files.
+func ResultsFileSystem(ctx context.Context) (fs.Interface, error) {
+	bucket, err := env("RESULTS_BUCKET")
+	if err != nil {
+		return nil, err
+	}
+	return gcs.New(ctx, bucket)
 }
 
 // DB opens a database connection to the Cloud SQL instance.
