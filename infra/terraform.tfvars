@@ -5,7 +5,6 @@ functions = [
   { name = "noop", trigger_type = "http" },
   { name = "env", trigger_type = "http" },
   { name = "watch", trigger_type = "http" },
-  { name = "perfdataupload", trigger_type = "result" },
   { name = "ingest", trigger_type = "result" },
   { name = "coordinator", trigger_type = "http" },
 ]
