@@ -7,6 +7,7 @@ import (
 	"os"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"github.com/blendle/zapdriver"
 	"go.uber.org/zap"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
@@ -35,7 +36,7 @@ func Initialize(i Init) {
 
 // Logger builds a logger for use in service code.
 func Logger() (*zap.Logger, error) {
-	return zap.NewProduction()
+	return zapdriver.NewProduction()
 }
 
 // ResultsFileSystem builds filesystem access to results data files.
