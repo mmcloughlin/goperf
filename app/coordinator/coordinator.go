@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path"
 	"sort"
 	"time"
 
@@ -232,9 +233,8 @@ func (c *Coordinator) write(ctx context.Context, r io.Reader, task *entity.Task)
 
 	r = io.MultiReader(hdr, r)
 
-	// Create the file. Note other parts of the system assume the task UUID can
-	// be deduced from the name, so change this with care.
-	name := task.UUID.String()
+	// Create the file.
+	name := dataFileName(task)
 	w, err := c.datafs.Create(ctx, name)
 	if err != nil {
 		return nil, err
@@ -253,6 +253,18 @@ func (c *Coordinator) write(ctx context.Context, r io.Reader, task *entity.Task)
 	h.Sum(datafile.SHA256[:0])
 
 	return datafile, nil
+}
+
+func dataFileName(task *entity.Task) string {
+	// Note other parts of the system may assume the task UUID can be deduced
+	// from the basename, so change this with care.
+	return path.Join(
+		task.Spec.Type.String(),
+		task.Spec.TargetUUID.String(),
+		task.Spec.CommitSHA,
+		task.Worker,
+		task.UUID.String(),
+	)
 }
 
 // findWorkerTask looks up a task by ID, verifying that it belongs to worker.
