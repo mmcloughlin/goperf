@@ -5,9 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"go.uber.org/zap"
+
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/app/service"
-	"go.uber.org/zap"
 )
 
 // Initialization.
