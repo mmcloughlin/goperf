@@ -100,6 +100,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.transitionTaskStatusStmt, err = db.PrepareContext(ctx, transitionTaskStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query TransitionTaskStatus: %w", err)
 	}
+	if q.truncateNonStaticStmt, err = db.PrepareContext(ctx, truncateNonStatic); err != nil {
+		return nil, fmt.Errorf("error preparing query TruncateNonStatic: %w", err)
+	}
 	if q.workerTasksWithStatusStmt, err = db.PrepareContext(ctx, workerTasksWithStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query WorkerTasksWithStatus: %w", err)
 	}
@@ -238,6 +241,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing transitionTaskStatusStmt: %w", cerr)
 		}
 	}
+	if q.truncateNonStaticStmt != nil {
+		if cerr := q.truncateNonStaticStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing truncateNonStaticStmt: %w", cerr)
+		}
+	}
 	if q.workerTasksWithStatusStmt != nil {
 		if cerr := q.workerTasksWithStatusStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing workerTasksWithStatusStmt: %w", cerr)
@@ -308,6 +316,7 @@ type Queries struct {
 	taskStmt                                      *sql.Stmt
 	tasksWithStatusStmt                           *sql.Stmt
 	transitionTaskStatusStmt                      *sql.Stmt
+	truncateNonStaticStmt                         *sql.Stmt
 	workerTasksWithStatusStmt                     *sql.Stmt
 }
 
@@ -341,6 +350,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		taskStmt:                  q.taskStmt,
 		tasksWithStatusStmt:       q.tasksWithStatusStmt,
 		transitionTaskStatusStmt:  q.transitionTaskStatusStmt,
+		truncateNonStaticStmt:     q.truncateNonStaticStmt,
 		workerTasksWithStatusStmt: q.workerTasksWithStatusStmt,
 	}
 }

@@ -30,6 +30,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lib/pq v1.3.0
 	github.com/lucasb-eyer/go-colorful v1.0.3
+	github.com/manifoldco/promptui v0.7.0
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/nwaples/rardecode v1.0.0 // indirect
 	github.com/pierrec/lz4 v2.4.1+incompatible // indirect
