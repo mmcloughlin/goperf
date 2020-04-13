@@ -10,12 +10,24 @@ linters:
     - prealloc
     - godox
     - interfacer
+    - gosec
+    - bodyclose
 
 issues:
+  exclude-use-default: false
   exclude-rules:
     # Allow the SCHED_* constants in proc package, matching the linux names.
     - path: pkg/proc/
       text: ALL_CAPS in Go names
       linters:
         - golint
+        - stylecheck
+
+    # Relax documentation requiremens during initial development.
+    - text: (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
+      linters:
+        - golint
+
+    - text: ST1000
+      linters:
         - stylecheck

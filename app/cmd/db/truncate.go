@@ -31,7 +31,7 @@ func (*Truncate) Usage() string {
 	return ""
 }
 
-func (cmd *Truncate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (cmd *Truncate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) (status subcommands.ExitStatus) {
 	// Destructive action. Ask for confirmation first.
 	prompt := promptui.Prompt{
 		Label:     "This is a destructive action. Are you sure you want to delete all data in the database",
@@ -53,7 +53,7 @@ func (cmd *Truncate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interfac
 	if err != nil {
 		return cmd.Error(err)
 	}
-	defer d.Close()
+	defer cmd.CheckClose(&status, d)
 
 	// Call truncate.
 	if err := d.TruncateNonStatic(ctx); err != nil {

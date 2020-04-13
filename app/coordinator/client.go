@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/app/httputil"
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 type Client struct {
@@ -80,7 +81,7 @@ type params struct {
 	Payload        interface{}
 }
 
-func (c *Client) request(ctx context.Context, p params) error {
+func (c *Client) request(ctx context.Context, p params) (err error) {
 	// Build request.
 	url := c.url + p.Path
 	req, err := http.NewRequestWithContext(ctx, p.Method, url, p.Body)
@@ -93,7 +94,7 @@ func (c *Client) request(ctx context.Context, p params) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer errutil.CheckClose(&err, res.Body)
 
 	if err := httputil.ExpectStatus(res.StatusCode, p.AcceptStatuses...); err != nil {
 		return err

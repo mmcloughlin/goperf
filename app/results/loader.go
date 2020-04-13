@@ -11,6 +11,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/repo"
+	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/mod"
@@ -103,12 +104,16 @@ func NewLoader(opts ...LoaderOption) (*Loader, error) {
 
 // Load the named benchmark file.
 func (l *Loader) Load(ctx context.Context, name string) ([]*entity.Result, error) {
+	return l.load(ctx, name)
+}
+
+func (l *Loader) load(ctx context.Context, name string) (_ []*entity.Result, err error) {
 	// Open the input data file.
 	f, err := l.fs.Open(ctx, name)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer errutil.CheckClose(&err, f)
 
 	// Hash the file while reading it.
 	h := sha256.New()

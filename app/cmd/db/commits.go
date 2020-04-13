@@ -41,7 +41,7 @@ func (cmd *Commits) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&cmd.batch, "batch", 1024, "number of inserts per transaction")
 }
 
-func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) (status subcommands.ExitStatus) {
 	// Open database.
 	sqldb, err := open()
 	if err != nil {
@@ -52,7 +52,7 @@ func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	if err != nil {
 		return cmd.Error(err)
 	}
-	defer d.Close()
+	defer cmd.CheckClose(&status, d)
 
 	// Clone the Go repository.
 	scope := lg.Scope(cmd.Log, "clone")
@@ -61,7 +61,7 @@ func (cmd *Commits) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	if err != nil {
 		return cmd.Error(err)
 	}
-	defer g.Close()
+	defer cmd.CheckClose(&status, g)
 
 	// "git log"
 	scope = lg.Scope(cmd.Log, "git log")

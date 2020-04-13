@@ -144,7 +144,7 @@ func TestSnapshotBuilderTypeDownload(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer resp.Body.Close()
+			defer test.AssertClose(t, resp.Body)
 
 			t.Logf("%d %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 		})

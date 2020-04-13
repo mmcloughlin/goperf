@@ -240,7 +240,7 @@ func (w *Workspace) Download(url, path string) {
 		w.seterr(err)
 		return
 	}
-	defer f.Close()
+	defer w.close(f)
 
 	// Issue request.
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -253,7 +253,7 @@ func (w *Workspace) Download(url, path string) {
 	if err != nil {
 		w.seterr(err)
 	}
-	defer res.Body.Close()
+	defer w.close(res.Body)
 
 	// Copy.
 	_, err = io.Copy(f, res.Body)

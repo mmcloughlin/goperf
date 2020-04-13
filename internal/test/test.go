@@ -2,6 +2,7 @@ package test
 
 import (
 	"flag"
+	"io"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -32,4 +33,11 @@ func TempDir(t *testing.T) string {
 	})
 
 	return dir
+}
+
+// AssertClose closes c and fails the test on error.
+func AssertClose(t *testing.T, c io.Closer) {
+	if err := c.Close(); err != nil {
+		t.Fatal(err)
+	}
 }

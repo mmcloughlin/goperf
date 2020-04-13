@@ -36,7 +36,7 @@ func (cmd *Migrate) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&cmd.dir, "dir", ".", "directory with migration files")
 }
 
-func (cmd *Migrate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
+func (cmd *Migrate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) (status subcommands.ExitStatus) {
 	args := f.Args()
 	if len(args) == 0 {
 		return cmd.UsageError("missing command")
@@ -54,7 +54,7 @@ func (cmd *Migrate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	if err != nil {
 		return cmd.Error(err)
 	}
-	defer d.Close()
+	defer cmd.CheckClose(&status, d)
 
 	return cmd.Status(goose.Run(command, d, cmd.dir, args...))
 }

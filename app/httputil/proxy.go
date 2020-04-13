@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 type proxysingleurl struct {
@@ -45,7 +47,7 @@ func (p *proxysingleurl) HandleRequest(w http.ResponseWriter, r *http.Request) e
 	return nil
 }
 
-func (p *proxysingleurl) fetch(ctx context.Context) error {
+func (p *proxysingleurl) fetch(ctx context.Context) (err error) {
 	// Make HTTP request.
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, p.u.String(), nil)
 	if err != nil {
@@ -56,7 +58,7 @@ func (p *proxysingleurl) fetch(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer errutil.CheckClose(&err, res.Body)
 
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {

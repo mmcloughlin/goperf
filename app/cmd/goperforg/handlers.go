@@ -17,6 +17,7 @@ import (
 	"github.com/mmcloughlin/cb/app/brand"
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/httputil"
+	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/fs"
 	"github.com/mmcloughlin/cb/pkg/units"
 )
@@ -227,7 +228,7 @@ func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) error {
 	})
 }
 
-func (h *Handlers) File(w http.ResponseWriter, r *http.Request) error {
+func (h *Handlers) File(w http.ResponseWriter, r *http.Request) (err error) {
 	ctx := r.Context()
 
 	// Parse UUID.
@@ -253,7 +254,7 @@ func (h *Handlers) File(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	defer rdr.Close()
+	defer errutil.CheckClose(&err, rdr)
 
 	type line struct {
 		Num       int

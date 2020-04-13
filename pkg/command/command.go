@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"syscall"
@@ -97,4 +98,12 @@ func (b Base) Status(err error) subcommands.ExitStatus {
 		return b.Error(err)
 	}
 	return subcommands.ExitSuccess
+}
+
+// CheckClose closes c. On error it logs and writes to the status pointer.
+// Intended for deferred Close() calls.
+func (b Base) CheckClose(statusp *subcommands.ExitStatus, c io.Closer) {
+	if err := c.Close(); err != nil {
+		*statusp = b.Error(err)
+	}
 }

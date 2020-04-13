@@ -11,6 +11,7 @@ import (
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/ingest"
 	"github.com/mmcloughlin/cb/app/results"
+	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
@@ -24,7 +25,7 @@ var (
 	data = flag.String("data", "", "data directory")
 )
 
-func run(ctx context.Context, l *zap.Logger) error {
+func run(ctx context.Context, l *zap.Logger) (err error) {
 	flag.Parse()
 
 	// Open database connection.
@@ -32,7 +33,7 @@ func run(ctx context.Context, l *zap.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer d.Close()
+	defer errutil.CheckClose(&err, d)
 
 	// Build ingester.
 	datafs := fs.NewLocal(*data)

@@ -13,6 +13,8 @@ import (
 
 	"github.com/golang/groupcache/lru"
 	"golang.org/x/mod/module"
+
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 // Reference: https://github.com/golang/go/blob/b5c66de0892d0e9f3f59126eeebc31070e79143b/src/cmd/go/internal/modfetch/repo.go#L56-L65
@@ -152,7 +154,7 @@ func (p *modproxy) Stat(ctx context.Context, path, rev string) (*RevInfo, error)
 	return info, nil
 }
 
-func (p *modproxy) get(ctx context.Context, path string) ([]byte, error) {
+func (p *modproxy) get(ctx context.Context, path string) (_ []byte, err error) {
 	// Build URL.
 	target := *p.url
 	target.Path = pathpkg.Join(target.Path, path)
@@ -168,7 +170,7 @@ func (p *modproxy) get(ctx context.Context, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer errutil.CheckClose(&err, res.Body)
 
 	return ioutil.ReadAll(res.Body)
 }

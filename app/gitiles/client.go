@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/mmcloughlin/cb/app/httputil"
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 type Client struct {
@@ -41,7 +42,7 @@ func (c *Client) Revision(ctx context.Context, repo, ref string) (*RevisionRespo
 	return payload, nil
 }
 
-func (c *Client) get(ctx context.Context, path string, payload interface{}) error {
+func (c *Client) get(ctx context.Context, path string, payload interface{}) (err error) {
 	// Build request.
 	u := c.base + "/" + path
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
@@ -54,7 +55,7 @@ func (c *Client) get(ctx context.Context, path string, payload interface{}) erro
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer errutil.CheckClose(&err, res.Body)
 
 	// Parse response body.
 	if err := decodejson(res.Body, payload); err != nil {

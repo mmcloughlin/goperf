@@ -52,12 +52,12 @@ func writeflagfile(path string, enabled bool) error {
 	return writefile(path, []byte(data), 0644)
 }
 
-func intsfile(path string) ([]int, error) {
+func intsfile(path string) (_ []int, err error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer errutil.CheckClose(&err, f)
 
 	var ns []int
 	s := bufio.NewScanner(f)
