@@ -18,5 +18,6 @@ var DefaultProviders = cfg.Providers{
 	sys.Caches{},
 	sys.CPUFreq{},
 	sys.IntelPState{},
+	sys.SMT{},
 	proc.Stat{},
 }
