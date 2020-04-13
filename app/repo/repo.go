@@ -1,3 +1,4 @@
+// Package repo provides access to git repository metadata.
 package repo
 
 import (

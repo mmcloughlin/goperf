@@ -1,3 +1,4 @@
+// Package results implements loading of benchmark results from data files.
 package results
 
 import (

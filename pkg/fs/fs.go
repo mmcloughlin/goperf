@@ -1,3 +1,4 @@
+// Package fs provides a filesystem abstraction.
 package fs
 
 import (

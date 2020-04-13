@@ -1,3 +1,4 @@
+// Package command provides a common structure for building command line programs.
 package command
 
 import (

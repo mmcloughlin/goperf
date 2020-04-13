@@ -1,3 +1,4 @@
+// Package flags provides custom flag value types.
 package flags
 
 import (

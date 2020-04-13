@@ -1,3 +1,4 @@
+// Package service initializes Google Cloud services.
 package service
 
 import (

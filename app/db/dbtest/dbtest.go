@@ -1,3 +1,4 @@
+// Package dbtest provides helpers for testing the database storage layer.
 package dbtest
 
 import (

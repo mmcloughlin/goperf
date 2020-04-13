@@ -1,3 +1,4 @@
+// Package fixture provides fake objects for testing.
 package fixture
 
 import (

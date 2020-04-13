@@ -1,3 +1,4 @@
+// Package sig provides signal helpers.
 package sig
 
 import (

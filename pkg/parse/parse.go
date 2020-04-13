@@ -1,3 +1,4 @@
+// Package parse implements a parser for the Go benchmark format.
 package parse
 
 import (

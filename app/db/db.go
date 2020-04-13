@@ -1,3 +1,4 @@
+// Package db provides a database storage layer.
 package db
 
 import (
@@ -18,7 +19,7 @@ import (
 //go:generate rm -rf internal/db
 //go:generate sqlc generate
 
-// DB provides a database storage layer.
+// DB provides database access.
 type DB struct {
 	db  *sql.DB
 	q   *db.Queries

@@ -1,3 +1,4 @@
+// Package cpuset is a library for manipulation of Linux cpusets.
 package cpuset
 
 import (

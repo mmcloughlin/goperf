@@ -1,3 +1,4 @@
+// Package ingest implements ingestion of benchmark results.
 package ingest
 
 import (

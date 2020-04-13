@@ -1,3 +1,4 @@
+// Package lg provides logging utilities.
 package lg
 
 import (

@@ -1,3 +1,4 @@
+// Package gitiles implements a client for the Gitiles API.
 package gitiles
 
 import (

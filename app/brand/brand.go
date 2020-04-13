@@ -1,3 +1,4 @@
+// Package brand provides Go Brand colors.
 package brand
 
 import (

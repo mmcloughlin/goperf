@@ -1,3 +1,4 @@
+// Package wrap provides wrapper executables for customizing benchmark execution.
 package wrap
 
 import (

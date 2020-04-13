@@ -1,3 +1,4 @@
+// Package sys provides system configuration.
 package sys
 
 import (

@@ -1,3 +1,5 @@
+// Package httputil provides utilities for implementing web frontends and APIs
+// with the Go standard library.
 package httputil
 
 import (

@@ -1,3 +1,4 @@
+// Package coordinator implements a benchmark task manager and API.
 package coordinator
 
 import (

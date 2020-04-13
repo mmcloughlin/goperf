@@ -1,3 +1,4 @@
+// Package job provides a schema for describing benchmark jobs.
 package job
 
 import (

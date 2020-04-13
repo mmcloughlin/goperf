@@ -1,3 +1,4 @@
+// Package mod provides access to Go module metadata.
 package mod
 
 import (

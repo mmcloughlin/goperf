@@ -1,3 +1,4 @@
+// Package units implements human-friendly representations of common units.
 package units
 
 import "time"

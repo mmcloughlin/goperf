@@ -1,3 +1,4 @@
+// Package runner implements sandboxed Go benchmark execution.
 package runner
 
 import (

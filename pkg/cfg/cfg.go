@@ -1,3 +1,4 @@
+// Package cfg provides structured benchmark configuration.
 package cfg
 
 import (

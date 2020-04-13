@@ -1,3 +1,4 @@
+// Package worker implements worker node iteraction with the coordinator server.
 package worker
 
 import (
