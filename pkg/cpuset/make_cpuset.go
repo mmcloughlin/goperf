@@ -12,17 +12,18 @@ import (
 )
 
 type Type struct {
-	Name       string
+	Read       string
+	Write      string
 	Go         string
 	WriteVerb  string
 	DefaultVar string
 }
 
 var (
-	Flag = Type{"flag", "bool", "Set", "enabled"}
-	Set  = Type{"list", "Set", "Set", "s"}
-	Int  = Type{"int", "int", "Set", "n"}
-	Ints = Type{"ints", "[]int", "Add", "ns"}
+	Flag = Type{"pseudofs.Flag", "pseudofs.WriteFlag", "bool", "Set", "enabled"}
+	Set  = Type{"listfile", "writelistfile", "Set", "Set", "s"}
+	Int  = Type{"pseudofs.Int", "pseudofs.WriteInt", "int", "Set", "n"}
+	Ints = Type{"pseudofs.Ints", "pseudofs.WriteInts", "[]int", "Add", "ns"}
 )
 
 type Property struct {
@@ -266,7 +267,8 @@ func (g *Generator) Format() ([]byte, error) {
 }
 
 func (g *Generator) Methods(ps []Property) {
-	g.Printf("package %s\n", g.pkg)
+	g.Linef("package %s", g.pkg)
+	g.Linef(`import "github.com/mmcloughlin/cb/pkg/pseudofs"`)
 	for _, p := range ps {
 		g.Property(p)
 	}
@@ -282,7 +284,7 @@ func (g *Generator) Property(p Property) {
 	g.Linef("// Corresponds to the %q file in the cpuset directory.", p.Filename)
 
 	g.Linef("func (%s *%s) %s() (%s, error) {", g.receiver, g.name, p.FunctionName, p.Type.Go)
-	g.Linef("\treturn %sfile(%s.path(%q))", p.Type.Name, g.receiver, p.Filename)
+	g.Linef("\treturn %s(%s.path(%q))", p.Type.Read, g.receiver, p.Filename)
 	g.Linef("}")
 
 	// Write method.
@@ -298,7 +300,7 @@ func (g *Generator) WriteMethods(p Property) {
 	g.Linef("//")
 	g.Linef("// See %s() for the meaning of this field.", p.FunctionName)
 	g.Linef("func (%s *%s) %s(%s %s) error {", g.receiver, g.name, p.WriteFunc(), p.Variable(), p.Type.Go)
-	g.Linef("\treturn write%sfile(%s.path(%q), %s)", p.Type.Name, g.receiver, p.Filename, p.Variable())
+	g.Linef("\treturn %s(%s.path(%q), %s)", p.Type.Write, g.receiver, p.Filename, p.Variable())
 	g.Linef("}")
 
 	// Special case Enable/Disable methods for flags.

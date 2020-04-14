@@ -1,17 +1,19 @@
 package cpuset
 
+import "github.com/mmcloughlin/cb/pkg/pseudofs"
+
 // Tasks returns the list of process IDs (PIDs) of the processes in the cpuset.
 //
 // Corresponds to the "tasks" file in the cpuset directory.
 func (c *CPUSet) Tasks() ([]int, error) {
-	return intsfile(c.path("tasks"))
+	return pseudofs.Ints(c.path("tasks"))
 }
 
 // AddTasks writes to the "tasks" file of the cpuset.
 //
 // See Tasks() for the meaning of this field.
 func (c *CPUSet) AddTasks(tasks []int) error {
-	return writeintsfile(c.path("tasks"), tasks)
+	return pseudofs.WriteInts(c.path("tasks"), tasks)
 }
 
 // NotifyOnRelease reports whether the notify_on_release flag is set for this
@@ -22,14 +24,14 @@ func (c *CPUSet) AddTasks(tasks []int) error {
 //
 // Corresponds to the "notify_on_release" file in the cpuset directory.
 func (c *CPUSet) NotifyOnRelease() (bool, error) {
-	return flagfile(c.path("notify_on_release"))
+	return pseudofs.Flag(c.path("notify_on_release"))
 }
 
 // SetNotifyOnRelease writes to the "notify_on_release" file of the cpuset.
 //
 // See NotifyOnRelease() for the meaning of this field.
 func (c *CPUSet) SetNotifyOnRelease(enabled bool) error {
-	return writeflagfile(c.path("notify_on_release"), enabled)
+	return pseudofs.WriteFlag(c.path("notify_on_release"), enabled)
 }
 
 // EnableNotifyOnRelease sets the "notify_on_release" file to true.
@@ -70,14 +72,14 @@ func (c *CPUSet) SetCPUs(s Set) error {
 //
 // Corresponds to the "cpuset.cpu_exclusive" file in the cpuset directory.
 func (c *CPUSet) CPUExclusive() (bool, error) {
-	return flagfile(c.path("cpuset.cpu_exclusive"))
+	return pseudofs.Flag(c.path("cpuset.cpu_exclusive"))
 }
 
 // SetCPUExclusive writes to the "cpuset.cpu_exclusive" file of the cpuset.
 //
 // See CPUExclusive() for the meaning of this field.
 func (c *CPUSet) SetCPUExclusive(enabled bool) error {
-	return writeflagfile(c.path("cpuset.cpu_exclusive"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.cpu_exclusive"), enabled)
 }
 
 // EnableCPUExclusive sets the "cpuset.cpu_exclusive" file to true.
@@ -117,14 +119,14 @@ func (c *CPUSet) SetMems(s Set) error {
 //
 // Corresponds to the "cpuset.mem_exclusive" file in the cpuset directory.
 func (c *CPUSet) MemExclusive() (bool, error) {
-	return flagfile(c.path("cpuset.mem_exclusive"))
+	return pseudofs.Flag(c.path("cpuset.mem_exclusive"))
 }
 
 // SetMemExclusive writes to the "cpuset.mem_exclusive" file of the cpuset.
 //
 // See MemExclusive() for the meaning of this field.
 func (c *CPUSet) SetMemExclusive(enabled bool) error {
-	return writeflagfile(c.path("cpuset.mem_exclusive"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.mem_exclusive"), enabled)
 }
 
 // EnableMemExclusive sets the "cpuset.mem_exclusive" file to true.
@@ -145,14 +147,14 @@ func (c *CPUSet) DisableMemExclusive() error { return c.SetMemExclusive(false) }
 //
 // Corresponds to the "cpuset.mem_hardwall" file in the cpuset directory.
 func (c *CPUSet) MemHardwall() (bool, error) {
-	return flagfile(c.path("cpuset.mem_hardwall"))
+	return pseudofs.Flag(c.path("cpuset.mem_hardwall"))
 }
 
 // SetMemHardwall writes to the "cpuset.mem_hardwall" file of the cpuset.
 //
 // See MemHardwall() for the meaning of this field.
 func (c *CPUSet) SetMemHardwall(enabled bool) error {
-	return writeflagfile(c.path("cpuset.mem_hardwall"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.mem_hardwall"), enabled)
 }
 
 // EnableMemHardwall sets the "cpuset.mem_hardwall" file to true.
@@ -169,14 +171,14 @@ func (c *CPUSet) DisableMemHardwall() error { return c.SetMemHardwall(false) }
 //
 // Corresponds to the "cpuset.memory_migrate" file in the cpuset directory.
 func (c *CPUSet) MemoryMigrate() (bool, error) {
-	return flagfile(c.path("cpuset.memory_migrate"))
+	return pseudofs.Flag(c.path("cpuset.memory_migrate"))
 }
 
 // SetMemoryMigrate writes to the "cpuset.memory_migrate" file of the cpuset.
 //
 // See MemoryMigrate() for the meaning of this field.
 func (c *CPUSet) SetMemoryMigrate(enabled bool) error {
-	return writeflagfile(c.path("cpuset.memory_migrate"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.memory_migrate"), enabled)
 }
 
 // EnableMemoryMigrate sets the "cpuset.memory_migrate" file to true.
@@ -195,7 +197,7 @@ func (c *CPUSet) DisableMemoryMigrate() error { return c.SetMemoryMigrate(false)
 //
 // Corresponds to the "cpuset.memory_pressure" file in the cpuset directory.
 func (c *CPUSet) MemoryPressure() (int, error) {
-	return intfile(c.path("cpuset.memory_pressure"))
+	return pseudofs.Int(c.path("cpuset.memory_pressure"))
 }
 
 // MemoryPressureEnabled reports whether memory pressure calculations are
@@ -204,14 +206,14 @@ func (c *CPUSet) MemoryPressure() (int, error) {
 //
 // Corresponds to the "cpuset.memory_pressure_enabled" file in the cpuset directory.
 func (c *CPUSet) MemoryPressureEnabled() (bool, error) {
-	return flagfile(c.path("cpuset.memory_pressure_enabled"))
+	return pseudofs.Flag(c.path("cpuset.memory_pressure_enabled"))
 }
 
 // SetMemoryPressureEnabled writes to the "cpuset.memory_pressure_enabled" file of the cpuset.
 //
 // See MemoryPressureEnabled() for the meaning of this field.
 func (c *CPUSet) SetMemoryPressureEnabled(enabled bool) error {
-	return writeflagfile(c.path("cpuset.memory_pressure_enabled"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.memory_pressure_enabled"), enabled)
 }
 
 // EnableMemoryPressureEnabled sets the "cpuset.memory_pressure_enabled" file to true.
@@ -231,14 +233,14 @@ func (c *CPUSet) DisableMemoryPressureEnabled() error { return c.SetMemoryPressu
 //
 // Corresponds to the "cpuset.memory_spread_page" file in the cpuset directory.
 func (c *CPUSet) MemorySpreadPage() (bool, error) {
-	return flagfile(c.path("cpuset.memory_spread_page"))
+	return pseudofs.Flag(c.path("cpuset.memory_spread_page"))
 }
 
 // SetMemorySpreadPage writes to the "cpuset.memory_spread_page" file of the cpuset.
 //
 // See MemorySpreadPage() for the meaning of this field.
 func (c *CPUSet) SetMemorySpreadPage(enabled bool) error {
-	return writeflagfile(c.path("cpuset.memory_spread_page"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.memory_spread_page"), enabled)
 }
 
 // EnableMemorySpreadPage sets the "cpuset.memory_spread_page" file to true.
@@ -258,14 +260,14 @@ func (c *CPUSet) DisableMemorySpreadPage() error { return c.SetMemorySpreadPage(
 //
 // Corresponds to the "cpuset.memory_spread_slab" file in the cpuset directory.
 func (c *CPUSet) MemorySpreadSlab() (bool, error) {
-	return flagfile(c.path("cpuset.memory_spread_slab"))
+	return pseudofs.Flag(c.path("cpuset.memory_spread_slab"))
 }
 
 // SetMemorySpreadSlab writes to the "cpuset.memory_spread_slab" file of the cpuset.
 //
 // See MemorySpreadSlab() for the meaning of this field.
 func (c *CPUSet) SetMemorySpreadSlab(enabled bool) error {
-	return writeflagfile(c.path("cpuset.memory_spread_slab"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.memory_spread_slab"), enabled)
 }
 
 // EnableMemorySpreadSlab sets the "cpuset.memory_spread_slab" file to true.
@@ -287,14 +289,14 @@ func (c *CPUSet) DisableMemorySpreadSlab() error { return c.SetMemorySpreadSlab(
 //
 // Corresponds to the "cpuset.sched_load_balance" file in the cpuset directory.
 func (c *CPUSet) SchedLoadBalance() (bool, error) {
-	return flagfile(c.path("cpuset.sched_load_balance"))
+	return pseudofs.Flag(c.path("cpuset.sched_load_balance"))
 }
 
 // SetSchedLoadBalance writes to the "cpuset.sched_load_balance" file of the cpuset.
 //
 // See SchedLoadBalance() for the meaning of this field.
 func (c *CPUSet) SetSchedLoadBalance(enabled bool) error {
-	return writeflagfile(c.path("cpuset.sched_load_balance"), enabled)
+	return pseudofs.WriteFlag(c.path("cpuset.sched_load_balance"), enabled)
 }
 
 // EnableSchedLoadBalance sets the "cpuset.sched_load_balance" file to true.
@@ -317,12 +319,12 @@ func (c *CPUSet) DisableSchedLoadBalance() error { return c.SetSchedLoadBalance(
 //
 // Corresponds to the "cpuset.sched_relax_domain_level" file in the cpuset directory.
 func (c *CPUSet) SchedRelaxDomainLevel() (int, error) {
-	return intfile(c.path("cpuset.sched_relax_domain_level"))
+	return pseudofs.Int(c.path("cpuset.sched_relax_domain_level"))
 }
 
 // SetSchedRelaxDomainLevel writes to the "cpuset.sched_relax_domain_level" file of the cpuset.
 //
 // See SchedRelaxDomainLevel() for the meaning of this field.
 func (c *CPUSet) SetSchedRelaxDomainLevel(level int) error {
-	return writeintfile(c.path("cpuset.sched_relax_domain_level"), level)
+	return pseudofs.WriteInt(c.path("cpuset.sched_relax_domain_level"), level)
 }
