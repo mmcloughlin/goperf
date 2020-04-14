@@ -1,4 +1,4 @@
-// Package sys provides system configuration.
+// Package sys provides system configuration and tuning.
 package sys
 
 import (

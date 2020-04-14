@@ -97,14 +97,18 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite, output string) {
 
 	// Apply tuners.
 	for _, t := range r.tuners {
+		log := r.w.Log.With(zap.String("tuner", t.Name()))
 		if !t.Available() {
+			log.Warn("tuner unavailable")
 			continue
 		}
+		log.Info("applying tuner")
 		if err := t.Apply(); err != nil {
 			r.w.seterr(err)
 			return
 		}
 		defer func(t Tuner) {
+			log.Info("reset tuner")
 			r.w.seterr(t.Reset())
 		}(t)
 	}

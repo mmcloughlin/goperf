@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/cb/pkg/proc"
+	"github.com/mmcloughlin/cb/pkg/pseudofs"
 )
 
 // Reference: https://github.com/torvalds/linux/blob/4dd2ab9a0f84a446c65ff33c95339f1cd0e21a4b/Documentation/admin-guide/pm/intel_pstate.rst#L321-L426
@@ -146,6 +148,23 @@ func (IntelPState) Configuration() (cfg.Configuration, error) {
 		property("turbo_pct", parseint, "percentage of the total performance that is supported by hardware that is in the turbo range"),
 	})
 }
+
+const noturbo = intelpstateroot + "/no_turbo"
+
+// DisableIntelTurbo is a tuner that sets the "no_turbo" flag in the Intel P-State driver.
+type DisableIntelTurbo struct{}
+
+// Name of the tuning method.
+func (DisableIntelTurbo) Name() string { return "no_turbo" }
+
+// Available reports whether the process can write to the no_turbo file.
+func (DisableIntelTurbo) Available() bool { return proc.Writable(noturbo) }
+
+// Apply enables the "no_turbo" flag.
+func (DisableIntelTurbo) Apply() error { return pseudofs.WriteFlag(noturbo, true) }
+
+// Reset disables the "no_turbo" flag.
+func (DisableIntelTurbo) Reset() error { return pseudofs.WriteFlag(noturbo, false) }
 
 // Reference: https://github.com/torvalds/linux/blob/4dd2ab9a0f84a446c65ff33c95339f1cd0e21a4b/Documentation/admin-guide/pm/cpufreq.rst#L224-L331
 //

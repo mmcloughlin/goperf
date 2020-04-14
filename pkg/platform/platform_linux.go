@@ -8,6 +8,7 @@ import (
 	"github.com/mmcloughlin/cb/pkg/command"
 	"github.com/mmcloughlin/cb/pkg/runner"
 	"github.com/mmcloughlin/cb/pkg/shield"
+	"github.com/mmcloughlin/cb/pkg/sys"
 	"github.com/mmcloughlin/cb/pkg/wrap"
 )
 
@@ -49,6 +50,9 @@ func (p *Platform) ConfigureRunner(r *runner.Runner) error {
 		}
 		r.Wrap(w)
 	}
+
+	// Apply tuning methods.
+	r.Tune(sys.DisableIntelTurbo{})
 
 	// Setup CPU shield.
 	s := shield.NewShield(

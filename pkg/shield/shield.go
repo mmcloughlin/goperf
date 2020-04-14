@@ -65,6 +65,9 @@ func WithLogger(l *zap.Logger) Option {
 	return func(s *Shield) { s.log = l.Named("shield") }
 }
 
+// Name of tuning method.
+func (s *Shield) Name() string { return "shield" }
+
 // ShieldName returns the name of the shield cpuset.
 func (s *Shield) ShieldName() string {
 	return s.shield
