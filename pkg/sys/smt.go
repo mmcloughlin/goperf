@@ -49,6 +49,6 @@ func (SMT) Available() bool {
 // Configuration queries sysfs for simultaneous multithreading configuration.
 func (SMT) Configuration() (cfg.Configuration, error) {
 	return parsefiles("/sys/devices/system/cpu/smt", []fileproperty{
-		{"active", "", parsebool, "whether smt is active (enabled and siblings online)"},
+		perfproperty("active", parsebool, "whether smt is active (enabled and siblings online)"),
 	})
 }

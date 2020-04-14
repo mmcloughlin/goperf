@@ -78,15 +78,15 @@ func (Caches) Available() bool {
 // Configuration queries sysfs for cache configuration.
 func (Caches) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
-		{"type", "", parsestring, "cache type: Data, Instruction or Unified"},
-		{"level", "", parseint, "the cache hierarchy in the multi-level cache configuration"},
-		{"size", "", parsesize, "total cache size"},
-		{"coherency_line_size", "", parseint, "minimum amount of data in bytes that gets transferred from memory to cache"},
-		{"ways_of_associativity", "", parseint, "degree of freedom in placing a particular block of memory in the cache"},
-		{"number_of_sets", "", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"},
-		{"shared_cpu_list", "", parsestring, "list of logical cpus sharing the cache"},
-		{"shared_cpu_map", "numsharing", parsecpumasksetbits, "number of cpus sharing the cache"},
-		{"physical_line_partition", "", parseint, "number of physical cache line per cache tag"},
+		property("type", parsestring, "cache type: Data, Instruction or Unified"),
+		property("level", parseint, "the cache hierarchy in the multi-level cache configuration"),
+		property("size", parsesize, "total cache size"),
+		property("coherency_line_size", parseint, "minimum amount of data in bytes that gets transferred from memory to cache"),
+		property("ways_of_associativity", parseint, "degree of freedom in placing a particular block of memory in the cache"),
+		property("number_of_sets", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"),
+		property("shared_cpu_list", parsestring, "list of logical cpus sharing the cache"),
+		{"shared_cpu_map", "numsharing", parsecpumasksetbits, "number of cpus sharing the cache", nil},
+		property("physical_line_partition", parseint, "number of physical cache line per cache tag"),
 	}
 
 	cpudirs, err := filepath.Glob("/sys/devices/system/cpu/cpu*")

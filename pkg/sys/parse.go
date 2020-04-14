@@ -14,6 +14,20 @@ type fileproperty struct {
 	alias    string
 	parser   func(string) (cfg.Value, error)
 	doc      string
+	tags     []cfg.Tag
+}
+
+func property(filename string, parser func(string) (cfg.Value, error), doc string, tags ...cfg.Tag) fileproperty {
+	return fileproperty{
+		filename: filename,
+		parser:   parser,
+		doc:      doc,
+		tags:     tags,
+	}
+}
+
+func perfproperty(filename string, parser func(string) (cfg.Value, error), doc string) fileproperty {
+	return property(filename, parser, doc, cfg.TagPerfCritical)
 }
 
 func (p fileproperty) key() cfg.Key {
@@ -36,7 +50,7 @@ func parsefiles(root string, properties []fileproperty) (cfg.Configuration, erro
 		if err != nil {
 			return nil, err
 		}
-		c = append(c, cfg.Property(p.key(), p.doc, v))
+		c = append(c, cfg.Property(p.key(), p.doc, v, p.tags...))
 	}
 	return c, nil
 }
@@ -55,14 +69,6 @@ func parsekhz(s string) (cfg.Value, error) {
 		return nil, err
 	}
 	return cfg.FrequencyValue(n * 1000), nil
-}
-
-func parsemillicelsius(s string) (cfg.Value, error) {
-	n, err := strconv.Atoi(s)
-	if err != nil {
-		return nil, err
-	}
-	return cfg.TemperatureValue(float64(n) / 1000), nil
 }
 
 func parsebool(s string) (cfg.Value, error) {

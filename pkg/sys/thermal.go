@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 )
@@ -287,9 +288,9 @@ func (Thermal) Available() bool {
 // Configuration queries sysfs for thermal zone status.
 func (Thermal) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
-		{"type", "", parsestring, "concise thermal zone description"},
-		{"temp", "", parsemillicelsius, "current temperature as reported by zone sensor"},
-		{"policy", "", parsestring, "thermal governor used for this zone"},
+		property("type", parsestring, "concise thermal zone description"),
+		property("temp", parsemillicelsius, "current temperature as reported by zone sensor"),
+		property("policy", parsestring, "thermal governor used for this zone"),
 	}
 
 	dirs, err := filepath.Glob("/sys/class/thermal/thermal_zone*")
@@ -312,4 +313,12 @@ func (Thermal) Configuration() (cfg.Configuration, error) {
 		c = append(c, section)
 	}
 	return c, nil
+}
+
+func parsemillicelsius(s string) (cfg.Value, error) {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return nil, err
+	}
+	return cfg.TemperatureValue(float64(n) / 1000), nil
 }

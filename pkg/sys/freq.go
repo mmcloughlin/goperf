@@ -138,12 +138,12 @@ func (IntelPState) Available() bool {
 // Configuration queries sysfs for Intel P-state configuration.
 func (IntelPState) Configuration() (cfg.Configuration, error) {
 	return parsefiles(intelpstateroot, []fileproperty{
-		{"max_perf_pct", "", parseint, "maximum p-state that will be selected as a percentage of available performance"},
-		{"min_perf_pct", "", parseint, "minimum p-State that will be requested by the driver as a percentage of the max (non-turbo) performance level"},
-		{"no_turbo", "", parsebool, "when true the driver is limited to p-states below the turbo frequency range"},
-		{"num_pstates", "", parseint, "num p-states supported by the hardware"},
-		{"status", "", parsestring, "active/passive/off"},
-		{"turbo_pct", "", parseint, "percentage of the total performance that is supported by hardware that is in the turbo range"},
+		property("max_perf_pct", parseint, "maximum p-state that will be selected as a percentage of available performance"),
+		property("min_perf_pct", parseint, "minimum p-State that will be requested by the driver as a percentage of the max (non-turbo) performance level"),
+		perfproperty("no_turbo", parsebool, "when true the driver is limited to p-states below the turbo frequency range"),
+		property("num_pstates", parseint, "num p-states supported by the hardware"),
+		property("status", parsestring, "active/passive/off"),
+		property("turbo_pct", parseint, "percentage of the total performance that is supported by hardware that is in the turbo range"),
 	})
 }
 
@@ -277,14 +277,14 @@ func (CPUFreq) Available() bool {
 // Configuration queries sysfs for CPU frequency scaling status.
 func (CPUFreq) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
-		{"cpuinfo_min_freq", "", parsekhz, "minimum operating frequency the processor can run at"},
-		{"cpuinfo_max_freq", "", parsekhz, "maximum operating frequency the processor can run at"},
-		{"cpuinfo_transition_latency", "", parseint, "time it takes on this cpu to switch between two frequencies in nanoseconds"},
-		{"scaling_driver", "", parsestring, "which cpufreq driver is used to set the frequency on this cpu"},
-		{"scaling_governor", "", parsestring, "currently active scaling governor on this cpu"},
-		{"scaling_min_freq", "", parsekhz, "minimum allowed frequency by the current scaling policy"},
-		{"scaling_min_freq", "", parsekhz, "maximum allowed frequency by the current scaling policy"},
-		{"scaling_cur_freq", "", parsekhz, "current frequency as determined by the governor and cpufreq core"},
+		property("cpuinfo_min_freq", parsekhz, "minimum operating frequency the processor can run at"),
+		property("cpuinfo_max_freq", parsekhz, "maximum operating frequency the processor can run at"),
+		property("cpuinfo_transition_latency", parseint, "time it takes on this cpu to switch between two frequencies in nanoseconds"),
+		property("scaling_driver", parsestring, "which cpufreq driver is used to set the frequency on this cpu"),
+		property("scaling_governor", parsestring, "currently active scaling governor on this cpu"),
+		property("scaling_min_freq", parsekhz, "minimum allowed frequency by the current scaling policy"),
+		property("scaling_min_freq", parsekhz, "maximum allowed frequency by the current scaling policy"),
+		property("scaling_cur_freq", parsekhz, "current frequency as determined by the governor and cpufreq core"),
 	}
 
 	dirs, err := filepath.Glob("/sys/devices/system/cpu/cpu*/cpufreq")
