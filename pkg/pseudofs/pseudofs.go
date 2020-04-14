@@ -14,19 +14,32 @@ import (
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
+// String reads a string from path, trimming whitespace.
+func String(path string) (string, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(b)), nil
+}
+
+// WriteString writes a string to a file, followed by a newline.
+func WriteString(path string, s string) error {
+	return WriteFile(path, []byte(s+"\n"), 0644)
+}
+
 // Int reads an integer from a file.
 func Int(path string) (int, error) {
-	b, err := ioutil.ReadFile(path)
+	s, err := String(path)
 	if err != nil {
 		return 0, err
 	}
-	return strconv.Atoi(strings.TrimSpace(string(b)))
+	return strconv.Atoi(s)
 }
 
 // WriteInt writes an integer to a file.
 func WriteInt(path string, n int) error {
-	data := strconv.Itoa(n) + "\n"
-	return WriteFile(path, []byte(data), 0644)
+	return WriteString(path, strconv.Itoa(n)+"\n")
 }
 
 // Flag reads a boolean from a file, represented as 0 or 1.

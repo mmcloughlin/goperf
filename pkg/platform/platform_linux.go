@@ -51,7 +51,9 @@ func (p *Platform) ConfigureRunner(r *runner.Runner) error {
 		r.Wrap(w)
 	}
 
-	// Apply tuning methods.
+	// Apply tuning methods. Note SMT deactivation needs to come early since it
+	// changes the number of CPUs on the platform.
+	r.Tune(sys.DeactivateSMT{})
 	r.Tune(sys.DisableIntelTurbo{})
 
 	// Setup CPU shield.
