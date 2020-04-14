@@ -6,6 +6,7 @@ curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | 
 
 # Install Go tools.
 GO111MODULE=off go get -u \
+    mvdan.cc/gofumpt \
     mvdan.cc/gofumpt/gofumports \
     github.com/alvaroloes/enumer \
     github.com/kyleconroy/sqlc/cmd/sqlc \

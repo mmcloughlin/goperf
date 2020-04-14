@@ -12,3 +12,4 @@ find . -name '*.fmtbackup' -delete
 
 # goimports is goimports with stricter formatting.
 gofumports -w -local ${repo} ${files}
+gofumpt -w -s ${files}
