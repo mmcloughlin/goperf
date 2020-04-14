@@ -21,7 +21,7 @@ type rtaction struct {
 }
 
 func (a *rtaction) SetFlags(f *flag.FlagSet) {
-	f.IntVar(&a.prio, "rt", 99, "if non-zero, attempt to set real-time priority")
+	f.IntVar(&a.prio, "rt", 0, "if non-zero, attempt to set real-time priority")
 }
 
 func (a *rtaction) Apply() error {
