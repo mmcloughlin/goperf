@@ -6,6 +6,7 @@ import (
 	"flag"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
@@ -47,7 +48,12 @@ func (*Run) Usage() string {
 func (cmd *Run) SetFlags(f *flag.FlagSet) {
 	cmd.Platform.SetFlags(f)
 
-	f.StringVar(&cmd.name, "name", "", "worker name")
+	defaultName := ""
+	if hostname, err := os.Hostname(); err == nil {
+		defaultName = hostname
+	}
+
+	f.StringVar(&cmd.name, "name", defaultName, "worker name")
 	f.StringVar(&cmd.coordinatorURL, "coordinator", "", "coordinator address")
 	f.StringVar(&cmd.artifacts, "artifacts", "", "artifacts storage directory")
 }
