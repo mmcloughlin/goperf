@@ -55,6 +55,7 @@ func (p *Platform) ConfigureRunner(r *runner.Runner) error {
 	// changes the number of CPUs on the platform.
 	r.Tune(sys.DeactivateSMT{})
 	r.Tune(sys.DisableIntelTurbo{})
+	r.Tune(sys.SetScalingGovernor{Governor: "performance"})
 
 	// Setup CPU shield.
 	s := shield.NewShield(

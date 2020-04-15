@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/proc"
@@ -326,4 +327,102 @@ func (CPUFreq) Configuration() (cfg.Configuration, error) {
 		c = append(c, section)
 	}
 	return c, nil
+}
+
+// SetScalingGovernor is a tuner that sets the scaling governor on all CPUs to a given value.
+type SetScalingGovernor struct {
+	Governor string
+}
+
+// Name of the tuning method.
+func (s SetScalingGovernor) Name() string { return fmt.Sprintf("%s_scaling_governor", s.Governor) }
+
+// Available reports whether the process can write to the scaling governor files.
+func (s SetScalingGovernor) Available() bool {
+	cpus, err := s.onlineCPUPaths()
+	if err != nil {
+		fmt.Println("cannot get online cpus", err)
+		return false
+	}
+
+	for _, cpu := range cpus {
+		// Check the scaling governor is writable.
+		if !proc.Writable(filepath.Join(cpu, "cpufreq/scaling_governor")) {
+			fmt.Println("scaling gov not writable")
+			return false
+		}
+
+		// Check the configured scaling governor is available.
+		available, err := pseudofs.String(filepath.Join(cpu, "cpufreq/scaling_available_governors"))
+		if err != nil {
+			fmt.Println("cannot read available")
+			return false
+		}
+		governors := strings.Fields(available)
+		if !contains(governors, s.Governor) {
+			fmt.Println("not avail")
+			return false
+		}
+	}
+
+	return true
+}
+
+// Apply sets scaling governors on all online CPUs to the configured value.
+func (s SetScalingGovernor) Apply() error { return s.set(s.Governor) }
+
+// Reset sets scaling governors on all online CPUs to "powersave".
+func (s SetScalingGovernor) Reset() error { return s.set("powersave") }
+
+// set all scaling governors to gov.
+func (s SetScalingGovernor) set(gov string) error {
+	cpus, err := s.onlineCPUPaths()
+	if err != nil {
+		return err
+	}
+
+	for _, cpu := range cpus {
+		file := filepath.Join(cpu, "cpufreq/scaling_governor")
+		if err := pseudofs.WriteString(file, gov); err != nil {
+			return fmt.Errorf("write to %s: %w", file, err)
+		}
+	}
+
+	return nil
+}
+
+func (s SetScalingGovernor) onlineCPUPaths() ([]string, error) {
+	paths, err := filepath.Glob("/sys/devices/system/cpu/cpu[0-9]*")
+	if err != nil {
+		return nil, err
+	}
+
+	cpus := []string{}
+	for _, path := range paths {
+		// Check whether the cpu is online.
+		online, err := pseudofs.Flag(filepath.Join(path, "online"))
+		if err != nil {
+			fmt.Printf("%T %s\n", err, err)
+		}
+		switch {
+		case err == nil && online:
+			cpus = append(cpus, path)
+		// Edge case where cpu0 is typically exclided from hotplug and does not have an "online" file.
+		case os.IsNotExist(err) && strings.HasSuffix(path, "cpu0"):
+			cpus = append(cpus, path)
+		case err != nil:
+			return nil, err
+		}
+	}
+
+	return cpus, nil
+}
+
+func contains(strs []string, target string) bool {
+	for _, str := range strs {
+		if str == target {
+			return true
+		}
+	}
+	return false
 }
