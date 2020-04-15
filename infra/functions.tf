@@ -62,6 +62,18 @@ resource "google_cloud_scheduler_job" "watch_schedule" {
   }
 }
 
+resource "google_cloud_scheduler_job" "staletimeout_schedule" {
+  name             = "schedule_staletimeout"
+  schedule         = "*/5 * * * *"
+  time_zone        = "Etc/UTC"
+  attempt_deadline = "120s"
+
+  http_target {
+    http_method = "GET"
+    uri         = google_cloudfunctions_function.http_function["staletimeout"].https_trigger_url
+  }
+}
+
 resource "google_cloudfunctions_function" "result_function" {
   for_each = toset([for f in var.functions : f.name if f.trigger_type == "result"])
 
