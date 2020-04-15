@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -85,6 +86,37 @@ func transitionTaskStatus(ctx context.Context, q *db.Queries, id uuid.UUID, from
 	}
 
 	return nil
+}
+
+// TimeoutStaleTasks marks stale all pending tasks with last update before until.
+func (d *DB) TimeoutStaleTasks(ctx context.Context, until time.Time) error {
+	return d.TransitionTaskStatusesBefore(ctx, entity.TaskStatusPendingValues(), entity.TaskStatusStaleTimeout, until)
+}
+
+// TransitionTaskStatusesBefore applies a task status transition to all tasks
+// that were last updated before the until timestamp.
+func (d *DB) TransitionTaskStatusesBefore(ctx context.Context, from []entity.TaskStatus, to entity.TaskStatus, until time.Time) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return transitionTaskStatusesBefore(ctx, q, from, to, until)
+	})
+}
+
+func transitionTaskStatusesBefore(ctx context.Context, q *db.Queries, from []entity.TaskStatus, to entity.TaskStatus, until time.Time) error {
+	fromStatuses, err := toTaskStatuses(from)
+	if err != nil {
+		return err
+	}
+
+	toStatus, err := toTaskStatus(to)
+	if err != nil {
+		return err
+	}
+
+	return q.TransitionTaskStatusesBefore(ctx, db.TransitionTaskStatusesBeforeParams{
+		FromStatuses: fromStatuses,
+		ToStatus:     toStatus,
+		Until:        until,
+	})
 }
 
 // RecordTaskDataUpload inserts the given datafile and associates it with the supplied task ID.
@@ -240,6 +272,8 @@ func toTaskStatus(status entity.TaskStatus) (db.TaskStatus, error) {
 		return db.TaskStatusCompleteError, nil
 	case entity.TaskStatusHalted:
 		return db.TaskStatusHalted, nil
+	case entity.TaskStatusStaleTimeout:
+		return db.TaskStatusStaleTimeout, nil
 	default:
 		return "", errutil.UnhandledCase(status)
 	}
@@ -305,6 +339,8 @@ func mapTaskStatus(status db.TaskStatus) (entity.TaskStatus, error) {
 		return entity.TaskStatusCompleteError, nil
 	case db.TaskStatusHalted:
 		return entity.TaskStatusHalted, nil
+	case db.TaskStatusStaleTimeout:
+		return entity.TaskStatusStaleTimeout, nil
 	default:
 		return 0, errutil.UnhandledCase(status)
 	}

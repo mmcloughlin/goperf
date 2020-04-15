@@ -28,26 +28,34 @@ const (
 	TaskStatusCompleteSuccess                           // completed successfully
 	TaskStatusCompleteError                             // completed with error
 	TaskStatusHalted                                    // worker stopped processing the task
+	TaskStatusStaleTimeout                              // timed out due to inactivity
 )
 
 //go:generate enumer -type TaskStatus -output taskstatus_enum.go -trimprefix TaskStatus -transform snake
 
-// IsComplete reports whether this task is finished.
+// IsComplete reports whether this task was completed, either with a success or error.
 func (s TaskStatus) IsComplete() bool {
-	switch s {
-	case TaskStatusCompleteSuccess, TaskStatusCompleteError, TaskStatusHalted:
-		return true
-	}
-	return false
+	return s == TaskStatusCompleteSuccess || s == TaskStatusCompleteError
+}
+
+// IsTerminal reports whether the task is in a final state, meaning no further
+// changes will happen to it. This could be because processing was completed
+// (success or error), or processing could have stopped for some reason (halted
+// by the worker, marked stale after inactivity).
+func (s TaskStatus) IsTerminal() bool {
+	return s.IsComplete() || s == TaskStatusHalted || s == TaskStatusStaleTimeout
 }
 
 // IsPending reports whether this task is in a pending state.
 func (s TaskStatus) IsPending() bool {
-	return !s.IsComplete()
+	return !s.IsTerminal()
 }
 
 // TaskStatusCompleteValues returns all complete task states.
 func TaskStatusCompleteValues() []TaskStatus { return filterTaskStatusValues(TaskStatus.IsComplete) }
+
+// TaskStatusTerminalValues returns all terminal task states.
+func TaskStatusTerminalValues() []TaskStatus { return filterTaskStatusValues(TaskStatus.IsTerminal) }
 
 // TaskStatusPendingValues returns all pending task states.
 func TaskStatusPendingValues() []TaskStatus { return filterTaskStatusValues(TaskStatus.IsPending) }

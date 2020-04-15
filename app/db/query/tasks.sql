@@ -54,6 +54,17 @@ RETURNING
     status
 ;
 
+-- name: TransitionTaskStatusesBefore :exec
+UPDATE
+    tasks
+SET
+    status = sqlc.arg(to_status),
+    last_status_update = NOW()
+WHERE 1=1
+    AND status = ANY (sqlc.arg(from_statuses)::task_status[])
+    AND last_status_update < sqlc.arg(until)
+;
+
 -- name: SetTaskDataFile :exec
 UPDATE
     tasks

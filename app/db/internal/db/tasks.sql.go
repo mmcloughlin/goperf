@@ -5,6 +5,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -165,6 +166,28 @@ func (q *Queries) TransitionTaskStatus(ctx context.Context, arg TransitionTaskSt
 	var status TaskStatus
 	err := row.Scan(&status)
 	return status, err
+}
+
+const transitionTaskStatusesBefore = `-- name: TransitionTaskStatusesBefore :exec
+UPDATE
+    tasks
+SET
+    status = $1,
+    last_status_update = NOW()
+WHERE 1=1
+    AND status = ANY ($2::task_status[])
+    AND last_status_update < $3
+`
+
+type TransitionTaskStatusesBeforeParams struct {
+	ToStatus     TaskStatus
+	FromStatuses []TaskStatus
+	Until        time.Time
+}
+
+func (q *Queries) TransitionTaskStatusesBefore(ctx context.Context, arg TransitionTaskStatusesBeforeParams) error {
+	_, err := q.exec(ctx, q.transitionTaskStatusesBeforeStmt, transitionTaskStatusesBefore, arg.ToStatus, pq.Array(arg.FromStatuses), arg.Until)
+	return err
 }
 
 const workerTasksWithStatus = `-- name: WorkerTasksWithStatus :many

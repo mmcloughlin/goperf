@@ -21,6 +21,7 @@ const (
 	TaskStatusResultUploadStarted TaskStatus = "result_upload_started"
 	TaskStatusResultUploaded      TaskStatus = "result_uploaded"
 	TaskStatusHalted              TaskStatus = "halted"
+	TaskStatusStaleTimeout        TaskStatus = "stale_timeout"
 )
 
 func (e *TaskStatus) Scan(src interface{}) error {

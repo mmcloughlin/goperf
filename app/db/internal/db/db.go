@@ -100,6 +100,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.transitionTaskStatusStmt, err = db.PrepareContext(ctx, transitionTaskStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query TransitionTaskStatus: %w", err)
 	}
+	if q.transitionTaskStatusesBeforeStmt, err = db.PrepareContext(ctx, transitionTaskStatusesBefore); err != nil {
+		return nil, fmt.Errorf("error preparing query TransitionTaskStatusesBefore: %w", err)
+	}
 	if q.truncateNonStaticStmt, err = db.PrepareContext(ctx, truncateNonStatic); err != nil {
 		return nil, fmt.Errorf("error preparing query TruncateNonStatic: %w", err)
 	}
@@ -241,6 +244,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing transitionTaskStatusStmt: %w", cerr)
 		}
 	}
+	if q.transitionTaskStatusesBeforeStmt != nil {
+		if cerr := q.transitionTaskStatusesBeforeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing transitionTaskStatusesBeforeStmt: %w", cerr)
+		}
+	}
 	if q.truncateNonStaticStmt != nil {
 		if cerr := q.truncateNonStaticStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing truncateNonStaticStmt: %w", cerr)
@@ -316,6 +324,7 @@ type Queries struct {
 	taskStmt                                      *sql.Stmt
 	tasksWithStatusStmt                           *sql.Stmt
 	transitionTaskStatusStmt                      *sql.Stmt
+	transitionTaskStatusesBeforeStmt              *sql.Stmt
 	truncateNonStaticStmt                         *sql.Stmt
 	workerTasksWithStatusStmt                     *sql.Stmt
 }
@@ -345,12 +354,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		pkgStmt:               q.pkgStmt,
 		propertiesStmt:        q.propertiesStmt,
 		recentCommitModulePairsWithoutWorkerTasksStmt: q.recentCommitModulePairsWithoutWorkerTasksStmt,
-		resultStmt:                q.resultStmt,
-		setTaskDataFileStmt:       q.setTaskDataFileStmt,
-		taskStmt:                  q.taskStmt,
-		tasksWithStatusStmt:       q.tasksWithStatusStmt,
-		transitionTaskStatusStmt:  q.transitionTaskStatusStmt,
-		truncateNonStaticStmt:     q.truncateNonStaticStmt,
-		workerTasksWithStatusStmt: q.workerTasksWithStatusStmt,
+		resultStmt:                       q.resultStmt,
+		setTaskDataFileStmt:              q.setTaskDataFileStmt,
+		taskStmt:                         q.taskStmt,
+		tasksWithStatusStmt:              q.tasksWithStatusStmt,
+		transitionTaskStatusStmt:         q.transitionTaskStatusStmt,
+		transitionTaskStatusesBeforeStmt: q.transitionTaskStatusesBeforeStmt,
+		truncateNonStaticStmt:            q.truncateNonStaticStmt,
+		workerTasksWithStatusStmt:        q.workerTasksWithStatusStmt,
 	}
 }
