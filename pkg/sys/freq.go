@@ -341,26 +341,22 @@ func (s SetScalingGovernor) Name() string { return fmt.Sprintf("%s_scaling_gover
 func (s SetScalingGovernor) Available() bool {
 	cpus, err := s.onlineCPUPaths()
 	if err != nil {
-		fmt.Println("cannot get online cpus", err)
 		return false
 	}
 
 	for _, cpu := range cpus {
 		// Check the scaling governor is writable.
 		if !proc.Writable(filepath.Join(cpu, "cpufreq/scaling_governor")) {
-			fmt.Println("scaling gov not writable")
 			return false
 		}
 
 		// Check the configured scaling governor is available.
 		available, err := pseudofs.String(filepath.Join(cpu, "cpufreq/scaling_available_governors"))
 		if err != nil {
-			fmt.Println("cannot read available")
 			return false
 		}
 		governors := strings.Fields(available)
 		if !contains(governors, s.Governor) {
-			fmt.Println("not avail")
 			return false
 		}
 	}
@@ -401,9 +397,6 @@ func (s SetScalingGovernor) onlineCPUPaths() ([]string, error) {
 	for _, path := range paths {
 		// Check whether the cpu is online.
 		online, err := pseudofs.Flag(filepath.Join(path, "online"))
-		if err != nil {
-			fmt.Printf("%T %s\n", err, err)
-		}
 		switch {
 		case err == nil && online:
 			cpus = append(cpus, path)
