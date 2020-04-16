@@ -99,7 +99,7 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite, output string) {
 	for _, t := range r.tuners {
 		log := r.w.Log.With(zap.String("tuner", t.Name()))
 		if !t.Available() {
-			log.Warn("tuner unavailable")
+			log.Info("tuner unavailable")
 			continue
 		}
 		log.Info("applying tuner")

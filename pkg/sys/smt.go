@@ -62,11 +62,23 @@ type DeactivateSMT struct{}
 // Name of the tuning method.
 func (DeactivateSMT) Name() string { return "deactivate_smt" }
 
-// Available reports whether the process can write to the SMT control file.
-func (DeactivateSMT) Available() bool { return proc.Writable(smtcontrol) }
+// Available reports whether the process can control SMT.
+func (DeactivateSMT) Available() bool {
+	setting, err := pseudofs.String(smtcontrol)
+	if err != nil {
+		return false
+	}
+	switch setting {
+	case "forceoff", "notsupported", "notimplemented":
+		return false
+	}
+	return proc.Writable(smtcontrol)
+}
 
 // Apply turns off SMT.
-func (DeactivateSMT) Apply() error { return pseudofs.WriteString(smtcontrol, "off") }
+func (DeactivateSMT) Apply() error {
+	return pseudofs.WriteString(smtcontrol, "off")
+}
 
 // Reset turns on SMT.
 func (DeactivateSMT) Reset() error { return pseudofs.WriteString(smtcontrol, "on") }
