@@ -95,6 +95,7 @@ func cpuinfo(filename string, perftags ...cfg.Tag) (_ []cfg.Configuration, err e
 
 func cpuproperty(key, value string, perftags ...cfg.Tag) (cfg.Entry, error) {
 	properties := map[string]fileproperty{
+		// amd64
 		"vendor_id":   property("vendorid", parsestring, "vendor id", perftags...),
 		"cpu family":  property("family", parsestring, `identifies the type of processor in the system (for intel place the number in front of "86")`),
 		"model":       property("model", parsestring, "model number"),
@@ -106,6 +107,14 @@ func cpuproperty(key, value string, perftags ...cfg.Tag) (cfg.Entry, error) {
 		"cpu MHz":     property("frequency", parsemhz, "current frequency"),
 		"cache size":  property("cachesize", parsecachesize, "cache size (level 2)"),
 		"flags":       property("flags", parsestrings, "processor properties and feature sets"),
+
+		// arm64
+		"Features":         property("features", parsestrings, "processor properties and feature sets"),
+		"CPU implementer":  property("implementer", parsestring, "arm cpuid implementer code"),
+		"CPU architecture": property("architecture", parsestring, "arm cpu architecture"),
+		"CPU variant":      property("variant", parsestring, "arm cpuid processor revision code"),
+		"CPU part":         property("part", parsestring, "arm cpuid part number"),
+		"CPU revision":     property("revision", parsestring, "arm cpuid revision or patch number"),
 	}
 
 	p, ok := properties[key]
