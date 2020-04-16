@@ -37,6 +37,14 @@ func (p fileproperty) key() cfg.Key {
 	return cfg.Key(strings.ReplaceAll(p.filename, "_", ""))
 }
 
+func (p fileproperty) parse(s string) (cfg.Entry, error) {
+	v, err := p.parser(s)
+	if err != nil {
+		return nil, err
+	}
+	return cfg.Property(p.key(), p.doc, v, p.tags...), nil
+}
+
 func parsefiles(root string, properties []fileproperty) (cfg.Configuration, error) {
 	c := cfg.Configuration{}
 	for _, p := range properties {
@@ -46,11 +54,11 @@ func parsefiles(root string, properties []fileproperty) (cfg.Configuration, erro
 			return nil, err
 		}
 		data := strings.TrimSpace(string(b))
-		v, err := p.parser(data)
+		prop, err := p.parse(data)
 		if err != nil {
 			return nil, err
 		}
-		c = append(c, cfg.Property(p.key(), p.doc, v, p.tags...))
+		c = append(c, prop)
 	}
 	return c, nil
 }

@@ -1,9 +1,9 @@
 package sys
 
 import (
-	cpuutil "github.com/shirou/gopsutil/cpu"
+	"fmt"
+	"strconv"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/cfg"
 	"github.com/mmcloughlin/cb/pkg/proc"
 )
@@ -11,7 +11,7 @@ import (
 var AffineCPU = cfg.NewProviderFunc("affinecpu", "CPU information for processors assigned to this process", affinecpu)
 
 func affinecpu() (cfg.Configuration, error) {
-	procs, err := cpuutil.Info()
+	procs, err := cpuinfo("/proc/cpuinfo", cfg.TagPerfCritical)
 	if err != nil {
 		return nil, err
 	}
@@ -23,11 +23,12 @@ func affinecpu() (cfg.Configuration, error) {
 
 	c := cfg.Configuration{}
 	for idx, cpu := range affinty {
-		proc := procs[cpu]
-		if int(proc.CPU) != cpu {
-			return nil, errutil.AssertionFailure("unexpected cpu index")
-		}
-		c = append(c, processor(proc, idx, cfg.TagPerfCritical))
+		section := cfg.Section(
+			cfg.Key("cpu"+strconv.Itoa(idx)),
+			fmt.Sprintf("information about processor %d assigned to this process", idx),
+			procs[cpu]...,
+		)
+		c = append(c, section)
 	}
 	return c, nil
 }
