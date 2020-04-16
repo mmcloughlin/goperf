@@ -35,7 +35,7 @@ func TestCPUGolden(t *testing.T) {
 		base := filepath.Base(filename)
 		t.Run(base, func(t *testing.T) {
 			// Parse.
-			c, err := cpucfg(filename)
+			c, err := cpucfg(filename, cfg.TagPerfCritical)
 			if err != nil {
 				t.Fatal(err)
 			}

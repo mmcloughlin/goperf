@@ -1,8 +1,8 @@
 cpu0-processor: 0
-cpu0-vendorid: GenuineIntel
+cpu0-vendorid: GenuineIntel [perf]
 cpu0-family: 6
 cpu0-model: 60
-cpu0-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu0-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu0-stepping: 3
 cpu0-frequency: 1.46 GHz
 cpu0-cachesize: 8 MiB
@@ -11,10 +11,10 @@ cpu0-coreid: 0
 cpu0-cores: 4
 cpu0-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu1-processor: 1
-cpu1-vendorid: GenuineIntel
+cpu1-vendorid: GenuineIntel [perf]
 cpu1-family: 6
 cpu1-model: 60
-cpu1-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu1-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu1-stepping: 3
 cpu1-frequency: 1.38 GHz
 cpu1-cachesize: 8 MiB
@@ -23,10 +23,10 @@ cpu1-coreid: 1
 cpu1-cores: 4
 cpu1-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu2-processor: 2
-cpu2-vendorid: GenuineIntel
+cpu2-vendorid: GenuineIntel [perf]
 cpu2-family: 6
 cpu2-model: 60
-cpu2-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu2-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu2-stepping: 3
 cpu2-frequency: 1.67 GHz
 cpu2-cachesize: 8 MiB
@@ -35,10 +35,10 @@ cpu2-coreid: 2
 cpu2-cores: 4
 cpu2-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu3-processor: 3
-cpu3-vendorid: GenuineIntel
+cpu3-vendorid: GenuineIntel [perf]
 cpu3-family: 6
 cpu3-model: 60
-cpu3-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu3-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu3-stepping: 3
 cpu3-frequency: 1.63 GHz
 cpu3-cachesize: 8 MiB
@@ -47,10 +47,10 @@ cpu3-coreid: 3
 cpu3-cores: 4
 cpu3-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu4-processor: 4
-cpu4-vendorid: GenuineIntel
+cpu4-vendorid: GenuineIntel [perf]
 cpu4-family: 6
 cpu4-model: 60
-cpu4-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu4-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu4-stepping: 3
 cpu4-frequency: 1.06 GHz
 cpu4-cachesize: 8 MiB
@@ -59,10 +59,10 @@ cpu4-coreid: 0
 cpu4-cores: 4
 cpu4-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu5-processor: 5
-cpu5-vendorid: GenuineIntel
+cpu5-vendorid: GenuineIntel [perf]
 cpu5-family: 6
 cpu5-model: 60
-cpu5-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu5-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu5-stepping: 3
 cpu5-frequency: 1.63 GHz
 cpu5-cachesize: 8 MiB
@@ -71,10 +71,10 @@ cpu5-coreid: 1
 cpu5-cores: 4
 cpu5-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu6-processor: 6
-cpu6-vendorid: GenuineIntel
+cpu6-vendorid: GenuineIntel [perf]
 cpu6-family: 6
 cpu6-model: 60
-cpu6-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu6-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu6-stepping: 3
 cpu6-frequency: 1.62 GHz
 cpu6-cachesize: 8 MiB
@@ -83,10 +83,10 @@ cpu6-coreid: 2
 cpu6-cores: 4
 cpu6-flags: fpu,vme,de,pse,tsc,msr,pae,mce,cx8,apic,sep,mtrr,pge,mca,cmov,pat,pse36,clflush,dts,acpi,mmx,fxsr,sse,sse2,ss,ht,tm,pbe,syscall,nx,pdpe1gb,rdtscp,lm,constant_tsc,arch_perfmon,pebs,bts,rep_good,nopl,xtopology,nonstop_tsc,cpuid,aperfmperf,pni,pclmulqdq,dtes64,monitor,ds_cpl,vmx,smx,est,tm2,ssse3,sdbg,fma,cx16,xtpr,pdcm,pcid,sse4_1,sse4_2,x2apic,movbe,popcnt,tsc_deadline_timer,aes,xsave,avx,f16c,rdrand,lahf_lm,abm,cpuid_fault,epb,invpcid_single,pti,ssbd,ibrs,ibpb,stibp,tpr_shadow,vnmi,flexpriority,ept,vpid,ept_ad,fsgsbase,tsc_adjust,bmi1,avx2,smep,bmi2,erms,invpcid,xsaveopt,dtherm,ida,arat,pln,pts,md_clear,flush_l1d
 cpu7-processor: 7
-cpu7-vendorid: GenuineIntel
+cpu7-vendorid: GenuineIntel [perf]
 cpu7-family: 6
 cpu7-model: 60
-cpu7-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz
+cpu7-modelname: Intel(R) Core(TM) i7-4790S CPU @ 3.20GHz [perf]
 cpu7-stepping: 3
 cpu7-frequency: 1.64 GHz
 cpu7-cachesize: 8 MiB
