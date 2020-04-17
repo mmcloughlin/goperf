@@ -78,7 +78,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
 
 	iconproxy := httputil.ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"})
-	h.mux.Handle("/favicon.ico", h.handler(iconproxy))
+	h.mux.Handle("/static/img/favicon.ico", h.handler(iconproxy))
 
 	return h
 }

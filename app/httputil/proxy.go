@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,9 +18,10 @@ type proxysingleurl struct {
 	u *url.URL
 	c *http.Client
 
-	mu      sync.Mutex
-	data    []byte
-	modtime time.Time
+	mu          sync.Mutex
+	data        []byte
+	modtime     time.Time
+	contenttype string
 }
 
 // ProxySingleURL is a handler that serves the content at the given URL.
@@ -31,7 +33,7 @@ func ProxySingleURL(u *url.URL) Handler {
 }
 
 func (p *proxysingleurl) HandleRequest(w http.ResponseWriter, r *http.Request) error {
-	if r.URL.Path != p.u.Path {
+	if !strings.HasSuffix(r.URL.Path, p.u.Path) {
 		return NotFound()
 	}
 
@@ -43,6 +45,9 @@ func (p *proxysingleurl) HandleRequest(w http.ResponseWriter, r *http.Request) e
 	}
 
 	// Serve.
+	if p.contenttype != "" {
+		w.Header().Set("Content-Type", p.contenttype)
+	}
 	http.ServeContent(w, r, filepath.Base(p.u.Path), p.modtime, bytes.NewReader(p.data))
 	return nil
 }
@@ -76,6 +81,7 @@ func (p *proxysingleurl) fetch(ctx context.Context) (err error) {
 	defer p.mu.Unlock()
 	p.data = data
 	p.modtime = modtime
+	p.contenttype = res.Header.Get("Content-Type")
 
 	return nil
 }
