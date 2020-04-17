@@ -8,6 +8,7 @@ functions = [
   { name = "ingest", trigger_type = "result" },
   { name = "coordinator", trigger_type = "http" },
   { name = "staletimeout", trigger_type = "http" },
+  { name = "dashboard", trigger_type = "http" },
 ]
 
 worker_machine_type     = "n1-standard-2"
