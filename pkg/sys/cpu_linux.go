@@ -4,12 +4,55 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/cb/pkg/proc"
 )
+
+func cpudirs() ([]string, error) {
+	return filepath.Glob("/sys/devices/system/cpu/cpu[0-9]*")
+}
+
+func affinecpudirs() ([]string, error) {
+	affinity, err := proc.AffinitySelf()
+	if err != nil {
+		return nil, err
+	}
+	dirs := []string{}
+	for _, cpu := range affinity {
+		dirs = append(dirs, fmt.Sprintf("/sys/devices/system/cpu/cpu%d", cpu))
+	}
+	return dirs, nil
+}
+
+var AffineCPU = cfg.NewProviderFunc("affinecpu", "CPU information for processors assigned to this process", affinecpu)
+
+func affinecpu() (cfg.Configuration, error) {
+	procs, err := cpuinfo("/proc/cpuinfo", cfg.TagPerfCritical)
+	if err != nil {
+		return nil, err
+	}
+
+	affinty, err := proc.AffinitySelf()
+	if err != nil {
+		return nil, err
+	}
+
+	c := cfg.Configuration{}
+	for idx, cpu := range affinty {
+		section := cfg.Section(
+			cfg.Key("cpu"+strconv.Itoa(idx)),
+			fmt.Sprintf("information about processor %d assigned to this process", idx),
+			procs[cpu]...,
+		)
+		c = append(c, section)
+	}
+	return c, nil
+}
 
 func cpu() (cfg.Configuration, error) {
 	return cpucfg("/proc/cpuinfo")
@@ -106,15 +149,15 @@ func cpuproperty(key, value string, perftags ...cfg.Tag) (cfg.Entry, error) {
 		"cpu cores":   property("cores", parseint, "number of physical cores"),
 		"cpu MHz":     property("frequency", parsemhz, "current frequency"),
 		"cache size":  property("cachesize", parsecachesize, "cache size (level 2)"),
-		"flags":       property("flags", parsestrings, "processor properties and feature sets"),
+		"flags":       property("flags", parsestrings, "processor properties and feature sets", perftags...),
 
 		// arm64
-		"Features":         property("features", parsestrings, "processor properties and feature sets"),
-		"CPU implementer":  property("implementer", parsestring, "arm cpuid implementer code"),
-		"CPU architecture": property("architecture", parsestring, "arm cpu architecture"),
-		"CPU variant":      property("variant", parsestring, "arm cpuid processor revision code"),
-		"CPU part":         property("part", parsestring, "arm cpuid part number"),
-		"CPU revision":     property("revision", parsestring, "arm cpuid revision or patch number"),
+		"Features":         property("features", parsestrings, "processor properties and feature sets", perftags...),
+		"CPU implementer":  property("implementer", parsestring, "arm cpuid implementer code", perftags...),
+		"CPU architecture": property("architecture", parsestring, "arm cpu architecture", perftags...),
+		"CPU variant":      property("variant", parsestring, "arm cpuid processor revision code", perftags...),
+		"CPU part":         property("part", parsestring, "arm cpuid part number", perftags...),
+		"CPU revision":     property("revision", parsestring, "arm cpuid revision or patch number", perftags...),
 	}
 
 	p, ok := properties[key]

@@ -27,7 +27,7 @@ func (Stat) Available() bool {
 
 // Configuration reports performance-critical parameters from the /proc/self/stat file.
 func (Stat) Configuration() (cfg.Configuration, error) {
-	stat, err := linux.ReadProcessStat("/proc/self/stat")
+	stat, err := linux.ReadProcessStat(selfstatfile)
 	if err != nil {
 		return nil, err
 	}

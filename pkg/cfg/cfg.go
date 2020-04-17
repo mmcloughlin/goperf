@@ -501,7 +501,7 @@ func (w *writer) seterr(err error) {
 	}
 }
 
-var valuetagsregexp = regexp.MustCompile(`^(.+?)\s+\[([a-z0-9,]+)\]$`)
+var valuetagsregexp = regexp.MustCompile(`^(.*)\[([a-z0-9,]+)\]$`)
 
 // ParseValueTags parses tags from a configuration line value.
 func ParseValueTags(s string) (string, []Tag) {
@@ -510,7 +510,7 @@ func ParseValueTags(s string) (string, []Tag) {
 		return s, nil
 	}
 
-	v := match[1]
+	v := strings.TrimSpace(match[1])
 	tagscsv := match[2]
 
 	parts := strings.Split(tagscsv, ",")

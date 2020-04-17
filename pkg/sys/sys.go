@@ -34,7 +34,7 @@ func host() (cfg.Configuration, error) {
 		cfg.Property("platformfamily", "example: debian", cfg.StringValue(info.PlatformFamily)),
 		cfg.PerfProperty("platformversion", "version of the complete OS", cfg.StringValue(info.PlatformVersion)),
 		cfg.Property("kernelversion", "version of the OS kernel", cfg.StringValue(info.KernelVersion)),
-		cfg.Property("kernelarch", "native cpu architecture queried at runtime", cfg.StringValue(info.KernelArch)),
+		cfg.PerfProperty("kernelarch", "native cpu architecture queried at runtime", cfg.StringValue(info.KernelArch)),
 		cfg.Property("virtsystem", "virtualization system", cfg.StringValue(info.VirtualizationSystem)),
 		cfg.PerfProperty("virtrole", "virtualization role", cfg.StringValue(info.VirtualizationRole)),
 	}, nil
@@ -60,7 +60,7 @@ func virtualmemory() (cfg.Configuration, error) {
 	}
 
 	return cfg.Configuration{
-		cfg.Property("total", "total amount of RAM on this system", cfg.BytesValue(vmem.Total)),
+		cfg.PerfProperty("total", "total amount of RAM on this system", cfg.BytesValue(vmem.Total)),
 		cfg.Property("available", "RAM available for programs to allocate", cfg.BytesValue(vmem.Available)),
 		cfg.Property("used", "RAM used by programs", cfg.BytesValue(vmem.Used)),
 		cfg.Property("usedpercent", "percentage of RAM used by programs", cfg.PercentageValue(vmem.UsedPercent)),

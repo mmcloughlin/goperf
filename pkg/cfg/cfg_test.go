@@ -214,6 +214,16 @@ func TestParseValueTags(t *testing.T) {
 			Tags:  []Tag{"a", "b", "c"},
 		},
 		{
+			Input: " [a]",
+			Value: "",
+			Tags:  []Tag{"a"},
+		},
+		{
+			Input: "[a]",
+			Value: "",
+			Tags:  []Tag{"a"},
+		},
+		{
 			Input: "hello world [these are not tags]",
 			Value: "hello world [these are not tags]",
 			Tags:  nil,

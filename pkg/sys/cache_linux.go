@@ -3,11 +3,11 @@ package sys
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/cb/pkg/proc"
 )
 
 // Reference: https://github.com/torvalds/linux/blob/34dabd81160f7bfb18b67c1161b3c4d7ca6cab83/Documentation/ABI/testing/sysfs-devices-system-cpu#L339-L384
@@ -60,27 +60,51 @@ import (
 //					     memory only when it is replaced
 //
 
-// Caches provides configuration about processor caches.
-type Caches struct{}
+// Caches returns a config provider for all CPU caches.
+func Caches() cfg.Provider {
+	return &caches{
+		key:  "cache",
+		doc:  "cache hierarchy for all cpus",
+		dirs: cpudirs,
+	}
+}
 
-// Key returns "cache".
-func (Caches) Key() cfg.Key { return "cache" }
+// AffineCaches returns a config provider for caches on CPUs assigned to this
+// process.
+func AffineCaches() cfg.Provider {
+	return &caches{
+		key:      "affinecache",
+		doc:      "cache hierarchy for assigned cpus",
+		dirs:     affinecpudirs,
+		perftags: []cfg.Tag{cfg.TagPerfCritical},
+	}
+}
+
+// caches provides configuration about processor caches.
+type caches struct {
+	key      cfg.Key
+	doc      string
+	dirs     func() ([]string, error)
+	perftags []cfg.Tag
+}
+
+// Key returns the config key.
+func (c *caches) Key() cfg.Key { return c.key }
 
 // Doc for the configuration provider.
-func (Caches) Doc() string { return "Processor cache hierarchy" }
+func (c *caches) Doc() string { return c.doc }
 
 // Available checks whether the cache sysfs files are present.
-func (Caches) Available() bool {
-	info, err := os.Stat("/sys/devices/system/cpu/cpu0/cache/index0")
-	return err == nil && info.IsDir()
+func (c *caches) Available() bool {
+	return proc.Readable("/sys/devices/system/cpu/cpu0/cache/index0")
 }
 
 // Configuration queries sysfs for cache configuration.
-func (Caches) Configuration() (cfg.Configuration, error) {
+func (c *caches) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
-		property("type", parsestring, "cache type: Data, Instruction or Unified"),
-		property("level", parseint, "the cache hierarchy in the multi-level cache configuration"),
-		property("size", parsesize, "total cache size"),
+		property("type", parsestring, "cache type: Data, Instruction or Unified", c.perftags...),
+		property("level", parseint, "the cache hierarchy in the multi-level cache configuration", c.perftags...),
+		property("size", parsesize, "total cache size", c.perftags...),
 		property("coherency_line_size", parseint, "minimum amount of data in bytes that gets transferred from memory to cache"),
 		property("ways_of_associativity", parseint, "degree of freedom in placing a particular block of memory in the cache"),
 		property("number_of_sets", parseint, "total number of sets in the cache, a set is a collection of cache lines with the same cache index"),
@@ -89,12 +113,12 @@ func (Caches) Configuration() (cfg.Configuration, error) {
 		property("physical_line_partition", parseint, "number of physical cache line per cache tag"),
 	}
 
-	cpudirs, err := filepath.Glob("/sys/devices/system/cpu/cpu*")
+	cpudirs, err := c.dirs()
 	if err != nil {
 		return nil, err
 	}
 
-	c := cfg.Configuration{}
+	config := cfg.Configuration{}
 	for _, cpudir := range cpudirs {
 		cpu := filepath.Base(cpudir)
 		pattern := filepath.Join(cpudir, "cache", "index*")
@@ -118,14 +142,14 @@ func (Caches) Configuration() (cfg.Configuration, error) {
 			cachecfg = append(cachecfg, section)
 		}
 
-		c = append(c, cfg.Section(
+		config = append(config, cfg.Section(
 			cfg.Key(cpu),
 			fmt.Sprintf("caches for %s", cpu),
 			cachecfg...,
 		))
 	}
 
-	return c, nil
+	return config, nil
 }
 
 func parsesize(s string) (cfg.Value, error) {

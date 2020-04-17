@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/mmcloughlin/cb/pkg/cfg"
@@ -279,48 +280,72 @@ func (DisableIntelTurbo) Reset() error { return pseudofs.WriteFlag(noturbo, fals
 //		be written to in order to set a new frequency for the policy.
 //
 
-// CPUFreq provides configuration about CPU frequency scaling.
-type CPUFreq struct{}
+// CPUFreq builds a configuration provider for CPU frequency scaling information.
+func CPUFreq() cfg.Provider {
+	return &freq{
+		key:  "cpufreq",
+		doc:  "frequency scaling status for all cpus",
+		dirs: cpudirs,
+	}
+}
+
+// AffineCPUFreq builds a configuration provider for CPU frequency scaling
+// information for processors the process is assigned to.
+func AffineCPUFreq() cfg.Provider {
+	return &freq{
+		key:      "affinecpufreq",
+		doc:      "frequency scaling status for assigned cpus",
+		dirs:     affinecpudirs,
+		perftags: []cfg.Tag{cfg.TagPerfCritical},
+	}
+}
+
+// freq provides configuration about CPU frequency scaling.
+type freq struct {
+	key      cfg.Key
+	doc      string
+	dirs     func() ([]string, error)
+	perftags []cfg.Tag
+}
 
 // Key returns "cpufreq".
-func (CPUFreq) Key() cfg.Key { return "cpufreq" }
+func (f *freq) Key() cfg.Key { return f.key }
 
 // Doc for the configuration provider.
-func (CPUFreq) Doc() string { return "CPU frequency scaling status" }
+func (f *freq) Doc() string { return f.doc }
 
-// Available checks whether the cpufreq sysfs files are present.
-func (CPUFreq) Available() bool {
-	_, err := os.Stat("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
-	return err == nil
+// Available checks whether the cpufreq sysfs files are present and readable.
+func (freq) Available() bool {
+	return proc.Readable("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor")
 }
 
 // Configuration queries sysfs for CPU frequency scaling status.
-func (CPUFreq) Configuration() (cfg.Configuration, error) {
+func (f *freq) Configuration() (cfg.Configuration, error) {
 	properties := []fileproperty{
 		property("cpuinfo_min_freq", parsekhz, "minimum operating frequency the processor can run at"),
-		property("cpuinfo_max_freq", parsekhz, "maximum operating frequency the processor can run at"),
+		property("cpuinfo_max_freq", parsekhz, "maximum operating frequency the processor can run at", f.perftags...),
 		property("cpuinfo_transition_latency", parseint, "time it takes on this cpu to switch between two frequencies in nanoseconds"),
 		property("scaling_driver", parsestring, "which cpufreq driver is used to set the frequency on this cpu"),
-		property("scaling_governor", parsestring, "currently active scaling governor on this cpu"),
+		property("scaling_governor", parsestring, "currently active scaling governor on this cpu", f.perftags...),
 		property("scaling_min_freq", parsekhz, "minimum allowed frequency by the current scaling policy"),
 		property("scaling_min_freq", parsekhz, "maximum allowed frequency by the current scaling policy"),
 		property("scaling_cur_freq", parsekhz, "current frequency as determined by the governor and cpufreq core"),
 	}
 
-	dirs, err := filepath.Glob("/sys/devices/system/cpu/cpu*/cpufreq")
+	dirs, err := f.dirs()
 	if err != nil {
 		return nil, err
 	}
 
 	c := cfg.Configuration{}
-	for _, dir := range dirs {
-		cpu := filepath.Base(filepath.Dir(dir))
-		sub, err := parsefiles(dir, properties)
+	for idx, dir := range dirs {
+		cpu := filepath.Base(dir)
+		sub, err := parsefiles(filepath.Join(dir, "cpufreq"), properties)
 		if err != nil {
 			return nil, err
 		}
 		section := cfg.Section(
-			cfg.Key(cpu),
+			cfg.Key("cpu"+strconv.Itoa(idx)),
 			fmt.Sprintf("cpu frequency status for %s", cpu),
 			sub...,
 		)
