@@ -9,6 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/mmcloughlin/cb/app/dashboard"
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/gcs"
 	"github.com/mmcloughlin/cb/internal/errutil"
@@ -40,27 +41,27 @@ func run(ctx context.Context, l *zap.Logger) (err error) {
 	defer errutil.CheckClose(&err, d)
 
 	// Build handlers.
-	opts := []Option{WithLogger(l)}
+	opts := []dashboard.Option{dashboard.WithLogger(l)}
 
 	if *bucket != "" {
 		datafs, err := gcs.New(ctx, *bucket)
 		if err != nil {
 			return err
 		}
-		opts = append(opts, WithDataFileSystem(datafs))
+		opts = append(opts, dashboard.WithDataFileSystem(datafs))
 	}
 
 	if *tmpl != "" {
-		templates := NewTemplates(fs.NewLocal(*tmpl))
+		templates := dashboard.NewTemplates(fs.NewLocal(*tmpl))
 		templates.SetCacheEnabled(!*nocache)
-		opts = append(opts, WithTemplates(templates))
+		opts = append(opts, dashboard.WithTemplates(templates))
 	}
 
 	if *static != "" {
-		opts = append(opts, WithStaticFileSystem(fs.NewLocal(*static)))
+		opts = append(opts, dashboard.WithStaticFileSystem(fs.NewLocal(*static)))
 	}
 
-	h := NewHandlers(d, opts...)
+	h := dashboard.NewHandlers(d, opts...)
 
 	if err := h.Init(ctx); err != nil {
 		return err
