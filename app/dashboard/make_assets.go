@@ -15,15 +15,9 @@ import (
 )
 
 func main() {
-	os.Exit(main1())
-}
-
-func main1() int {
 	if err := mainerr(); err != nil {
-		log.Print(err)
-		return 1
+		log.Fatal(err)
 	}
-	return 0
 }
 
 // Command line flags.

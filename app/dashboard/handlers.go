@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
@@ -76,9 +75,6 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	// Static assets.
 	static := h.handler(httputil.NewStatic(h.static))
 	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
-
-	iconproxy := httputil.ProxySingleURL(&url.URL{Scheme: "https", Host: "golang.org", Path: "/favicon.ico"})
-	h.mux.Handle("/static/img/favicon.ico", h.handler(iconproxy))
 
 	return h
 }
