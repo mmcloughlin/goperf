@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -22,11 +23,12 @@ import (
 )
 
 type Handlers struct {
-	db     *db.DB
-	static fs.Readable
-	datafs fs.Readable
+	db       *db.DB
+	staticfs fs.Readable
+	datafs   fs.Readable
 
 	mux       *http.ServeMux
+	static    *httputil.Static
 	templates *Templates
 	log       *zap.Logger
 }
@@ -38,7 +40,7 @@ func WithTemplates(t *Templates) Option {
 }
 
 func WithStaticFileSystem(r fs.Readable) Option {
-	return func(h *Handlers) { h.static = r }
+	return func(h *Handlers) { h.staticfs = r }
 }
 
 func WithDataFileSystem(r fs.Readable) Option {
@@ -53,7 +55,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	// Configure.
 	h := &Handlers{
 		db:        d,
-		static:    StaticFileSystem,
+		staticfs:  StaticFileSystem,
 		datafs:    fs.Null,
 		mux:       http.NewServeMux(),
 		templates: NewTemplates(TemplateFileSystem),
@@ -73,8 +75,9 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.Handle("/commit/", h.handlerFunc(h.Commit))
 
 	// Static assets.
-	static := h.handler(httputil.NewStatic(h.static))
-	h.mux.Handle("/static/", http.StripPrefix("/static/", static))
+	h.static = httputil.NewStatic(h.staticfs)
+	h.static.SetLogger(h.log)
+	h.mux.Handle("/static/", http.StripPrefix("/static/", h.handler(h.static)))
 
 	return h
 }
@@ -89,7 +92,18 @@ func (h *Handlers) handler(handler httputil.Handler) http.Handler {
 func (h *Handlers) handlerFunc(handler httputil.HandlerFunc) http.Handler { return h.handler(handler) }
 
 func (h *Handlers) Init(ctx context.Context) error {
+	// Template function for static paths.
+	h.templates.Func("static", func(name string) (string, error) {
+		p, err := h.static.Path(ctx, name)
+		if err != nil {
+			return "", err
+		}
+		return path.Join("/static/", p), nil
+	})
+
+	// Color scheme.
 	h.templates.Func("color", brand.Color)
+
 	return h.templates.Init(ctx)
 }
 

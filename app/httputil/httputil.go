@@ -3,15 +3,12 @@
 package httputil
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/golang/gddo/httputil"
 	"go.uber.org/zap"
-
-	"github.com/mmcloughlin/cb/pkg/fs"
 )
 
 // ExpectStatus errors if code is not in the allowed list.
@@ -121,25 +118,4 @@ func (h ErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func OK(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "ok")
-}
-
-// NewStatic serves static content from the supplied filesystem.
-func NewStatic(filesys fs.Readable) Handler {
-	return HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
-		ctx := r.Context()
-		name := r.URL.Path
-
-		info, err := filesys.Stat(ctx, name)
-		if err != nil {
-			return err
-		}
-
-		b, err := fs.ReadFile(ctx, filesys, name)
-		if err != nil {
-			return err
-		}
-
-		http.ServeContent(w, r, name, info.ModTime, bytes.NewReader(b))
-		return nil
-	})
 }
