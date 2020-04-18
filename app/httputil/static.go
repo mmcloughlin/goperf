@@ -24,6 +24,13 @@ type CacheControl struct {
 	Directives   []string
 }
 
+// CacheControlImmutable provides suitable cache control headers for immutable files.
+var CacheControlImmutable = CacheControl{
+	MaxAge:       24 * time.Hour,
+	SharedMaxAge: 365 * 24 * time.Hour,
+	Directives:   []string{"public", "immutable"},
+}
+
 func (c CacheControl) String() string {
 	directives := c.Directives
 	if c.MaxAge != 0 {
@@ -35,44 +42,32 @@ func (c CacheControl) String() string {
 	return strings.Join(directives, ", ")
 }
 
-// Static serves static content froma filesystem.
+// Static serves static content from a filesystem. Filenames are extended with a
+// content hash for cache busting.
 type Static struct {
 	fs  fs.Readable
+	cc  CacheControl
 	log *zap.Logger
-
-	defaultCache   CacheControl
-	versionedCache CacheControl
 
 	mu sync.Mutex
 	v  map[string]string
 }
 
+// NewStatic builds a static file HTTP handler.
 func NewStatic(filesys fs.Readable) *Static {
 	return &Static{
 		fs:  filesys,
+		cc:  CacheControlImmutable,
 		log: zap.NewNop(),
-		defaultCache: CacheControl{
-			MaxAge:     24 * time.Hour,
-			Directives: []string{"public"},
-		},
-		versionedCache: CacheControl{
-			MaxAge:       24 * time.Hour,
-			SharedMaxAge: 365 * 24 * time.Hour,
-			Directives:   []string{"public", "immutable"},
-		},
-		v: map[string]string{},
+		v:   map[string]string{},
 	}
 }
 
+// SetCacheControl configures cache control headers.
+func (s *Static) SetCacheControl(cc CacheControl) { s.cc = cc }
+
+// SetLogger configures logging output from the static handler.
 func (s *Static) SetLogger(l *zap.Logger) { s.log = l.Named("static") }
-
-func (s *Static) SetDefaultCacheControl(cc CacheControl) {
-	s.defaultCache = cc
-}
-
-func (s *Static) SetVersionedCacheControl(cc CacheControl) {
-	s.versionedCache = cc
-}
 
 // Path returns the versioned path for name, intended for cache busting.
 func (s *Static) Path(ctx context.Context, name string) (string, error) {
@@ -83,10 +78,15 @@ func (s *Static) Path(ctx context.Context, name string) (string, error) {
 	return versionedPath(name, v), nil
 }
 
+// HandleRequest serves a request.
 func (s *Static) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 	ctx := r.Context()
 
 	name, v := parseNameVersion(r.URL.Path)
+	if v == "" {
+		s.log.Info("unversioned request")
+		return NotFound()
+	}
 
 	// Fetch the file.
 	info, err := s.fs.Stat(ctx, name)
@@ -100,17 +100,13 @@ func (s *Static) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 		s.log.Info("file read error", zap.Error(err))
 		return NotFound()
 	}
-	if v != "" && v != expect {
+	if v != expect {
 		s.log.Info("version mismatch", zap.String("v", v), zap.String("expect", expect))
 		return NotFound()
 	}
 
 	// Cache control.
-	cc := s.defaultCache
-	if v != "" {
-		cc = s.versionedCache
-	}
-	w.Header().Set("Cache-Control", cc.String())
+	w.Header().Set("Cache-Control", s.cc.String())
 
 	http.ServeContent(w, r, name, info.ModTime, bytes.NewReader(b))
 	return nil
