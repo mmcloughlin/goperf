@@ -2,22 +2,8 @@
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript">
   google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(drawChart);
 
-  points = [
-    {{ range .Points -}}
-    { resultUUID: {{ .ResultUUID | js }}, commitSHA: {{ .CommitSHA | js }} },
-    {{ end }}
-  ]
-
-  function drawChart () {
-    var data = google.visualization.arrayToDataTable([
-      ['commit_index', 'value', 'filtered'],
-      {{ range $idx, $point := .Points -}}
-      [{{ $idx }}, {{ $point.Value }}, {{ index $.Filtered $idx }}],
-      {{ end }}
-    ]);
-
+  function drawChart (element, data, meta) {
     var options = {
       chartArea: {
         width: '85%',
@@ -33,7 +19,7 @@
       tooltip: { trigger: 'selection' }
     };
 
-    var chart = new google.visualization.ScatterChart(document.getElementById('chart'));
+    var chart = new google.visualization.ScatterChart(element)
 
     chart.setAction({
       id: 'result',
@@ -41,7 +27,7 @@
       action: function() {
         selection = chart.getSelection();
         idx = selection[0].row;
-        window.location.href = '/result/' + points[idx].resultUUID;
+        window.location.href = '/result/' + meta[idx].resultUUID;
       }
     });
 
@@ -51,12 +37,33 @@
       action: function() {
         selection = chart.getSelection();
         idx = selection[0].row;
-        window.location.href = '/commit/' + points[idx].commitSHA;
+        window.location.href = '/commit/' + meta[idx].commitSHA;
       }
     });
 
     chart.draw(data, options);
   }
+
+  {{ range $idx, $group := .PointsGroups }}
+  google.charts.setOnLoadCallback(function () {
+    var element = document.getElementById('chart{{ $idx }}');
+
+    var data = google.visualization.arrayToDataTable([
+      ['commit_index', 'value', 'filtered'],
+      {{ range $idx, $point := $group.Points -}}
+      [{{ $idx }}, {{ $point.Value }}, {{ index $group.Filtered $idx }}],
+      {{ end }}
+    ]);
+
+    var meta = [
+      {{ range $group.Points -}}
+      { resultUUID: {{ .ResultUUID | js }}, commitSHA: {{ .CommitSHA | js }} },
+      {{ end }}
+    ]
+
+    drawChart(element, data, meta);
+  });
+  {{ end }}
 </script>
 {{ end }}
 
@@ -70,6 +77,9 @@
   </dl>
 </div>
 
-<div id="chart"></div>
+{{ range $idx, $group := .PointsGroups }}
+<h2>environment {{ $group.Title }}</h2>
+<div id="chart{{ $idx }}"></div>
+{{ end }}
 
 {{ end }}

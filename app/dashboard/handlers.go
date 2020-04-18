@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/brand"
 	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/fs"
@@ -200,15 +202,59 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// Apply KZA filter.
-	kza := analysis.AdaptiveKolmogorovZurbenko(points.Values(), 31, 5)
+	// Group by environment.
+	groups, err := h.groups(ctx, points)
+	if err != nil {
+		return err
+	}
 
 	// Write response.
 	return h.render(ctx, w, "bench", map[string]interface{}{
-		"Benchmark": bench,
-		"Points":    points,
-		"Filtered":  kza,
+		"Benchmark":    bench,
+		"PointsGroups": groups,
 	})
+}
+
+// PointsGroup is a benchmark timeseries for a given environment.
+type PointsGroup struct {
+	Title       string
+	Environment entity.Properties
+	Points      entity.Points
+	Filtered    []float64
+}
+
+func (h *Handlers) groups(ctx context.Context, points entity.Points) ([]*PointsGroup, error) {
+	// Group by environment.
+	byenv := map[uuid.UUID]entity.Points{}
+	for _, point := range points {
+		byenv[point.EnvironmentUUID] = append(byenv[point.EnvironmentUUID], point)
+	}
+
+	// Fetch environment objects and build groups.
+	groups := []*PointsGroup{}
+	for id, points := range byenv {
+		env, err := h.db.FindPropertiesByUUID(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, &PointsGroup{
+			Title:       envName(env),
+			Environment: env,
+			Points:      points,
+		})
+	}
+
+	// Apply KZA filtering.
+	for _, group := range groups {
+		group.Filtered = analysis.AdaptiveKolmogorovZurbenko(group.Points.Values(), 31, 5)
+	}
+
+	// Sort by descending size.
+	sort.Slice(groups, func(i, j int) bool {
+		return len(groups[i].Points) > len(groups[j].Points)
+	})
+
+	return groups, nil
 }
 
 func (h *Handlers) Result(w http.ResponseWriter, r *http.Request) error {
@@ -331,4 +377,23 @@ func stripprefix(path, prefix string) (string, error) {
 		return "", fmt.Errorf("path %q expected to have prefix %q", path, prefix)
 	}
 	return path[len(prefix):], nil
+}
+
+func envName(e entity.Properties) string {
+	keys := []string{
+		"go-os",
+		"go-arch",
+		"affinecpu-cpu0-modelname",
+		"affinecpufreq-cpu0-cpuinfomaxfreq",
+	}
+	fields := []string{}
+	for _, key := range keys {
+		if v, ok := e[key]; ok {
+			fields = append(fields, v)
+		}
+	}
+	if len(fields) > 0 {
+		return strings.Join(fields, ", ")
+	}
+	return e.UUID().String()
 }
