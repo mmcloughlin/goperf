@@ -31,6 +31,11 @@ resource "google_sql_database_instance" "primary" {
       ipv4_enabled    = true
       private_network = data.google_compute_network.default.self_link
     }
+
+    database_flags {
+      name  = "log_min_duration_statement"
+      value = 2000
+    }
   }
 }
 
