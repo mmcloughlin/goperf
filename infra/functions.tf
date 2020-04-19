@@ -1,3 +1,10 @@
+resource "google_vpc_access_connector" "connector" {
+  name          = "connector"
+  region        = var.region
+  ip_cidr_range = "10.8.0.0/28"
+  network       = data.google_compute_network.default.name
+}
+
 resource "google_storage_bucket" "functions_bucket" {
   name = "${var.project_name}_functions"
 }
@@ -39,6 +46,7 @@ resource "google_cloudfunctions_function" "http_function" {
   trigger_http          = true
   runtime               = var.functions_runtime
   environment_variables = local.environment_variables
+  vpc_connector         = google_vpc_access_connector.connector.id
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
@@ -85,6 +93,7 @@ resource "google_cloudfunctions_function" "result_function" {
   entry_point           = "Handle"
   runtime               = var.functions_runtime
   environment_variables = local.environment_variables
+  vpc_connector         = google_vpc_access_connector.connector.id
 
   event_trigger {
     event_type = "google.storage.object.finalize"
