@@ -27,7 +27,7 @@ resource "google_storage_bucket_object" "function_zip" {
 
 locals {
   environment_variables = {
-    CB_SQL_CONNECTION_NAME      = google_sql_database_instance.primary.connection_name
+    CB_SQL_IP_ADDRESS           = google_sql_database_instance.primary.private_ip_address
     CB_SQL_DATABASE             = google_sql_database.database.name
     CB_SQL_USER                 = google_sql_user.admin.name
     CB_SQL_PASSWORD_SECRET_NAME = google_secret_manager_secret_version.sql_admin_password_secret_version.name

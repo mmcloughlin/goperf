@@ -28,7 +28,7 @@ resource "google_sql_database_instance" "primary" {
     disk_type         = "PD_HDD"
 
     ip_configuration {
-      ipv4_enabled    = false
+      ipv4_enabled    = true
       private_network = data.google_compute_network.default.self_link
     }
   }

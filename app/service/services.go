@@ -52,7 +52,7 @@ func ResultsFileSystem(ctx context.Context) (fs.Interface, error) {
 // DB opens a database connection to the Cloud SQL instance.
 func DB(ctx context.Context, l *zap.Logger) (*db.DB, error) {
 	params, err := envs(
-		"SQL_CONNECTION_NAME",
+		"SQL_IP_ADDRESS",
 		"SQL_DATABASE",
 		"SQL_USER",
 		"SQL_PASSWORD_SECRET_NAME",
@@ -66,9 +66,8 @@ func DB(ctx context.Context, l *zap.Logger) (*db.DB, error) {
 		return nil, err
 	}
 
-	sock := "/cloudsql/" + params["SQL_CONNECTION_NAME"]
 	conn := fmt.Sprintf("host=%s dbname=%s user=%s password=%s",
-		sock, params["SQL_DATABASE"], params["SQL_USER"], password)
+		params["SQL_IP_ADDRESS"], params["SQL_DATABASE"], params["SQL_USER"], password)
 
 	d, err := db.Open(ctx, conn)
 	if err != nil {
