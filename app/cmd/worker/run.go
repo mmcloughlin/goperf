@@ -26,6 +26,7 @@ type Run struct {
 	name           string
 	coordinatorURL string
 	artifacts      string
+	goproxy        string
 }
 
 func NewRun(b command.Base, p *platform.Platform) *Run {
@@ -56,6 +57,7 @@ func (cmd *Run) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&cmd.name, "name", defaultName, "worker name")
 	f.StringVar(&cmd.coordinatorURL, "coordinator", "", "coordinator address")
 	f.StringVar(&cmd.artifacts, "artifacts", "", "artifacts storage directory")
+	f.StringVar(&cmd.goproxy, "goproxy", "proxy.golang.org", "GOPROXY environment variable")
 }
 
 func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
@@ -66,6 +68,7 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 	p := &Processor{
 		platform:  cmd.Platform,
 		artifacts: artifacts,
+		goproxy:   cmd.goproxy,
 		log:       cmd.Log,
 	}
 
@@ -77,6 +80,7 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 type Processor struct {
 	platform  *platform.Platform
 	artifacts fs.Interface
+	goproxy   string
 	log       *zap.Logger
 }
 
@@ -104,6 +108,7 @@ func (p *Processor) Process(ctx context.Context, j *coordinator.Job) (io.ReadClo
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
+	r.SetGoProxy(p.goproxy)
 	if err := p.platform.ConfigureRunner(r); err != nil {
 		return nil, err
 	}

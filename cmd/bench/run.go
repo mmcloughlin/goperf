@@ -32,6 +32,7 @@ type Run struct {
 	toolchainconfig flags.TypeParams
 	output          string
 	preserve        bool
+	goproxy         string
 }
 
 func NewRun(b command.Base, p *platform.Platform) *Run {
@@ -60,6 +61,7 @@ func (cmd *Run) SetFlags(f *flag.FlagSet) {
 	f.Var(&cmd.toolchainconfig, "toolchain", "toolchain configuration")
 	f.StringVar(&cmd.output, "output", "", "output path")
 	f.BoolVar(&cmd.preserve, "preserve", false, "preserve working directory")
+	f.StringVar(&cmd.goproxy, "goproxy", "", "GOPROXY value for the benchark runner")
 
 	cmd.Platform.SetFlags(f)
 }
@@ -83,6 +85,10 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 
 	// Initialize runner.
 	r := runner.NewRunner(w, tc)
+
+	if cmd.goproxy != "" {
+		r.SetGoProxy(cmd.goproxy)
+	}
 
 	if err := cmd.ConfigureRunner(r); err != nil {
 		return cmd.Error(err)

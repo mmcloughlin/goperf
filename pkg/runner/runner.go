@@ -18,6 +18,7 @@ import (
 type Runner struct {
 	w         *Workspace
 	tc        Toolchain
+	goproxy   string
 	tuners    []Tuner
 	providers cfg.Providers
 
@@ -27,9 +28,16 @@ type Runner struct {
 
 func NewRunner(w *Workspace, tc Toolchain) *Runner {
 	return &Runner{
-		w:  w,
-		tc: tc,
+		w:       w,
+		tc:      tc,
+		goproxy: "https://proxy.golang.org",
 	}
+}
+
+// SetGoProxy sets the GOPROXY environment variable.
+func (r *Runner) SetGoProxy(proxy string) {
+	r.w.Log.Info("set go proxy", zap.String("GOPROXY", proxy))
+	r.goproxy = proxy
 }
 
 // Init initializes the runner.
@@ -48,6 +56,7 @@ func (r *Runner) Init(ctx context.Context) {
 	r.w.SetEnv("GOPATH", r.w.EnsureDir("gopath"))
 	r.w.SetEnv("GOCACHE", r.w.EnsureDir("gocache"))
 	r.w.SetEnv("GO111MODULE", "on")
+	r.w.SetEnv("GOPROXY", r.goproxy)
 	r.w.DefineTool("AR", "ar")
 	r.w.DefineTool("CC", "gcc")
 	r.w.DefineTool("CXX", "g++")
