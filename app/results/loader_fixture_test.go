@@ -81,16 +81,16 @@ func TestLoader(t *testing.T) {
 	}
 
 	moddb := &SingleModule{
-		Mod:  fixture.Module.Path,
-		Rev:  fixture.ModuleSHA,
-		Info: fixture.RevInfo,
+		Mod:     fixture.Module.Path,
+		Rev:     fixture.ModuleSHA,
+		RevInfo: fixture.RevInfo,
 	}
 
 	// Construct loader.
 	loader, err := results.NewLoader(
 		results.WithFilesystem(m),
 		results.WithRevisions(rev),
-		results.WithModuleDatabase(moddb),
+		results.WithModuleInfo(moddb),
 		results.WithKeys(keys),
 		results.WithEnvironmentTags(envtags...),
 	)
@@ -134,7 +134,7 @@ func TestLoadSHA256Hash(t *testing.T) {
 	loader, err := results.NewLoader(
 		results.WithFilesystem(fs),
 		results.WithRevisions(&SingleRevision{Commit: fixture.Commit}),
-		results.WithModuleDatabase(&SingleModule{Info: fixture.RevInfo}),
+		results.WithModuleInfo(&SingleModule{RevInfo: fixture.RevInfo}),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -170,16 +170,16 @@ func (r *SingleRevision) Revision(_ context.Context, ref string) (*entity.Commit
 	return r.Commit, nil
 }
 
-// SingleModule is an implementation of suite.ModuleDatabase that returns fixed
-// revision information.
+// SingleModule is an implementation of mod.Infoer that returns fixed revision
+// information.
 type SingleModule struct {
 	Mod, Rev string
-	Info     *mod.RevInfo
+	RevInfo  *mod.RevInfo
 }
 
-func (m *SingleModule) Stat(_ context.Context, mod, rev string) (*mod.RevInfo, error) {
+func (m *SingleModule) Info(_ context.Context, mod, rev string) (*mod.RevInfo, error) {
 	if (m.Mod != "" && mod != m.Mod) || (m.Rev != "" && rev != m.Rev) {
 		return nil, errors.New("unknown")
 	}
-	return m.Info, nil
+	return m.RevInfo, nil
 }

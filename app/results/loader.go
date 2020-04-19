@@ -51,7 +51,7 @@ var DefaultKeys = Keys{
 type Loader struct {
 	fs      fs.Readable
 	rev     repo.Revisions
-	mod     mod.ModuleDatabase
+	mod     mod.Infoer
 	keys    Keys
 	envtags []cfg.Tag
 }
@@ -70,9 +70,9 @@ func WithRevisions(r repo.Revisions) LoaderOption {
 	return func(l *Loader) { l.rev = r }
 }
 
-// WithModuleDatabase configures a Loader to lookup module information from mod.
-func WithModuleDatabase(mdb mod.ModuleDatabase) LoaderOption {
-	return func(l *Loader) { l.mod = mdb }
+// WithModuleInfo configures how a Loader fetches module information.
+func WithModuleInfo(i mod.Infoer) LoaderOption {
+	return func(l *Loader) { l.mod = i }
 }
 
 // WithKeys configures which benchmark configuration keys are special.
@@ -90,7 +90,7 @@ func WithEnvironmentTags(tags ...cfg.Tag) LoaderOption {
 func NewLoader(opts ...LoaderOption) (*Loader, error) {
 	l := &Loader{
 		rev:     repo.NewRevisionsCache(repo.Go(http.DefaultClient), 16),
-		mod:     mod.NewModuleCache(mod.NewOfficialModuleProxy(http.DefaultClient), 16),
+		mod:     mod.NewInfoCache(mod.NewOfficialModuleProxy(http.DefaultClient), 16),
 		keys:    DefaultKeys,
 		envtags: []cfg.Tag{cfg.TagPerfCritical},
 	}
@@ -210,7 +210,7 @@ func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*entity.Benchm
 	}
 
 	// Resolve canonical version.
-	info, err := l.mod.Stat(ctx, modpath, modversion)
+	info, err := l.mod.Info(ctx, modpath, modversion)
 	if err != nil {
 		return nil, err
 	}

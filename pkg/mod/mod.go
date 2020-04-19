@@ -38,24 +38,29 @@ type RevInfo struct {
 	Time    time.Time
 }
 
+type Infoer interface {
+	Info(ctx context.Context, path, rev string) (*RevInfo, error)
+}
+
 type ModuleDatabase interface {
-	Stat(ctx context.Context, path, rev string) (*RevInfo, error)
+	Infoer
+	Latest(ctx context.Context, path string) (*RevInfo, error)
 }
 
-type modcache struct {
+type infocache struct {
 	cache *lru.Cache
-	mod   ModuleDatabase
+	i     Infoer
 }
 
-// NewModuleCache provides an in-memory cache in front of a ModuleDatabase.
-func NewModuleCache(mod ModuleDatabase, maxentries int) ModuleDatabase {
-	return &modcache{
+// NewInfoCache provides an in-memory cache in front of an Infoer.
+func NewInfoCache(i Infoer, maxentries int) Infoer {
+	return &infocache{
 		cache: lru.New(maxentries),
-		mod:   mod,
+		i:     i,
 	}
 }
 
-func (c *modcache) Stat(ctx context.Context, path, rev string) (*RevInfo, error) {
+func (c *infocache) Info(ctx context.Context, path, rev string) (*RevInfo, error) {
 	type key struct {
 		path, rev string
 	}
@@ -65,7 +70,7 @@ func (c *modcache) Stat(ctx context.Context, path, rev string) (*RevInfo, error)
 		return info.(*RevInfo), nil
 	}
 
-	info, err := c.mod.Stat(ctx, path, rev)
+	info, err := c.i.Info(ctx, path, rev)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +127,7 @@ func NewOfficialModuleProxy(c *http.Client) ModuleDatabase {
 //	}
 //
 
-func (p *modproxy) Stat(ctx context.Context, path, rev string) (*RevInfo, error) {
+func (p *modproxy) Info(ctx context.Context, path, rev string) (*RevInfo, error) {
 	// Apply escaping rules.
 	path, err := module.EscapePath(path)
 	if err != nil {
@@ -150,6 +155,29 @@ func (p *modproxy) Stat(ctx context.Context, path, rev string) (*RevInfo, error)
 	// Validate. If revision was already in canonical form it should have been returned as-is.
 	if info.Version != rev && rev == module.CanonicalVersion(rev) && module.Check(path, rev) == nil {
 		return nil, fmt.Errorf("proxy returned info for version %q instead of requested version", info.Version)
+	}
+
+	return info, nil
+}
+
+func (p *modproxy) Latest(ctx context.Context, path string) (*RevInfo, error) {
+	// Apply escaping rules.
+	path, err := module.EscapePath(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Issue request.
+	endpoint := pathpkg.Join(path, "@latest")
+	b, err := p.get(ctx, endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal.
+	info := new(RevInfo)
+	if err := json.Unmarshal(b, info); err != nil {
+		return nil, err
 	}
 
 	return info, nil

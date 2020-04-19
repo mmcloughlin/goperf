@@ -9,11 +9,11 @@ import (
 	"github.com/mmcloughlin/cb/internal/test"
 )
 
-func TestModuleProxyNetwork(t *testing.T) {
+func TestModuleProxyNetworkInfo(t *testing.T) {
 	test.RequiresNetwork(t)
 
 	mdb := NewOfficialModuleProxy(http.DefaultClient)
-	info, err := mdb.Stat(context.Background(), "golang.org/x/crypto", "0f24fbd83dfbb33be4b41327d5a857464b89e3cd")
+	info, err := mdb.Info(context.Background(), "golang.org/x/crypto", "0f24fbd83dfbb33be4b41327d5a857464b89e3cd")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,4 +30,16 @@ func TestModuleProxyNetwork(t *testing.T) {
 	if !info.Time.Equal(expect.Time) {
 		t.Error("time mismatch")
 	}
+}
+
+func TestModuleProxyNetworkLatest(t *testing.T) {
+	test.RequiresNetwork(t)
+
+	mdb := NewOfficialModuleProxy(http.DefaultClient)
+	info, err := mdb.Latest(context.Background(), "golang.org/x/crypto")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(info)
 }
