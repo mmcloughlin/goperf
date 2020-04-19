@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"path"
 	"runtime"
 	"time"
 
@@ -19,20 +18,21 @@ import (
 	"github.com/mmcloughlin/cb/pkg/runner"
 )
 
-const (
-	owner = "klauspost"
-	repo  = "compress"
-	rev   = "b949da471e55fbe4393e6eb595602d936f5c312e"
-)
+var defaultModule = job.Module{
+	Path:    "github.com/klauspost/compress",
+	Version: "b949da471e55fbe4393e6eb595602d936f5c312e",
+}
 
 type Run struct {
 	command.Base
 	*platform.Platform
 
 	toolchainconfig flags.TypeParams
-	output          string
-	preserve        bool
-	goproxy         string
+	mod             job.Module
+
+	output   string
+	preserve bool
+	goproxy  string
 }
 
 func NewRun(b command.Base, p *platform.Platform) *Run {
@@ -59,6 +59,9 @@ func (*Run) Usage() string {
 
 func (cmd *Run) SetFlags(f *flag.FlagSet) {
 	f.Var(&cmd.toolchainconfig, "toolchain", "toolchain configuration")
+	f.StringVar(&cmd.mod.Path, "modpath", defaultModule.Path, "module path")
+	f.StringVar(&cmd.mod.Version, "modrev", defaultModule.Version, "module revision")
+
 	f.StringVar(&cmd.output, "output", "", "output path")
 	f.BoolVar(&cmd.preserve, "preserve", false, "preserve working directory")
 	f.StringVar(&cmd.goproxy, "goproxy", "", "GOPROXY value for the benchark runner")
@@ -97,12 +100,8 @@ func (cmd *Run) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) 
 	r.Init(ctx)
 
 	// Run benchmark.
-	mod := job.Module{
-		Path:    path.Join("github.com", owner, repo),
-		Version: rev,
-	}
 	suite := job.Suite{
-		Module:    mod,
+		Module:    cmd.mod,
 		Short:     true,
 		BenchTime: 10 * time.Millisecond,
 	}
