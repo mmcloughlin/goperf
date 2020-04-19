@@ -10,4 +10,4 @@ cd -
 
 # Open psql -----------------------------------------------------------------
 
-psql "host=127.0.0.1 port=5433 sslmode=disable dbname=${dbname} user=${user} password=${password}"
+psql "host=127.0.0.1 port=5433 sslmode=disable dbname=${dbname} user=${user} password=${password}" "$@"
