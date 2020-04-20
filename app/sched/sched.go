@@ -15,11 +15,13 @@ type Request struct {
 
 // Suggested priority values.
 const (
-	PriorityMax    float64 = 1
-	PriorityHigh   float64 = 0.9
-	PriorityNormal float64 = 0
-	PriorityIdle   float64 = -0.9
-	PriorityMin    float64 = -1
+	PriorityMax     float64 = 1
+	PriorityHighest float64 = 0.9
+	PriorityHigh    float64 = 0.5
+	PriorityNormal  float64 = 0
+	PriorityLow     float64 = -0.5
+	PriorityIdle    float64 = -0.9
+	PriorityMin     float64 = -1
 )
 
 // Task is prioritized work proposed by a scheduler.

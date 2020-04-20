@@ -54,7 +54,7 @@ func (r *retry) pri(n int) float64 {
 	// Consider retries high priority at first but decline to 0 when we reach
 	// max errors.
 	return smoothstep(float64(n),
-		1, PriorityHigh,
+		1, PriorityHighest,
 		float64(r.maxErrors), PriorityMin,
 	)
 }
