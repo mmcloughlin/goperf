@@ -34,6 +34,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.commitStmt, err = db.PrepareContext(ctx, commit); err != nil {
 		return nil, fmt.Errorf("error preparing query Commit: %w", err)
 	}
+	if q.commitModuleWorkerErrorsStmt, err = db.PrepareContext(ctx, commitModuleWorkerErrors); err != nil {
+		return nil, fmt.Errorf("error preparing query CommitModuleWorkerErrors: %w", err)
+	}
 	if q.createTaskStmt, err = db.PrepareContext(ctx, createTask); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateTask: %w", err)
 	}
@@ -132,6 +135,11 @@ func (q *Queries) Close() error {
 	if q.commitStmt != nil {
 		if cerr := q.commitStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing commitStmt: %w", cerr)
+		}
+	}
+	if q.commitModuleWorkerErrorsStmt != nil {
+		if cerr := q.commitModuleWorkerErrorsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing commitModuleWorkerErrorsStmt: %w", cerr)
 		}
 	}
 	if q.createTaskStmt != nil {
@@ -302,6 +310,7 @@ type Queries struct {
 	benchmarkPointsStmt                           *sql.Stmt
 	benchmarkResultsStmt                          *sql.Stmt
 	commitStmt                                    *sql.Stmt
+	commitModuleWorkerErrorsStmt                  *sql.Stmt
 	createTaskStmt                                *sql.Stmt
 	dataFileStmt                                  *sql.Stmt
 	insertBenchmarkStmt                           *sql.Stmt
@@ -331,28 +340,29 @@ type Queries struct {
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                    tx,
-		tx:                    tx,
-		benchmarkStmt:         q.benchmarkStmt,
-		benchmarkPointsStmt:   q.benchmarkPointsStmt,
-		benchmarkResultsStmt:  q.benchmarkResultsStmt,
-		commitStmt:            q.commitStmt,
-		createTaskStmt:        q.createTaskStmt,
-		dataFileStmt:          q.dataFileStmt,
-		insertBenchmarkStmt:   q.insertBenchmarkStmt,
-		insertCommitStmt:      q.insertCommitStmt,
-		insertDataFileStmt:    q.insertDataFileStmt,
-		insertModuleStmt:      q.insertModuleStmt,
-		insertPkgStmt:         q.insertPkgStmt,
-		insertPropertiesStmt:  q.insertPropertiesStmt,
-		insertResultStmt:      q.insertResultStmt,
-		moduleStmt:            q.moduleStmt,
-		modulePkgsStmt:        q.modulePkgsStmt,
-		modulesStmt:           q.modulesStmt,
-		mostRecentCommitStmt:  q.mostRecentCommitStmt,
-		packageBenchmarksStmt: q.packageBenchmarksStmt,
-		pkgStmt:               q.pkgStmt,
-		propertiesStmt:        q.propertiesStmt,
+		db:                           tx,
+		tx:                           tx,
+		benchmarkStmt:                q.benchmarkStmt,
+		benchmarkPointsStmt:          q.benchmarkPointsStmt,
+		benchmarkResultsStmt:         q.benchmarkResultsStmt,
+		commitStmt:                   q.commitStmt,
+		commitModuleWorkerErrorsStmt: q.commitModuleWorkerErrorsStmt,
+		createTaskStmt:               q.createTaskStmt,
+		dataFileStmt:                 q.dataFileStmt,
+		insertBenchmarkStmt:          q.insertBenchmarkStmt,
+		insertCommitStmt:             q.insertCommitStmt,
+		insertDataFileStmt:           q.insertDataFileStmt,
+		insertModuleStmt:             q.insertModuleStmt,
+		insertPkgStmt:                q.insertPkgStmt,
+		insertPropertiesStmt:         q.insertPropertiesStmt,
+		insertResultStmt:             q.insertResultStmt,
+		moduleStmt:                   q.moduleStmt,
+		modulePkgsStmt:               q.modulePkgsStmt,
+		modulesStmt:                  q.modulesStmt,
+		mostRecentCommitStmt:         q.mostRecentCommitStmt,
+		packageBenchmarksStmt:        q.packageBenchmarksStmt,
+		pkgStmt:                      q.pkgStmt,
+		propertiesStmt:               q.propertiesStmt,
 		recentCommitModulePairsWithoutWorkerTasksStmt: q.recentCommitModulePairsWithoutWorkerTasksStmt,
 		resultStmt:                       q.resultStmt,
 		setTaskDataFileStmt:              q.setTaskDataFileStmt,

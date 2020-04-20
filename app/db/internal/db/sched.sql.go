@@ -11,6 +11,77 @@ import (
 	"github.com/lib/pq"
 )
 
+const commitModuleWorkerErrors = `-- name: CommitModuleWorkerErrors :many
+SELECT
+    target_uuid AS module_uuid,
+    commit_sha,
+    COUNT(*) FILTER (WHERE status = 'complete_error') AS num_errors,
+    MAX(last_status_update)::TIMESTAMP WITH TIME ZONE AS last_attempt_time
+FROM
+    tasks
+WHERE 1=1
+    AND worker = $1
+    AND type = 'module'
+GROUP BY
+    1, 2
+HAVING 1=1
+    AND COUNT(*) FILTER (WHERE status = 'complete_success') = 0
+    AND COUNT(*) FILTER (WHERE status = 'complete_error') BETWEEN 1 AND $2::INT
+    AND MAX(last_status_update) < $3
+ORDER BY
+    num_errors ASC,
+    last_attempt_time ASC
+LIMIT
+    $4
+`
+
+type CommitModuleWorkerErrorsParams struct {
+	Worker            string
+	MaxErrors         int32
+	LastAttemptBefore time.Time
+	Num               int32
+}
+
+type CommitModuleWorkerErrorsRow struct {
+	ModuleUUID      uuid.UUID
+	CommitSHA       []byte
+	NumErrors       int64
+	LastAttemptTime time.Time
+}
+
+func (q *Queries) CommitModuleWorkerErrors(ctx context.Context, arg CommitModuleWorkerErrorsParams) ([]CommitModuleWorkerErrorsRow, error) {
+	rows, err := q.query(ctx, q.commitModuleWorkerErrorsStmt, commitModuleWorkerErrors,
+		arg.Worker,
+		arg.MaxErrors,
+		arg.LastAttemptBefore,
+		arg.Num,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CommitModuleWorkerErrorsRow
+	for rows.Next() {
+		var i CommitModuleWorkerErrorsRow
+		if err := rows.Scan(
+			&i.ModuleUUID,
+			&i.CommitSHA,
+			&i.NumErrors,
+			&i.LastAttemptTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const recentCommitModulePairsWithoutWorkerTasks = `-- name: RecentCommitModulePairsWithoutWorkerTasks :many
 SELECT
     c.sha AS commit_sha,

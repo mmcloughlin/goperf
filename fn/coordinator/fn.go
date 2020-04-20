@@ -3,7 +3,6 @@ package coordinator
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -29,11 +28,7 @@ func initialize(ctx context.Context, l *zap.Logger) error {
 	}
 
 	// Coordinator.
-	pri := sched.TimeSinceSmoothStep(
-		60*24*time.Hour, sched.PriorityHigh,
-		365*24*time.Hour, sched.PriorityIdle,
-	)
-	scheduler := sched.NewRecentCommits(d, pri)
+	scheduler := sched.NewDefault(d)
 	coord := coordinator.New(d, scheduler, datafs)
 
 	// Handlers.

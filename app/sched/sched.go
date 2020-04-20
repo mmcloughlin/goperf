@@ -10,7 +10,7 @@ import (
 // Request for work.
 type Request struct {
 	Worker string // worker to request for
-	Num    int    // request this many proposed tasks
+	Num    int    // request at least this many proposed tasks
 }
 
 // Suggested priority values.
@@ -66,4 +66,19 @@ func StaticScheduler(tasks []*Task) Scheduler {
 // SingleTaskScheduler always returns the given task.
 func SingleTaskScheduler(task *Task) Scheduler {
 	return StaticScheduler([]*Task{task})
+}
+
+// CompositeScheduler merges proposed tasks from multiple schedulers.
+func CompositeScheduler(schedulers ...Scheduler) Scheduler {
+	return SchedulerFunc(func(ctx context.Context, req *Request) ([]*Task, error) {
+		var tasks []*Task
+		for _, scheduler := range schedulers {
+			sub, err := scheduler.Tasks(ctx, req)
+			if err != nil {
+				return nil, err
+			}
+			tasks = append(tasks, sub...)
+		}
+		return tasks, nil
+	})
 }

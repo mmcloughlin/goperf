@@ -38,11 +38,7 @@ func run(ctx context.Context, l *zap.Logger) (err error) {
 	defer errutil.CheckClose(&err, d)
 
 	// Build coordinator.
-	pri := sched.TimeSinceSmoothStep(
-		60*24*time.Hour, sched.PriorityHigh,
-		365*24*time.Hour, sched.PriorityIdle,
-	)
-	scheduler := sched.NewRecentCommits(d, pri)
+	scheduler := sched.NewDefault(d)
 	datafs := fs.NewLocal(*data)
 	c := coordinator.New(d, scheduler, datafs)
 	c.SetLogger(l)

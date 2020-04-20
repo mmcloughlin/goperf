@@ -22,3 +22,27 @@ ORDER BY
 LIMIT
     sqlc.arg(num)
 ;
+
+-- name: CommitModuleWorkerErrors :many
+SELECT
+    target_uuid AS module_uuid,
+    commit_sha,
+    COUNT(*) FILTER (WHERE status = 'complete_error') AS num_errors,
+    MAX(last_status_update)::TIMESTAMP WITH TIME ZONE AS last_attempt_time
+FROM
+    tasks
+WHERE 1=1
+    AND worker = sqlc.arg(worker)
+    AND type = 'module'
+GROUP BY
+    1, 2
+HAVING 1=1
+    AND COUNT(*) FILTER (WHERE status = 'complete_success') = 0
+    AND COUNT(*) FILTER (WHERE status = 'complete_error') BETWEEN 1 AND sqlc.arg(max_errors)::INT
+    AND MAX(last_status_update) < sqlc.arg(last_attempt_before)
+ORDER BY
+    num_errors ASC,
+    last_attempt_time ASC
+LIMIT
+    sqlc.arg(num)
+;
