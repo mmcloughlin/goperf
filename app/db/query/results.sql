@@ -17,11 +17,10 @@ FROM results AS r
 LEFT JOIN commits AS c
     ON r.commit_sha = c.sha
 WHERE 1=1
-    AND r.benchmark_uuid = $1
+    AND r.benchmark_uuid = sqlc.arg(benchmark_uuid)
+    AND c.commit_time BETWEEN sqlc.arg(commit_time_start) AND sqlc.arg(commit_time_end)
 ORDER BY
     c.commit_time DESC
-LIMIT
-    $2
 ;
 
 -- name: InsertResult :exec

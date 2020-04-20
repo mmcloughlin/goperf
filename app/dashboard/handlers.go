@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -197,7 +198,9 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	points, err := h.db.ListBenchmarkPoints(ctx, bench, 256)
+	end := time.Now()
+	start := end.Add(-60 * 24 * time.Hour)
+	points, err := h.db.ListBenchmarkPoints(ctx, bench, start, end)
 	if err != nil {
 		return err
 	}

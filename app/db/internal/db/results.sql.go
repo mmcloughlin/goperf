@@ -22,15 +22,15 @@ LEFT JOIN commits AS c
     ON r.commit_sha = c.sha
 WHERE 1=1
     AND r.benchmark_uuid = $1
+    AND c.commit_time BETWEEN $2 AND $3
 ORDER BY
     c.commit_time DESC
-LIMIT
-    $2
 `
 
 type BenchmarkPointsParams struct {
-	BenchmarkUUID uuid.UUID
-	Limit         int32
+	BenchmarkUUID   uuid.UUID
+	CommitTimeStart time.Time
+	CommitTimeEnd   time.Time
 }
 
 type BenchmarkPointsRow struct {
@@ -42,7 +42,7 @@ type BenchmarkPointsRow struct {
 }
 
 func (q *Queries) BenchmarkPoints(ctx context.Context, arg BenchmarkPointsParams) ([]BenchmarkPointsRow, error) {
-	rows, err := q.query(ctx, q.benchmarkPointsStmt, benchmarkPoints, arg.BenchmarkUUID, arg.Limit)
+	rows, err := q.query(ctx, q.benchmarkPointsStmt, benchmarkPoints, arg.BenchmarkUUID, arg.CommitTimeStart, arg.CommitTimeEnd)
 	if err != nil {
 		return nil, err
 	}
