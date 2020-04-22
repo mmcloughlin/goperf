@@ -209,6 +209,18 @@ func (d *DB) StoreCommitRef(ctx context.Context, r *entity.CommitRef) error {
 	})
 }
 
+// StoreCommitRefs writes the given commit refs to the database.
+func (d *DB) StoreCommitRefs(ctx context.Context, rs []*entity.CommitRef) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		for _, r := range rs {
+			if err := storeCommitRef(ctx, q, r); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func storeCommitRef(ctx context.Context, q *db.Queries, r *entity.CommitRef) error {
 	sha, err := hex.DecodeString(r.SHA)
 	if err != nil {

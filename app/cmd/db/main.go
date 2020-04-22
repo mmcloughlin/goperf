@@ -33,6 +33,7 @@ func run(ctx context.Context, l *zap.Logger) int {
 	subcommands.Register(NewTruncate(base), "database admin")
 
 	subcommands.Register(NewCommits(base), "data ingestion")
+	subcommands.Register(NewRefs(base), "data ingestion")
 	subcommands.Register(NewAddMod(base), "data ingestion")
 
 	// Help.
