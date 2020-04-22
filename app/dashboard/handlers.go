@@ -198,9 +198,10 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	ref := "master"
 	end := time.Now()
 	start := end.Add(-60 * 24 * time.Hour)
-	points, err := h.db.ListBenchmarkPoints(ctx, bench, start, end)
+	points, err := h.db.ListBenchmarkPoints(ctx, bench, ref, start, end)
 	if err != nil {
 		return err
 	}

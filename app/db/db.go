@@ -803,18 +803,19 @@ func result(ctx context.Context, q *db.Queries, r db.Result) (*entity.Result, er
 }
 
 // ListBenchmarkPoints returns timeseries points for the given benchmark and commit time range.
-func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, start, end time.Time) (entity.Points, error) {
+func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, ref string, start, end time.Time) (entity.Points, error) {
 	var ps []*entity.Point
 	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
-		ps, err = listBenchmarkPoints(ctx, q, b, start, end)
+		ps, err = listBenchmarkPoints(ctx, q, b, ref, start, end)
 		return err
 	})
 	return ps, err
 }
 
-func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark, start, end time.Time) (entity.Points, error) {
+func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark, ref string, start, end time.Time) (entity.Points, error) {
 	ps, err := q.BenchmarkPoints(ctx, db.BenchmarkPointsParams{
+		Ref:             ref,
 		BenchmarkUUID:   b.UUID(),
 		CommitTimeStart: start,
 		CommitTimeEnd:   end,

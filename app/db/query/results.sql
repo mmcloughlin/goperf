@@ -13,9 +13,12 @@ SELECT
     c.sha AS commit_sha,
     c.commit_time,
     r.value
-FROM results AS r
-LEFT JOIN commits AS c
-    ON r.commit_sha = c.sha
+FROM
+    results AS r
+    LEFT JOIN commits AS c
+        ON r.commit_sha = c.sha
+    INNER JOIN commit_refs AS refs
+        ON r.commit_sha = refs.sha AND refs.ref = sqlc.arg(ref)
 WHERE 1=1
     AND r.benchmark_uuid = sqlc.arg(benchmark_uuid)
     AND c.commit_time BETWEEN sqlc.arg(commit_time_start) AND sqlc.arg(commit_time_end)
