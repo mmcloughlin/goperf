@@ -9,7 +9,7 @@ import (
 // TruncateNonStatic deletes almost all data from the database. Only static
 // tables such as commits and modules are preserved.
 func (d *DB) TruncateNonStatic(ctx context.Context) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return q.TruncateNonStatic(ctx)
 	})
 }

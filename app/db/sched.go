@@ -22,7 +22,7 @@ type CommitModule struct {
 // pairs without completed tasks for the given worker.
 func (d *DB) ListCommitModulesWithoutCompleteTasks(ctx context.Context, worker string, n int) ([]CommitModule, error) {
 	var cms []CommitModule
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		cms, err = listCommitModulesWithoutTasksInStatus(ctx, q, worker, entity.TaskStatusCompleteValues(), n)
 		return err
@@ -72,7 +72,7 @@ type CommitModuleError struct {
 // timestamp. This is intended for identifying tasks that should be retried.
 func (d *DB) ListCommitModuleErrors(ctx context.Context, worker string, maxErrors int, lastAttempt time.Time, n int) ([]CommitModuleError, error) {
 	var results []CommitModuleError
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		results, err = listCommitModuleErrors(ctx, q, worker, maxErrors, lastAttempt, n)
 		return err

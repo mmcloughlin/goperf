@@ -32,6 +32,27 @@ func TestDBCommit(t *testing.T) {
 	}
 }
 
+func TestDBCommitBatch(t *testing.T) {
+	db := dbtest.Open(t)
+
+	// Store in batch mode.
+	ctx := context.Background()
+	err := db.StoreCommits(ctx, []*entity.Commit{fixture.Commit})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find.
+	got, err := db.FindCommitBySHA(ctx, fixture.Commit.SHA)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(fixture.Commit, got); diff != "" {
+		t.Errorf("mismatch\n%s", diff)
+	}
+}
+
 func TestDBModule(t *testing.T) {
 	db := dbtest.Open(t)
 

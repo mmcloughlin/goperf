@@ -16,7 +16,7 @@ import (
 // CreateTask creates a new task.
 func (d *DB) CreateTask(ctx context.Context, worker string, s entity.TaskSpec) (*entity.Task, error) {
 	var t *entity.Task
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		t, err = createTask(ctx, q, worker, s)
 		return err
@@ -56,7 +56,7 @@ func createTask(ctx context.Context, q *db.Queries, worker string, s entity.Task
 
 // TransitionTaskStatus performs the given task status transition.
 func (d *DB) TransitionTaskStatus(ctx context.Context, id uuid.UUID, from []entity.TaskStatus, to entity.TaskStatus) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return transitionTaskStatus(ctx, q, id, from, to)
 	})
 }
@@ -96,7 +96,7 @@ func (d *DB) TimeoutStaleTasks(ctx context.Context, until time.Time) error {
 // TransitionTaskStatusesBefore applies a task status transition to all tasks
 // that were last updated before the until timestamp.
 func (d *DB) TransitionTaskStatusesBefore(ctx context.Context, from []entity.TaskStatus, to entity.TaskStatus, until time.Time) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return transitionTaskStatusesBefore(ctx, q, from, to, until)
 	})
 }
@@ -121,7 +121,7 @@ func transitionTaskStatusesBefore(ctx context.Context, q *db.Queries, from []ent
 
 // RecordTaskDataUpload inserts the given datafile and associates it with the supplied task ID.
 func (d *DB) RecordTaskDataUpload(ctx context.Context, id uuid.UUID, f *entity.DataFile) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return recordTaskDataUpload(ctx, q, id, f)
 	})
 }
@@ -153,7 +153,7 @@ func recordTaskDataUpload(ctx context.Context, q *db.Queries, id uuid.UUID, f *e
 // FindTaskByUUID looks up the given task in the database.
 func (d *DB) FindTaskByUUID(ctx context.Context, id uuid.UUID) (*entity.Task, error) {
 	var t *entity.Task
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		t, err = findTaskByUUID(ctx, q, id)
 		return err
@@ -173,7 +173,7 @@ func findTaskByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity.T
 // ListTasksWithStatus returns tasks in the given states.
 func (d *DB) ListTasksWithStatus(ctx context.Context, statuses []entity.TaskStatus) ([]*entity.Task, error) {
 	var ts []*entity.Task
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		ts, err = listTasksWithStatus(ctx, q, statuses)
 		return err
@@ -203,7 +203,7 @@ func (d *DB) ListWorkerTasksPending(ctx context.Context, worker string) ([]*enti
 // ListWorkerTasksWithStatus returns tasks assigned to a worker in the given states.
 func (d *DB) ListWorkerTasksWithStatus(ctx context.Context, worker string, statuses []entity.TaskStatus) ([]*entity.Task, error) {
 	var ts []*entity.Task
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		ts, err = listWorkerTasksWithStatus(ctx, q, worker, statuses)
 		return err

@@ -2,19 +2,24 @@
 package db
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
 //go:generate rm -rf internal/db
@@ -57,8 +62,8 @@ func (d *DB) Close() error {
 // SetLogger configures a logger.
 func (d *DB) SetLogger(l *zap.Logger) { d.log = l.Named("db") }
 
-// tx executes the given query function in a transaction.
-func (d *DB) tx(ctx context.Context, fn func(q *db.Queries) error) (err error) {
+// tx executes the given function in a transaction.
+func (d *DB) tx(ctx context.Context, fn func(*sql.Tx) error) (err error) {
 	tx, err := d.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -78,25 +83,47 @@ func (d *DB) tx(ctx context.Context, fn func(q *db.Queries) error) (err error) {
 			err = tx.Commit()
 		}
 	}()
-	return fn(d.q.WithTx(tx))
+	return fn(tx)
+}
+
+// txq executes the given query function in a transaction.
+func (d *DB) txq(ctx context.Context, fn func(q *db.Queries) error) error {
+	return d.tx(ctx, func(tx *sql.Tx) error { return fn(d.q.WithTx(tx)) })
+}
+
+// insert executes a batch insert.
+func (d *DB) insert(ctx context.Context, tx *sql.Tx, table string, fields []string, values []interface{}, trailer string) error {
+	n := len(values)
+	if n%len(fields) != 0 {
+		return errutil.AssertionFailure("number of values must be a multiple of the number of fields")
+	}
+	// Build query.
+	buf := bytes.NewBuffer(nil)
+	fmt.Fprintf(buf, "INSERT INTO %s (%s) VALUES", table, strings.Join(fields, ","))
+	sep := byte(' ')
+	for i := 0; i < n; i += len(fields) {
+		buf.WriteByte(sep)
+		sep = '('
+		for j := 0; j < len(fields); j++ {
+			buf.WriteByte(sep)
+			sep = ','
+			buf.WriteByte('$')
+			buf.WriteString(strconv.Itoa(i + j + 1))
+		}
+		buf.WriteByte(')')
+		sep = ','
+	}
+	buf.WriteString(" " + trailer)
+	q := buf.String()
+	// Execute.
+	_, err := tx.ExecContext(ctx, q, values...)
+	return err
 }
 
 // StoreCommit writes commit to the database.
 func (d *DB) StoreCommit(ctx context.Context, c *entity.Commit) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeCommit(ctx, q, c)
-	})
-}
-
-// StoreCommits writes the given commits to the database.
-func (d *DB) StoreCommits(ctx context.Context, cs []*entity.Commit) error {
-	return d.tx(ctx, func(q *db.Queries) error {
-		for _, c := range cs {
-			if err := storeCommit(ctx, q, c); err != nil {
-				return err
-			}
-		}
-		return nil
 	})
 }
 
@@ -133,6 +160,58 @@ func storeCommit(ctx context.Context, q *db.Queries, c *entity.Commit) error {
 	})
 }
 
+// StoreCommits writes the given commits to the database in a single batch.
+func (d *DB) StoreCommits(ctx context.Context, cs []*entity.Commit) error {
+	fields := []string{
+		"sha",
+		"tree",
+		"parents",
+		"author_name",
+		"author_email",
+		"author_time",
+		"committer_name",
+		"committer_email",
+		"commit_time",
+		"message",
+	}
+	values := []interface{}{}
+	for _, c := range cs {
+		sha, err := hex.DecodeString(c.SHA)
+		if err != nil {
+			return fmt.Errorf("invalid sha: %w", err)
+		}
+
+		tree, err := hex.DecodeString(c.Tree)
+		if err != nil {
+			return fmt.Errorf("invalid tree: %w", err)
+		}
+
+		parents := make([][]byte, len(c.Parents))
+		for i, p := range c.Parents {
+			parents[i], err = hex.DecodeString(p)
+			if err != nil {
+				return fmt.Errorf("invalid parent: %w", err)
+			}
+		}
+
+		values = append(values,
+			sha,
+			tree,
+			pq.ByteaArray(parents),
+			c.Author.Name,
+			c.Author.Email,
+			c.AuthorTime,
+			c.Committer.Name,
+			c.Committer.Email,
+			c.CommitTime,
+			c.Message,
+		)
+	}
+	return d.tx(ctx, func(tx *sql.Tx) error {
+		return d.insert(ctx, tx, "commits", fields, values, "ON CONFLICT DO NOTHING")
+	})
+}
+
 // FindCommitBySHA looks up the given commit in the database.
 func (d *DB) FindCommitBySHA(ctx context.Context, sha string) (*entity.Commit, error) {
 	shabytes, err := hex.DecodeString(sha)
@@ -141,7 +220,7 @@ func (d *DB) FindCommitBySHA(ctx context.Context, sha string) (*entity.Commit, e
 	}
 
 	var c *entity.Commit
-	err = d.tx(ctx, func(q *db.Queries) error {
+	err = d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		c, err = findCommitBySHA(ctx, q, shabytes)
 		return err
@@ -161,7 +240,7 @@ func findCommitBySHA(ctx context.Context, q *db.Queries, sha []byte) (*entity.Co
 // MostRecentCommit returns the most recent commit by commit time.
 func (d *DB) MostRecentCommit(ctx context.Context) (*entity.Commit, error) {
 	var c *entity.Commit
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		c, err = mostRecentCommit(ctx, q)
 		return err
@@ -204,14 +283,14 @@ func mapCommit(c db.Commit) *entity.Commit {
 
 // StoreCommitRef writes a commit ref pair to the database.
 func (d *DB) StoreCommitRef(ctx context.Context, r *entity.CommitRef) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeCommitRef(ctx, q, r)
 	})
 }
 
 // StoreCommitRefs writes the given commit refs to the database.
 func (d *DB) StoreCommitRefs(ctx context.Context, rs []*entity.CommitRef) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		for _, r := range rs {
 			if err := storeCommitRef(ctx, q, r); err != nil {
 				return err
@@ -235,7 +314,7 @@ func storeCommitRef(ctx context.Context, q *db.Queries, r *entity.CommitRef) err
 
 // StoreModule writes module to the database.
 func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeModule(ctx, q, m)
 	})
 }
@@ -251,7 +330,7 @@ func storeModule(ctx context.Context, q *db.Queries, m *entity.Module) error {
 // FindModuleByUUID looks up the given module in the database.
 func (d *DB) FindModuleByUUID(ctx context.Context, id uuid.UUID) (*entity.Module, error) {
 	var m *entity.Module
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		m, err = findModuleByUUID(ctx, q, id)
 		return err
@@ -271,7 +350,7 @@ func findModuleByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity
 // ListModules returns all modules.
 func (d *DB) ListModules(ctx context.Context) ([]*entity.Module, error) {
 	var ms []*entity.Module
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		ms, err = listModules(ctx, q)
 		return err
@@ -302,7 +381,7 @@ func mapModule(m db.Module) *entity.Module {
 
 // StorePackage writes package to the database.
 func (d *DB) StorePackage(ctx context.Context, p *entity.Package) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storePackage(ctx, q, p)
 	})
 }
@@ -322,7 +401,7 @@ func storePackage(ctx context.Context, q *db.Queries, p *entity.Package) error {
 // FindPackageByUUID looks up the given package in the database.
 func (d *DB) FindPackageByUUID(ctx context.Context, id uuid.UUID) (*entity.Package, error) {
 	var p *entity.Package
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		p, err = findPackageByUUID(ctx, q, id)
 		return err
@@ -347,7 +426,7 @@ func findPackageByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entit
 // ListModulePackages returns all packages in the given module.
 func (d *DB) ListModulePackages(ctx context.Context, m *entity.Module) ([]*entity.Package, error) {
 	var ps []*entity.Package
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		ps, err = listModulePackages(ctx, q, m)
 		return err
@@ -378,7 +457,7 @@ func mapPackage(p db.Package, m *entity.Module) *entity.Package {
 
 // StoreBenchmark writes benchmark to the database.
 func (d *DB) StoreBenchmark(ctx context.Context, b *entity.Benchmark) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeBenchmark(ctx, q, b)
 	})
 }
@@ -406,7 +485,7 @@ func storeBenchmark(ctx context.Context, q *db.Queries, b *entity.Benchmark) err
 // FindBenchmarkByUUID looks up the given benchmark in the database.
 func (d *DB) FindBenchmarkByUUID(ctx context.Context, id uuid.UUID) (*entity.Benchmark, error) {
 	var b *entity.Benchmark
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		b, err = findBenchmarkByUUID(ctx, q, id)
 		return err
@@ -431,7 +510,7 @@ func findBenchmarkByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*ent
 // ListPackageBenchmarks returns all benchmarks in the given package.
 func (d *DB) ListPackageBenchmarks(ctx context.Context, p *entity.Package) ([]*entity.Benchmark, error) {
 	var bs []*entity.Benchmark
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		bs, err = listPackageBenchmarks(ctx, q, p)
 		return err
@@ -473,7 +552,7 @@ func mapBenchmark(b db.Benchmark, p *entity.Package) (*entity.Benchmark, error) 
 
 // StoreDataFile writes the data file to the database.
 func (d *DB) StoreDataFile(ctx context.Context, f *entity.DataFile) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeDataFile(ctx, q, f)
 	})
 }
@@ -489,7 +568,7 @@ func storeDataFile(ctx context.Context, q *db.Queries, f *entity.DataFile) error
 // FindDataFileByUUID looks up the given data file in the database.
 func (d *DB) FindDataFileByUUID(ctx context.Context, id uuid.UUID) (*entity.DataFile, error) {
 	var f *entity.DataFile
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		f, err = findDataFileByUUID(ctx, q, id)
 		return err
@@ -514,7 +593,7 @@ func findDataFileByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*enti
 
 // StoreProperties writes properties to the database.
 func (d *DB) StoreProperties(ctx context.Context, p entity.Properties) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeProperties(ctx, q, p)
 	})
 }
@@ -534,7 +613,7 @@ func storeProperties(ctx context.Context, q *db.Queries, p entity.Properties) er
 // FindPropertiesByUUID looks up the given properties in the database.
 func (d *DB) FindPropertiesByUUID(ctx context.Context, id uuid.UUID) (entity.Properties, error) {
 	var p entity.Properties
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		p, err = findPropertiesByUUID(ctx, q, id)
 		return err
@@ -558,7 +637,7 @@ func findPropertiesByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (ent
 
 // StoreResult writes a result to the database.
 func (d *DB) StoreResult(ctx context.Context, r *entity.Result) error {
-	return d.tx(ctx, func(q *db.Queries) error {
+	return d.txq(ctx, func(q *db.Queries) error {
 		return storeResult(ctx, q, r)
 	})
 }
@@ -609,7 +688,7 @@ func storeResult(ctx context.Context, q *db.Queries, r *entity.Result) error {
 // FindResultByUUID looks up a result in the database given the ID.
 func (d *DB) FindResultByUUID(ctx context.Context, id uuid.UUID) (*entity.Result, error) {
 	var r *entity.Result
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		r, err = findResultByUUID(ctx, q, id)
 		return err
@@ -629,7 +708,7 @@ func findResultByUUID(ctx context.Context, q *db.Queries, id uuid.UUID) (*entity
 // ListBenchmarkResults returns all results for the given benchmark.
 func (d *DB) ListBenchmarkResults(ctx context.Context, b *entity.Benchmark) ([]*entity.Result, error) {
 	var rs []*entity.Result
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		rs, err = listBenchmarkResults(ctx, q, b)
 		return err
@@ -695,7 +774,7 @@ func result(ctx context.Context, q *db.Queries, r db.Result) (*entity.Result, er
 // ListBenchmarkPoints returns timeseries points for the given benchmark and commit time range.
 func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, start, end time.Time) (entity.Points, error) {
 	var ps []*entity.Point
-	err := d.tx(ctx, func(q *db.Queries) error {
+	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
 		ps, err = listBenchmarkPoints(ctx, q, b, start, end)
 		return err
