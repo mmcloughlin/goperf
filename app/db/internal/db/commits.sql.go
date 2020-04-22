@@ -88,6 +88,26 @@ func (q *Queries) InsertCommit(ctx context.Context, arg InsertCommitParams) erro
 	return err
 }
 
+const insertCommitRef = `-- name: InsertCommitRef :exec
+INSERT INTO commit_refs (
+    sha,
+    ref
+) VALUES (
+    $1,
+    $2
+) ON CONFLICT DO NOTHING
+`
+
+type InsertCommitRefParams struct {
+	SHA []byte
+	Ref string
+}
+
+func (q *Queries) InsertCommitRef(ctx context.Context, arg InsertCommitRefParams) error {
+	_, err := q.exec(ctx, q.insertCommitRefStmt, insertCommitRef, arg.SHA, arg.Ref)
+	return err
+}
+
 const mostRecentCommit = `-- name: MostRecentCommit :one
 SELECT sha, tree, parents, author_name, author_email, author_time, committer_name, committer_email, commit_time, message FROM commits
 ORDER BY commit_time DESC

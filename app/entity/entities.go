@@ -27,6 +27,11 @@ type Commit struct {
 	Message    string
 }
 
+type CommitRef struct {
+	SHA string
+	Ref string
+}
+
 type DataFile struct {
 	Name   string
 	SHA256 [sha256.Size]byte

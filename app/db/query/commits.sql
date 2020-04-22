@@ -31,3 +31,12 @@ INSERT INTO commits (
     $9,
     $10
 ) ON CONFLICT DO NOTHING;
+
+-- name: InsertCommitRef :exec
+INSERT INTO commit_refs (
+    sha,
+    ref
+) VALUES (
+    $1,
+    $2
+) ON CONFLICT DO NOTHING;

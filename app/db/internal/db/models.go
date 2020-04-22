@@ -76,6 +76,11 @@ type Commit struct {
 	Message        string
 }
 
+type CommitRef struct {
+	SHA []byte
+	Ref string
+}
+
 type Datafile struct {
 	UUID   uuid.UUID
 	Name   string

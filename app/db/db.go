@@ -202,6 +202,25 @@ func mapCommit(c db.Commit) *entity.Commit {
 	}
 }
 
+// StoreCommitRef writes a commit ref pair to the database.
+func (d *DB) StoreCommitRef(ctx context.Context, r *entity.CommitRef) error {
+	return d.tx(ctx, func(q *db.Queries) error {
+		return storeCommitRef(ctx, q, r)
+	})
+}
+
+func storeCommitRef(ctx context.Context, q *db.Queries, r *entity.CommitRef) error {
+	sha, err := hex.DecodeString(r.SHA)
+	if err != nil {
+		return fmt.Errorf("invalid sha: %w", err)
+	}
+
+	return q.InsertCommitRef(ctx, db.InsertCommitRefParams{
+		SHA: sha,
+		Ref: r.Ref,
+	})
+}
+
 // StoreModule writes module to the database.
 func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
 	return d.tx(ctx, func(q *db.Queries) error {
