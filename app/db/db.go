@@ -290,13 +290,24 @@ func (d *DB) StoreCommitRef(ctx context.Context, r *entity.CommitRef) error {
 
 // StoreCommitRefs writes the given commit refs to the database.
 func (d *DB) StoreCommitRefs(ctx context.Context, rs []*entity.CommitRef) error {
-	return d.txq(ctx, func(q *db.Queries) error {
-		for _, r := range rs {
-			if err := storeCommitRef(ctx, q, r); err != nil {
-				return err
-			}
+	fields := []string{
+		"sha",
+		"ref",
+	}
+	values := []interface{}{}
+	for _, r := range rs {
+		sha, err := hex.DecodeString(r.SHA)
+		if err != nil {
+			return fmt.Errorf("invalid sha: %w", err)
 		}
-		return nil
+
+		values = append(values,
+			sha,
+			r.Ref,
+		)
+	}
+	return d.tx(ctx, func(tx *sql.Tx) error {
+		return d.insert(ctx, tx, "commit_refs", fields, values, "ON CONFLICT DO NOTHING")
 	})
 }
 
