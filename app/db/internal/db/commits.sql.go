@@ -131,3 +131,33 @@ func (q *Queries) MostRecentCommit(ctx context.Context) (Commit, error) {
 	)
 	return i, err
 }
+
+const mostRecentCommitWithRef = `-- name: MostRecentCommitWithRef :one
+SELECT
+    c.sha, c.tree, c.parents, c.author_name, c.author_email, c.author_time, c.committer_name, c.committer_email, c.commit_time, c.message
+FROM
+    commits AS c
+    INNER JOIN commit_refs AS r
+        ON c.sha=r.sha AND r.ref = $1
+ORDER BY
+    c.commit_time DESC
+LIMIT 1
+`
+
+func (q *Queries) MostRecentCommitWithRef(ctx context.Context, ref string) (Commit, error) {
+	row := q.queryRow(ctx, q.mostRecentCommitWithRefStmt, mostRecentCommitWithRef, ref)
+	var i Commit
+	err := row.Scan(
+		&i.SHA,
+		&i.Tree,
+		&i.Parents,
+		&i.AuthorName,
+		&i.AuthorEmail,
+		&i.AuthorTime,
+		&i.CommitterName,
+		&i.CommitterEmail,
+		&i.CommitTime,
+		&i.Message,
+	)
+	return i, err
+}

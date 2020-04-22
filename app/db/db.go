@@ -257,6 +257,26 @@ func mostRecentCommit(ctx context.Context, q *db.Queries) (*entity.Commit, error
 	return mapCommit(c), nil
 }
 
+// MostRecentCommitWithRef returns the most recent commit by commit time having the supplied ref.
+func (d *DB) MostRecentCommitWithRef(ctx context.Context, ref string) (*entity.Commit, error) {
+	var c *entity.Commit
+	err := d.txq(ctx, func(q *db.Queries) error {
+		var err error
+		c, err = mostRecentCommitWithRef(ctx, q, ref)
+		return err
+	})
+	return c, err
+}
+
+func mostRecentCommitWithRef(ctx context.Context, q *db.Queries, ref string) (*entity.Commit, error) {
+	c, err := q.MostRecentCommitWithRef(ctx, ref)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapCommit(c), nil
+}
+
 func mapCommit(c db.Commit) *entity.Commit {
 	parents := make([]string, len(c.Parents))
 	for i, parent := range c.Parents {

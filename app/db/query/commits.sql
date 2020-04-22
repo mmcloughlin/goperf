@@ -7,6 +7,17 @@ SELECT * FROM commits
 ORDER BY commit_time DESC
 LIMIT 1;
 
+-- name: MostRecentCommitWithRef :one
+SELECT
+    c.*
+FROM
+    commits AS c
+    INNER JOIN commit_refs AS r
+        ON c.sha=r.sha AND r.ref = sqlc.arg(ref)
+ORDER BY
+    c.commit_time DESC
+LIMIT 1;
+
 -- name: InsertCommit :exec
 INSERT INTO commits (
     sha,

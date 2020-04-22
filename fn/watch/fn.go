@@ -2,6 +2,7 @@ package watch
 
 import (
 	"context"
+	"io"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -51,31 +52,27 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer d.Close()
 
-	// Get most recent commit in the database.
-	latest, err := d.MostRecentCommit(ctx)
+	// Get most recent commit on master in the database.
+	latest, err := d.MostRecentCommitWithRef(ctx, "master")
 	if err != nil {
 		return err
 	}
-	logger.Info("found latest commit in database", zap.String("sha", latest.SHA))
+	logger.Info("found latest commit on master in database", zap.String("sha", latest.SHA))
 
 	// Fetch commits until we get to the latest one.
+	commits := []*entity.Commit{}
 	start := "master"
 	for {
 		// Fetch commits.
 		logger.Info("git log", zap.String("start", start))
-		commits, err := repository.Log(ctx, start)
+		batch, err := repository.Log(ctx, start)
 		if err != nil {
 			logger.Error("error fetching recent commits", zap.Error(err))
 			return err
 		}
 
-		logger.Info("fetched recent commits", zap.Int("num_commits", len(commits)))
-
-		// Store in database.
-		if err := d.StoreCommits(ctx, commits); err != nil {
-			return err
-		}
-		logger.Info("inserted commits", zap.Int("num_commits", len(commits)))
+		logger.Info("fetched recent commits", zap.Int("num_commits", len(batch)))
+		commits = append(commits, batch...)
 
 		// Look to see if we've hit the latest one.
 		if containsCommit(commits, latest) {
@@ -85,6 +82,33 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 		// Update log starting point.
 		start = commits[len(commits)-1].SHA
 	}
+
+	// Store new commits in the database.
+	if err := d.StoreCommits(ctx, commits); err != nil {
+		return err
+	}
+	logger.Info("inserted commits", zap.Int("num_commits", len(commits)))
+
+	// Record refs.
+	it := repo.FirstParent(repo.CommitsIterator(commits))
+	for {
+		c, err := it.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if err := d.StoreCommitRef(ctx, &entity.CommitRef{
+			SHA: c.SHA,
+			Ref: "master",
+		}); err != nil {
+			return err
+		}
+	}
+
+	logger.Info("recorded commit refs")
 
 	// Report ok.
 	httputil.OK(w)

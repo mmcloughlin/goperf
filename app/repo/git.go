@@ -102,6 +102,28 @@ func mapGitSignatureToPerson(s object.Signature) entity.Person {
 	}
 }
 
+type commitsIterator struct {
+	commits []*entity.Commit
+}
+
+// CommitsIterator builds a commit iterator for a slice.
+func CommitsIterator(commits []*entity.Commit) CommitIterator {
+	return &commitsIterator{
+		commits: commits,
+	}
+}
+
+func (c *commitsIterator) Next() (*entity.Commit, error) {
+	if len(c.commits) == 0 {
+		return nil, io.EOF
+	}
+	next := c.commits[0]
+	c.commits = c.commits[1:]
+	return next, nil
+}
+
+func (c *commitsIterator) Close() {}
+
 type firstParent struct {
 	CommitIterator
 	prev *entity.Commit
