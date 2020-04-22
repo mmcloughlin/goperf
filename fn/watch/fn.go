@@ -91,6 +91,7 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 
 	// Record refs.
 	it := repo.FirstParent(repo.CommitsIterator(commits))
+	refs := []*entity.CommitRef{}
 	for {
 		c, err := it.Next()
 		if err == io.EOF {
@@ -100,14 +101,15 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		if err := d.StoreCommitRef(ctx, &entity.CommitRef{
+		refs = append(refs, &entity.CommitRef{
 			SHA: c.SHA,
 			Ref: "master",
-		}); err != nil {
-			return err
-		}
+		})
 	}
 
+	if err := d.StoreCommitRefs(ctx, refs); err != nil {
+		return err
+	}
 	logger.Info("recorded commit refs")
 
 	// Report ok.
