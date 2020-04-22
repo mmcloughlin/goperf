@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -98,5 +99,46 @@ func mapGitSignatureToPerson(s object.Signature) entity.Person {
 	return entity.Person{
 		Name:  s.Name,
 		Email: s.Email,
+	}
+}
+
+type firstParent struct {
+	CommitIterator
+	prev *entity.Commit
+}
+
+// FirstParent filters the given commit sequence by only following the first parent at merge commits.
+func FirstParent(commits CommitIterator) CommitIterator {
+	return &firstParent{
+		CommitIterator: commits,
+	}
+}
+
+func (f *firstParent) Next() (*entity.Commit, error) {
+	// First iteration.
+	if f.prev == nil {
+		c, err := f.CommitIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		f.prev = c
+		return c, nil
+	}
+
+	// Look for commit matching first parent of the previous one.
+	if len(f.prev.Parents) == 0 {
+		return nil, io.EOF
+	}
+
+	for {
+		c, err := f.CommitIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		if c.SHA == f.prev.Parents[0] {
+			f.prev = c
+			return c, nil
+		}
 	}
 }
