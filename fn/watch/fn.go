@@ -112,6 +112,12 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 	}
 	logger.Info("recorded commit refs")
 
+	// Rebuild commit positions table.
+	if err := d.BuildCommitPositions(ctx); err != nil {
+		return err
+	}
+	logger.Info("built commit positions")
+
 	// Report ok.
 	httputil.OK(w)
 

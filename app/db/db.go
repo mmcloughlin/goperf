@@ -343,6 +343,14 @@ func storeCommitRef(ctx context.Context, q *db.Queries, r *entity.CommitRef) err
 	})
 }
 
+// BuildCommitPositions creates the commit positions table. The table is
+// completely rebuilt from the source tables.
+func (d *DB) BuildCommitPositions(ctx context.Context) error {
+	return d.txq(ctx, func(q *db.Queries) error {
+		return q.BuildCommitPositions(ctx)
+	})
+}
+
 // StoreModule writes module to the database.
 func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
 	return d.txq(ctx, func(q *db.Queries) error {

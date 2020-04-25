@@ -10,6 +10,26 @@ import (
 	"github.com/lib/pq"
 )
 
+const buildCommitPositions = `-- name: BuildCommitPositions :exec
+INSERT INTO commit_positions (
+    SELECT
+        c.sha,
+        c.commit_time,
+        (ROW_NUMBER() OVER (ORDER BY c.commit_time))-1 AS index
+    FROM
+        commits AS c
+        INNER JOIN commit_refs AS r
+            ON c.sha=r.sha AND r.ref = 'master'
+)
+ON CONFLICT (sha)
+DO UPDATE SET index = EXCLUDED.index
+`
+
+func (q *Queries) BuildCommitPositions(ctx context.Context) error {
+	_, err := q.exec(ctx, q.buildCommitPositionsStmt, buildCommitPositions)
+	return err
+}
+
 const commit = `-- name: Commit :one
 SELECT sha, tree, parents, author_name, author_email, author_time, committer_name, committer_email, commit_time, message FROM commits
 WHERE sha = $1 LIMIT 1

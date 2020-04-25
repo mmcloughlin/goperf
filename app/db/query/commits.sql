@@ -51,3 +51,18 @@ INSERT INTO commit_refs (
     $1,
     $2
 ) ON CONFLICT DO NOTHING;
+
+-- name: BuildCommitPositions :exec
+INSERT INTO commit_positions (
+    SELECT
+        c.sha,
+        c.commit_time,
+        (ROW_NUMBER() OVER (ORDER BY c.commit_time))-1 AS index
+    FROM
+        commits AS c
+        INNER JOIN commit_refs AS r
+            ON c.sha=r.sha AND r.ref = 'master'
+)
+ON CONFLICT (sha)
+DO UPDATE SET index = EXCLUDED.index
+;

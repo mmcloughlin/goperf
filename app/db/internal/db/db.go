@@ -31,6 +31,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.benchmarkResultsStmt, err = db.PrepareContext(ctx, benchmarkResults); err != nil {
 		return nil, fmt.Errorf("error preparing query BenchmarkResults: %w", err)
 	}
+	if q.buildCommitPositionsStmt, err = db.PrepareContext(ctx, buildCommitPositions); err != nil {
+		return nil, fmt.Errorf("error preparing query BuildCommitPositions: %w", err)
+	}
 	if q.commitStmt, err = db.PrepareContext(ctx, commit); err != nil {
 		return nil, fmt.Errorf("error preparing query Commit: %w", err)
 	}
@@ -136,6 +139,11 @@ func (q *Queries) Close() error {
 	if q.benchmarkResultsStmt != nil {
 		if cerr := q.benchmarkResultsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing benchmarkResultsStmt: %w", cerr)
+		}
+	}
+	if q.buildCommitPositionsStmt != nil {
+		if cerr := q.buildCommitPositionsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing buildCommitPositionsStmt: %w", cerr)
 		}
 	}
 	if q.commitStmt != nil {
@@ -325,6 +333,7 @@ type Queries struct {
 	benchmarkStmt                                 *sql.Stmt
 	benchmarkPointsStmt                           *sql.Stmt
 	benchmarkResultsStmt                          *sql.Stmt
+	buildCommitPositionsStmt                      *sql.Stmt
 	commitStmt                                    *sql.Stmt
 	commitModuleWorkerErrorsStmt                  *sql.Stmt
 	createTaskStmt                                *sql.Stmt
@@ -363,6 +372,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		benchmarkStmt:                q.benchmarkStmt,
 		benchmarkPointsStmt:          q.benchmarkPointsStmt,
 		benchmarkResultsStmt:         q.benchmarkResultsStmt,
+		buildCommitPositionsStmt:     q.buildCommitPositionsStmt,
 		commitStmt:                   q.commitStmt,
 		commitModuleWorkerErrorsStmt: q.commitModuleWorkerErrorsStmt,
 		createTaskStmt:               q.createTaskStmt,

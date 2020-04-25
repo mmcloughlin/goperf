@@ -76,6 +76,12 @@ type Commit struct {
 	Message        string
 }
 
+type CommitPosition struct {
+	SHA        []byte
+	CommitTime time.Time
+	Index      int32
+}
+
 type CommitRef struct {
 	SHA []byte
 	Ref string
