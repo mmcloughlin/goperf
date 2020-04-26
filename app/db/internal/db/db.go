@@ -82,6 +82,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.mostRecentCommitStmt, err = db.PrepareContext(ctx, mostRecentCommit); err != nil {
 		return nil, fmt.Errorf("error preparing query MostRecentCommit: %w", err)
 	}
+	if q.mostRecentCommitIndexStmt, err = db.PrepareContext(ctx, mostRecentCommitIndex); err != nil {
+		return nil, fmt.Errorf("error preparing query MostRecentCommitIndex: %w", err)
+	}
 	if q.mostRecentCommitWithRefStmt, err = db.PrepareContext(ctx, mostRecentCommitWithRef); err != nil {
 		return nil, fmt.Errorf("error preparing query MostRecentCommitWithRef: %w", err)
 	}
@@ -108,6 +111,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.tasksWithStatusStmt, err = db.PrepareContext(ctx, tasksWithStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query TasksWithStatus: %w", err)
+	}
+	if q.tracePointsStmt, err = db.PrepareContext(ctx, tracePoints); err != nil {
+		return nil, fmt.Errorf("error preparing query TracePoints: %w", err)
 	}
 	if q.transitionTaskStatusStmt, err = db.PrepareContext(ctx, transitionTaskStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query TransitionTaskStatus: %w", err)
@@ -226,6 +232,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing mostRecentCommitStmt: %w", cerr)
 		}
 	}
+	if q.mostRecentCommitIndexStmt != nil {
+		if cerr := q.mostRecentCommitIndexStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing mostRecentCommitIndexStmt: %w", cerr)
+		}
+	}
 	if q.mostRecentCommitWithRefStmt != nil {
 		if cerr := q.mostRecentCommitWithRefStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing mostRecentCommitWithRefStmt: %w", cerr)
@@ -269,6 +280,11 @@ func (q *Queries) Close() error {
 	if q.tasksWithStatusStmt != nil {
 		if cerr := q.tasksWithStatusStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing tasksWithStatusStmt: %w", cerr)
+		}
+	}
+	if q.tracePointsStmt != nil {
+		if cerr := q.tracePointsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing tracePointsStmt: %w", cerr)
 		}
 	}
 	if q.transitionTaskStatusStmt != nil {
@@ -350,6 +366,7 @@ type Queries struct {
 	modulePkgsStmt                                *sql.Stmt
 	modulesStmt                                   *sql.Stmt
 	mostRecentCommitStmt                          *sql.Stmt
+	mostRecentCommitIndexStmt                     *sql.Stmt
 	mostRecentCommitWithRefStmt                   *sql.Stmt
 	packageBenchmarksStmt                         *sql.Stmt
 	pkgStmt                                       *sql.Stmt
@@ -359,6 +376,7 @@ type Queries struct {
 	setTaskDataFileStmt                           *sql.Stmt
 	taskStmt                                      *sql.Stmt
 	tasksWithStatusStmt                           *sql.Stmt
+	tracePointsStmt                               *sql.Stmt
 	transitionTaskStatusStmt                      *sql.Stmt
 	transitionTaskStatusesBeforeStmt              *sql.Stmt
 	truncateNonStaticStmt                         *sql.Stmt
@@ -389,6 +407,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		modulePkgsStmt:               q.modulePkgsStmt,
 		modulesStmt:                  q.modulesStmt,
 		mostRecentCommitStmt:         q.mostRecentCommitStmt,
+		mostRecentCommitIndexStmt:    q.mostRecentCommitIndexStmt,
 		mostRecentCommitWithRefStmt:  q.mostRecentCommitWithRefStmt,
 		packageBenchmarksStmt:        q.packageBenchmarksStmt,
 		pkgStmt:                      q.pkgStmt,
@@ -398,6 +417,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		setTaskDataFileStmt:              q.setTaskDataFileStmt,
 		taskStmt:                         q.taskStmt,
 		tasksWithStatusStmt:              q.tasksWithStatusStmt,
+		tracePointsStmt:                  q.tracePointsStmt,
 		transitionTaskStatusStmt:         q.transitionTaskStatusStmt,
 		transitionTaskStatusesBeforeStmt: q.transitionTaskStatusesBeforeStmt,
 		truncateNonStaticStmt:            q.truncateNonStaticStmt,

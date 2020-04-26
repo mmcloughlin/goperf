@@ -66,3 +66,10 @@ INSERT INTO commit_positions (
 ON CONFLICT (sha)
 DO UPDATE SET index = EXCLUDED.index
 ;
+
+-- name: MostRecentCommitIndex :one
+SELECT
+    MAX(index)::INT
+FROM
+    commit_positions
+;

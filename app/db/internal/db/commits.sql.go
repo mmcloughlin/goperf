@@ -152,6 +152,20 @@ func (q *Queries) MostRecentCommit(ctx context.Context) (Commit, error) {
 	return i, err
 }
 
+const mostRecentCommitIndex = `-- name: MostRecentCommitIndex :one
+SELECT
+    MAX(index)::INT
+FROM
+    commit_positions
+`
+
+func (q *Queries) MostRecentCommitIndex(ctx context.Context) (int32, error) {
+	row := q.queryRow(ctx, q.mostRecentCommitIndexStmt, mostRecentCommitIndex)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const mostRecentCommitWithRef = `-- name: MostRecentCommitWithRef :one
 SELECT
     c.sha, c.tree, c.parents, c.author_name, c.author_email, c.author_time, c.committer_name, c.committer_email, c.commit_time, c.message

@@ -26,6 +26,21 @@ ORDER BY
     c.commit_time DESC
 ;
 
+-- name: TracePoints :many
+SELECT
+    r.benchmark_uuid,
+    r.environment_uuid,
+    p.index AS commit_index,
+    p.commit_time,
+    r.value
+FROM
+    results AS r
+    INNER JOIN commit_positions AS p
+        ON r.commit_sha=p.sha
+WHERE 1=1
+    AND p.index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
+;
+
 -- name: InsertResult :exec
 INSERT INTO results (
     uuid,

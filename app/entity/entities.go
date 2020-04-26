@@ -32,6 +32,11 @@ type CommitRef struct {
 	Ref string
 }
 
+type CommitIndexRange struct {
+	Min int
+	Max int
+}
+
 type DataFile struct {
 	Name   string
 	SHA256 [sha256.Size]byte

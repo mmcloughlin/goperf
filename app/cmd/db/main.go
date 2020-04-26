@@ -36,6 +36,8 @@ func run(ctx context.Context, l *zap.Logger) int {
 	subcommands.Register(NewRefs(base), "data ingestion")
 	subcommands.Register(NewAddMod(base), "data ingestion")
 
+	subcommands.Register(NewTraces(base), "data access")
+
 	// Help.
 	subcommands.Register(subcommands.HelpCommand(), "help")
 	subcommands.Register(subcommands.CommandsCommand(), "help")

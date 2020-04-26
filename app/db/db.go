@@ -19,6 +19,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/app/trace"
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
@@ -349,6 +350,17 @@ func (d *DB) BuildCommitPositions(ctx context.Context) error {
 	return d.txq(ctx, func(q *db.Queries) error {
 		return q.BuildCommitPositions(ctx)
 	})
+}
+
+// MostRecentCommitIndex returns the most recent commit index.
+func (d *DB) MostRecentCommitIndex(ctx context.Context) (int, error) {
+	var idx int
+	err := d.txq(ctx, func(q *db.Queries) error {
+		i, err := q.MostRecentCommitIndex(ctx)
+		idx = int(i)
+		return err
+	})
+	return idx, err
 }
 
 // StoreModule writes module to the database.
@@ -840,6 +852,41 @@ func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark
 			ResultUUID:      p.ResultUUID,
 			EnvironmentUUID: p.EnvironmentUUID,
 			CommitSHA:       hex.EncodeToString(p.CommitSHA),
+			CommitTime:      p.CommitTime,
+			Value:           p.Value,
+		}
+	}
+
+	return output, nil
+}
+
+// ListTracePoints returns trace points for the given commit range.
+func (d *DB) ListTracePoints(ctx context.Context, r entity.CommitIndexRange) ([]trace.Point, error) {
+	var ps []trace.Point
+	err := d.txq(ctx, func(q *db.Queries) error {
+		var err error
+		ps, err = listTracePoints(ctx, q, r)
+		return err
+	})
+	return ps, err
+}
+
+func listTracePoints(ctx context.Context, q *db.Queries, r entity.CommitIndexRange) ([]trace.Point, error) {
+	ps, err := q.TracePoints(ctx, db.TracePointsParams{
+		CommitIndexMin: int32(r.Min),
+		CommitIndexMax: int32(r.Max),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to trace point objects.
+	output := make([]trace.Point, len(ps))
+	for i, p := range ps {
+		output[i] = trace.Point{
+			BenchmarkUUID:   p.BenchmarkUUID,
+			EnvironmentUUID: p.EnvironmentUUID,
+			CommitIndex:     int(p.CommitIndex),
 			CommitTime:      p.CommitTime,
 			Value:           p.Value,
 		}

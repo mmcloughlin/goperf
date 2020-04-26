@@ -189,3 +189,60 @@ func (q *Queries) Result(ctx context.Context, uuid uuid.UUID) (Result, error) {
 	)
 	return i, err
 }
+
+const tracePoints = `-- name: TracePoints :many
+SELECT
+    r.benchmark_uuid,
+    r.environment_uuid,
+    p.index AS commit_index,
+    p.commit_time,
+    r.value
+FROM
+    results AS r
+    INNER JOIN commit_positions AS p
+        ON r.commit_sha=p.sha
+WHERE 1=1
+    AND p.index BETWEEN $1 AND $2
+`
+
+type TracePointsParams struct {
+	CommitIndexMin int32
+	CommitIndexMax int32
+}
+
+type TracePointsRow struct {
+	BenchmarkUUID   uuid.UUID
+	EnvironmentUUID uuid.UUID
+	CommitIndex     int32
+	CommitTime      time.Time
+	Value           float64
+}
+
+func (q *Queries) TracePoints(ctx context.Context, arg TracePointsParams) ([]TracePointsRow, error) {
+	rows, err := q.query(ctx, q.tracePointsStmt, tracePoints, arg.CommitIndexMin, arg.CommitIndexMax)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TracePointsRow
+	for rows.Next() {
+		var i TracePointsRow
+		if err := rows.Scan(
+			&i.BenchmarkUUID,
+			&i.EnvironmentUUID,
+			&i.CommitIndex,
+			&i.CommitTime,
+			&i.Value,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
