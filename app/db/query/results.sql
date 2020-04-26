@@ -31,7 +31,6 @@ SELECT
     r.benchmark_uuid,
     r.environment_uuid,
     p.index AS commit_index,
-    p.commit_time,
     r.value
 FROM
     results AS r

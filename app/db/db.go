@@ -887,7 +887,6 @@ func listTracePoints(ctx context.Context, q *db.Queries, r entity.CommitIndexRan
 			BenchmarkUUID:   p.BenchmarkUUID,
 			EnvironmentUUID: p.EnvironmentUUID,
 			CommitIndex:     int(p.CommitIndex),
-			CommitTime:      p.CommitTime,
 			Value:           p.Value,
 		}
 	}

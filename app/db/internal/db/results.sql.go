@@ -195,7 +195,6 @@ SELECT
     r.benchmark_uuid,
     r.environment_uuid,
     p.index AS commit_index,
-    p.commit_time,
     r.value
 FROM
     results AS r
@@ -214,7 +213,6 @@ type TracePointsRow struct {
 	BenchmarkUUID   uuid.UUID
 	EnvironmentUUID uuid.UUID
 	CommitIndex     int32
-	CommitTime      time.Time
 	Value           float64
 }
 
@@ -231,7 +229,6 @@ func (q *Queries) TracePoints(ctx context.Context, arg TracePointsParams) ([]Tra
 			&i.BenchmarkUUID,
 			&i.EnvironmentUUID,
 			&i.CommitIndex,
-			&i.CommitTime,
 			&i.Value,
 		); err != nil {
 			return nil, err

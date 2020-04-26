@@ -10,7 +10,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -22,7 +21,6 @@ type Point struct {
 	BenchmarkUUID   uuid.UUID
 	EnvironmentUUID uuid.UUID
 	CommitIndex     int
-	CommitTime      time.Time
 	Value           float64
 }
 
@@ -30,11 +28,10 @@ type Point struct {
 func WritePoints(w io.Writer, ps []Point) error {
 	z := gzip.NewWriter(w)
 	for _, p := range ps {
-		_, err := fmt.Fprintf(z, "%s,%s,%d,%d,%v\n",
+		_, err := fmt.Fprintf(z, "%s,%s,%d,%v\n",
 			p.BenchmarkUUID,
 			p.EnvironmentUUID,
 			p.CommitIndex,
-			p.CommitTime.UnixNano(),
 			p.Value,
 		)
 		if err != nil {
@@ -55,8 +52,8 @@ func ReadPoints(r io.Reader) ([]Point, error) {
 	for s.Scan() {
 		line := s.Text()
 		parts := strings.Split(line, ",")
-		if len(parts) != 5 {
-			return nil, errors.New("expected five fields")
+		if len(parts) != 4 {
+			return nil, errors.New("expected 4 fields")
 		}
 
 		var p Point
@@ -75,13 +72,7 @@ func ReadPoints(r io.Reader) ([]Point, error) {
 			return nil, err
 		}
 
-		unixNano, err := strconv.ParseInt(parts[3], 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		p.CommitTime = time.Unix(0, unixNano)
-
-		p.Value, err = strconv.ParseFloat(parts[4], 64)
+		p.Value, err = strconv.ParseFloat(parts[3], 64)
 		if err != nil {
 			return nil, err
 		}
