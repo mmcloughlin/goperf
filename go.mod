@@ -38,13 +38,15 @@ require (
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/shirou/gopsutil v2.20.1+incompatible
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	go.skia.org/infra v0.0.0-20200424211517-97a74cd6da98
 	go.uber.org/zap v1.14.1
 	golang.org/x/build v0.0.0-20200207163221-ab7b028cb90c
 	golang.org/x/mod v0.2.0
 	golang.org/x/perf v0.0.0-20180704124530-6e6d33e29852
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d
+	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-	google.golang.org/api v0.20.0
-	google.golang.org/genproto v0.0.0-20200402124713-8ff61da6d932
+	gonum.org/v1/plot v0.7.0
+	google.golang.org/api v0.22.0
+	google.golang.org/genproto v0.0.0-20200420144010-e5e8543f8aeb
 )

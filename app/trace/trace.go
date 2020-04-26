@@ -26,6 +26,10 @@ type Point struct {
 	Value           float64
 }
 
+func (p *Point) key() string {
+	return fmt.Sprintf(",benchmark_uuid=%x,environment_uuid=%x,", p.BenchmarkUUID[:], p.EnvironmentUUID[:])
+}
+
 // WritePoints writes supplied points to w.
 func WritePoints(w io.Writer, ps []Point) error {
 	z := gzip.NewWriter(w)
@@ -109,4 +113,18 @@ func writePointsFile(filename string, ps []Point) (err error) {
 	}
 	defer errutil.CheckClose(&err, f)
 	return WritePoints(f, ps)
+}
+
+// ReadPointsFile reads points from filename.
+func ReadPointsFile(filename string) ([]Point, error) {
+	return readPointsFile(filename)
+}
+
+func readPointsFile(filename string) (_ []Point, err error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer errutil.CheckClose(&err, f)
+	return ReadPoints(f)
 }
