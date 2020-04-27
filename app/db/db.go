@@ -884,10 +884,14 @@ func listTracePoints(ctx context.Context, q *db.Queries, r entity.CommitIndexRan
 	output := make([]trace.Point, len(ps))
 	for i, p := range ps {
 		output[i] = trace.Point{
-			BenchmarkUUID:   p.BenchmarkUUID,
-			EnvironmentUUID: p.EnvironmentUUID,
-			CommitIndex:     int(p.CommitIndex),
-			Value:           p.Value,
+			ID: trace.ID{
+				BenchmarkUUID:   p.BenchmarkUUID,
+				EnvironmentUUID: p.EnvironmentUUID,
+			},
+			IndexedValue: trace.IndexedValue{
+				CommitIndex: int(p.CommitIndex),
+				Value:       p.Value,
+			},
 		}
 	}
 
