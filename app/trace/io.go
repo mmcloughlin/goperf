@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
 

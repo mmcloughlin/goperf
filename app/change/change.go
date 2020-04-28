@@ -1,3 +1,4 @@
+// Package change implements change detection in benchmark timeseries.
 package change
 
 import "math"
@@ -5,8 +6,6 @@ import "math"
 type Change struct {
 	CommitIndex int
 	EffectSize  float64
-	Pre         Stats
-	Post        Stats
 }
 
 type Stats struct {

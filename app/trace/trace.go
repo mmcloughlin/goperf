@@ -27,6 +27,14 @@ type IndexedValue struct {
 // Series is a series of (commit index, value) pairs in sorted order.
 type Series []IndexedValue
 
+func (s Series) Values() []float64 {
+	values := make([]float64, len(s))
+	for i := range s {
+		values[i] = s[i].Value
+	}
+	return values
+}
+
 // Point represents a point in a collection of benchmark timeseries.
 type Point struct {
 	ID
@@ -75,6 +83,7 @@ func Traces(ps []Point) map[ID]*Trace {
 
 	// Sort series by commit index.
 	for _, trace := range traces {
+		trace := trace // scopelint
 		sort.Slice(trace.Series, func(i, j int) bool {
 			return trace.Series[i].CommitIndex < trace.Series[j].CommitIndex
 		})
