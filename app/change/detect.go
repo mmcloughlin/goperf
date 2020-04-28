@@ -80,74 +80,53 @@ func (c *Cohen) Detect(series trace.Series) []Change {
 	return changes
 }
 
-// cohen computes Cohen's d effect size between two means.
-func cohen(s1, s2 Stats) float64 {
-	return (s1.Mean - s2.Mean) / pooledStddev(s1, s2)
+type Hybrid struct {
+	WindowSize    int     // window to consider either side
+	MinEffectSize float64 // Cohen's d threshold
+
+	M, K             int     // KZA k parameter
+	PercentThreshold float64 // threshold for KZA pass
+	Context          int     // number of points to consider either side
 }
 
-// pooledVariance computes the pooled variance over two samples.
-func pooledVariance(s1, s2 Stats) float64 {
-	n1 := float64(s1.N - 1)
-	n2 := float64(s2.N - 1)
-	return (n1*s1.Variance + n2*s2.Variance) / (n1 + n2)
-}
+func (h *Hybrid) Name() string { return "hybrid" }
 
-// pooledStddev computes the pooled standard deviation over two samples.
-func pooledStddev(s1, s2 Stats) float64 {
-	return math.Sqrt(pooledVariance(s1, s2))
-}
+func (h *Hybrid) Detect(series trace.Series) []Change {
+	var changes []Change
 
-// windows assists with computing statistics for windows in a sequence.
-type windows struct {
-	n      int
-	cumlx  []float64 // cumlx[i] = sum of x[j] for j < i
-	cumlx2 []float64 // cumlx2[i] = sum of x[j]^2 for j < i
-}
+	values := series.Values()
 
-// newwindows initializes an empty windows sequence.
-func newwindows() *windows {
-	return &windows{
-		n:      0,
-		cumlx:  []float64{0},
-		cumlx2: []float64{0},
+	w := newwindows()
+	w.push(values...)
+
+	// Pre-process with KZA.
+	f := analysis.AdaptiveKolmogorovZurbenko(values, h.M, h.K)
+
+	for i := 1; i < len(f); i++ {
+		percent := 100 * math.Abs((f[i]-f[i-1])/f[i-1])
+		if percent < h.PercentThreshold {
+			continue
+		}
+
+		// Find largest effect size in a small window around this candidate.
+		chg := Change{}
+		for j := i - h.Context; j <= i+h.Context; j++ {
+			if j < h.WindowSize || j+h.WindowSize >= len(values) {
+				continue
+			}
+			pre := w.stats(j-h.WindowSize, j)
+			post := w.stats(j, j+h.WindowSize)
+			effect := cohen(pre, post)
+			if math.Abs(effect) > math.Abs(chg.EffectSize) {
+				chg.CommitIndex = series[j].CommitIndex
+				chg.EffectSize = effect
+			}
+		}
+
+		if math.Abs(chg.EffectSize) > h.MinEffectSize {
+			changes = append(changes, chg)
+		}
 	}
-}
 
-// push value at the end of the sequence.
-func (w *windows) push(x float64) {
-	w.cumlx = append(w.cumlx, w.cumlx[w.n]+x)
-	w.cumlx2 = append(w.cumlx2, w.cumlx2[w.n]+x*x)
-	w.n++
-}
-
-// sum of window x[l:r].
-func (w *windows) sum(l, r int) float64 {
-	return w.cumlx[r] - w.cumlx[l]
-}
-
-// sumsq returns sum of squares in window x[l:r].
-func (w *windows) sumsq(l, r int) float64 {
-	return w.cumlx2[r] - w.cumlx2[l]
-}
-
-// mean of the window x[l:r].
-func (w *windows) mean(l, r int) float64 {
-	return w.sum(l, r) / float64(r-l)
-}
-
-// sampvar returns the sample variance of the window x[l:r].
-func (w *windows) sampvar(l, r int) float64 {
-	sumsq := w.sumsq(l, r)
-	sum := w.sum(l, r)
-	n := float64(r - l)
-	return (sumsq - sum*sum/n) / (n - 1)
-}
-
-// stats for the window x[l:r].
-func (w *windows) stats(l, r int) Stats {
-	return Stats{
-		N:        r - l,
-		Mean:     w.mean(l, r),
-		Variance: w.sampvar(l, r),
-	}
+	return changes
 }

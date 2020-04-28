@@ -21,14 +21,23 @@ func TestDetectTestData(t *testing.T) {
 	}
 
 	detectors := []Detector{
-		&Cohen{
+		// &Cohen{
+		// 	WindowSize:    30,
+		// 	MinEffectSize: 2.0,
+		// },
+		// &KZA{
+		// 	M:                15,
+		// 	K:                3,
+		// 	PercentThreshold: 5,
+		// },
+		&Hybrid{
 			WindowSize:    30,
-			MinEffectSize: 2.0,
-		},
-		&KZA{
+			MinEffectSize: 2,
+
 			M:                15,
 			K:                3,
-			PercentThreshold: 5,
+			PercentThreshold: 4,
+			Context:          2,
 		},
 	}
 
