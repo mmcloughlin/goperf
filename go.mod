@@ -11,6 +11,8 @@ require (
 	github.com/aclements/go-moremath v0.0.0-20190830160640-d16893ddf098 // indirect
 	github.com/blendle/zapdriver v1.3.1
 	github.com/c9s/goprocinfo v0.0.0-20200130063400-86ec00c33cd5
+	github.com/dgryski/go-change v0.0.0-20150402082756-785671114954
+	github.com/dgryski/go-onlinestats v0.0.0-20170612111826-1c7d19468768 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/frankban/quicktest v1.7.2 // indirect
 	github.com/go-git/go-git/v5 v5.0.0
@@ -45,6 +47,7 @@ require (
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+	gonum.org/v1/plot v0.7.0
 	google.golang.org/api v0.20.0
 	google.golang.org/genproto v0.0.0-20200402124713-8ff61da6d932
 )
