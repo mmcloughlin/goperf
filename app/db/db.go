@@ -344,6 +344,27 @@ func storeCommitRef(ctx context.Context, q *db.Queries, r *entity.CommitRef) err
 	})
 }
 
+// StoreCommitPosition writes a commit position to the database. This should be
+// rarely needed outside of testing; prefer BuildCommitPositions.
+func (d *DB) StoreCommitPosition(ctx context.Context, p *entity.CommitPosition) error {
+	return d.txq(ctx, func(q *db.Queries) error {
+		return storeCommitPosition(ctx, q, p)
+	})
+}
+
+func storeCommitPosition(ctx context.Context, q *db.Queries, p *entity.CommitPosition) error {
+	sha, err := hex.DecodeString(p.SHA)
+	if err != nil {
+		return fmt.Errorf("invalid sha: %w", err)
+	}
+
+	return q.InsertCommitPosition(ctx, db.InsertCommitPositionParams{
+		SHA:        sha,
+		CommitTime: p.CommitTime,
+		Index:      int32(p.Index),
+	})
+}
+
 // BuildCommitPositions creates the commit positions table. The table is
 // completely rebuilt from the source tables.
 func (d *DB) BuildCommitPositions(ctx context.Context) error {

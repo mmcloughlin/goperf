@@ -108,6 +108,29 @@ func (q *Queries) InsertCommit(ctx context.Context, arg InsertCommitParams) erro
 	return err
 }
 
+const insertCommitPosition = `-- name: InsertCommitPosition :exec
+INSERT INTO commit_positions (
+    sha,
+    commit_time,
+    index
+) VALUES (
+    $1,
+    $2,
+    $3
+) ON CONFLICT DO NOTHING
+`
+
+type InsertCommitPositionParams struct {
+	SHA        []byte
+	CommitTime time.Time
+	Index      int32
+}
+
+func (q *Queries) InsertCommitPosition(ctx context.Context, arg InsertCommitPositionParams) error {
+	_, err := q.exec(ctx, q.insertCommitPositionStmt, insertCommitPosition, arg.SHA, arg.CommitTime, arg.Index)
+	return err
+}
+
 const insertCommitRef = `-- name: InsertCommitRef :exec
 INSERT INTO commit_refs (
     sha,

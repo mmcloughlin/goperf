@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/pkg/mod"
 )
@@ -59,6 +60,12 @@ var (
 		Message:    "crypto/rand: batch large calls to linux getrandom",
 	}
 
+	CommitPosition = &entity.CommitPosition{
+		SHA:        Commit.SHA,
+		CommitTime: Commit.CommitTime,
+		Index:      32150,
+	}
+
 	DataFile = &entity.DataFile{
 		Name:   "e5a4b8be-c0e5-42c4-a243-2b458ceff483.txt",
 		SHA256: decodesha256("a36064ebcadaea9b4b419ef66b487a6bdf1f0d5f90efa513d35f800d4dfceeb1"),
@@ -96,6 +103,16 @@ var (
 		Status:           entity.TaskStatusCreated,
 		LastStatusUpdate: time.Date(2020, 4, 7, 20, 50, 13, 0, time.UTC),
 		DatafileUUID:     uuid.Nil,
+	}
+
+	Change = &entity.Change{
+		Benchmark: Benchmark,
+		Change: change.Change{
+			CommitIndex: CommitPosition.Index,
+			EffectSize:  4.72,
+			Pre:         change.Stats{N: 30, Mean: 42, Variance: 3},
+			Post:        change.Stats{N: 30, Mean: 50, Variance: 3.5},
+		},
 	}
 )
 

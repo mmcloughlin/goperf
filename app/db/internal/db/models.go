@@ -63,6 +63,18 @@ type Benchmark struct {
 	Parameters  json.RawMessage
 }
 
+type Change struct {
+	BenchmarkUUID uuid.UUID
+	Index         int32
+	EffectSize    float64
+	PreN          int32
+	PreMean       float64
+	PreStddev     float64
+	PostN         int32
+	PostMean      float64
+	PostStddev    float64
+}
+
 type Commit struct {
 	SHA            []byte
 	Tree           []byte

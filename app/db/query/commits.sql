@@ -52,6 +52,17 @@ INSERT INTO commit_refs (
     $2
 ) ON CONFLICT DO NOTHING;
 
+-- name: InsertCommitPosition :exec
+INSERT INTO commit_positions (
+    sha,
+    commit_time,
+    index
+) VALUES (
+    $1,
+    $2,
+    $3
+) ON CONFLICT DO NOTHING;
+
 -- name: BuildCommitPositions :exec
 INSERT INTO commit_positions (
     SELECT

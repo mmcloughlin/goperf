@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/id"
 )
 
@@ -30,6 +31,12 @@ type Commit struct {
 type CommitRef struct {
 	SHA string
 	Ref string
+}
+
+type CommitPosition struct {
+	SHA        string
+	CommitTime time.Time
+	Index      int
 }
 
 type CommitIndexRange struct {
@@ -131,4 +138,10 @@ func (b *Benchmark) UUID() uuid.UUID {
 		paramsid.String(),
 		b.Unit,
 	})
+}
+
+type Change struct {
+	change.Change
+
+	Benchmark *Benchmark
 }

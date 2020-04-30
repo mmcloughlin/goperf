@@ -52,6 +52,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.insertCommitStmt, err = db.PrepareContext(ctx, insertCommit); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertCommit: %w", err)
 	}
+	if q.insertCommitPositionStmt, err = db.PrepareContext(ctx, insertCommitPosition); err != nil {
+		return nil, fmt.Errorf("error preparing query InsertCommitPosition: %w", err)
+	}
 	if q.insertCommitRefStmt, err = db.PrepareContext(ctx, insertCommitRef); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertCommitRef: %w", err)
 	}
@@ -180,6 +183,11 @@ func (q *Queries) Close() error {
 	if q.insertCommitStmt != nil {
 		if cerr := q.insertCommitStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing insertCommitStmt: %w", cerr)
+		}
+	}
+	if q.insertCommitPositionStmt != nil {
+		if cerr := q.insertCommitPositionStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing insertCommitPositionStmt: %w", cerr)
 		}
 	}
 	if q.insertCommitRefStmt != nil {
@@ -356,6 +364,7 @@ type Queries struct {
 	dataFileStmt                                  *sql.Stmt
 	insertBenchmarkStmt                           *sql.Stmt
 	insertCommitStmt                              *sql.Stmt
+	insertCommitPositionStmt                      *sql.Stmt
 	insertCommitRefStmt                           *sql.Stmt
 	insertDataFileStmt                            *sql.Stmt
 	insertModuleStmt                              *sql.Stmt
@@ -397,6 +406,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		dataFileStmt:                 q.dataFileStmt,
 		insertBenchmarkStmt:          q.insertBenchmarkStmt,
 		insertCommitStmt:             q.insertCommitStmt,
+		insertCommitPositionStmt:     q.insertCommitPositionStmt,
 		insertCommitRefStmt:          q.insertCommitRefStmt,
 		insertDataFileStmt:           q.insertDataFileStmt,
 		insertModuleStmt:             q.insertModuleStmt,
