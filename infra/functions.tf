@@ -60,7 +60,7 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
 }
 
 resource "google_cloud_scheduler_job" "watch_schedule" {
-  name             = "schedule_watch"
+  name             = "watch"
   schedule         = "13 * * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "120s"
@@ -72,8 +72,8 @@ resource "google_cloud_scheduler_job" "watch_schedule" {
 }
 
 resource "google_cloud_scheduler_job" "staletimeout_schedule" {
-  name             = "schedule_staletimeout"
-  schedule         = "*/5 * * * *"
+  name             = "staletimeout"
+  schedule         = "*/15 * * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "120s"
 
@@ -84,7 +84,7 @@ resource "google_cloud_scheduler_job" "staletimeout_schedule" {
 }
 
 resource "google_cloud_scheduler_job" "changedetect_schedule" {
-  name             = "schedule_changedetect"
+  name             = "changedetect"
   schedule         = "33 */12 * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "120s"
