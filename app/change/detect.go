@@ -69,6 +69,8 @@ func (d *Detector) Detect(series trace.Series) []Change {
 			if math.Abs(effect) > math.Abs(chg.EffectSize) {
 				chg.CommitIndex = series[j].CommitIndex
 				chg.EffectSize = effect
+				chg.Pre = pre
+				chg.Post = post
 			}
 		}
 

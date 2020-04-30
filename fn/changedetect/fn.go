@@ -106,6 +106,7 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 	if err := database.ReplaceChanges(ctx, cr, changes); err != nil {
 		return err
 	}
+	logger.Info("inserted changes", zap.Int("num_changes", len(changes)))
 
 	// Report ok.
 	httputil.OK(w)
