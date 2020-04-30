@@ -4,4 +4,6 @@ package change
 type Change struct {
 	CommitIndex int
 	EffectSize  float64
+	Pre         Stats
+	Post        Stats
 }

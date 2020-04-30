@@ -73,6 +73,8 @@ func (c *Cohen) Detect(series trace.Series) []Change {
 			changes = append(changes, Change{
 				CommitIndex: series[i].CommitIndex,
 				EffectSize:  effect,
+				Pre:         pre,
+				Post:        post,
 			})
 		}
 	}

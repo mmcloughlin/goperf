@@ -7,18 +7,17 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/dgryski/go-change"
 	"go.uber.org/zap"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 
+	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/trace"
 	"github.com/mmcloughlin/cb/pkg/command"
 )
@@ -62,15 +61,27 @@ func report(traces map[trace.ID]*trace.Trace, dir string, l *zap.Logger) error {
 		return err
 	}
 
+	// Change detector.
+	detector := &change.Hybrid{
+		WindowSize:    30,
+		MinEffectSize: 4,
+
+		M:                15,
+		K:                3,
+		PercentThreshold: 4,
+		Context:          3,
+	}
+
 	// Build report.
 	buf := bytes.NewBuffer(nil)
 	n := 0
 	for id, trc := range traces {
 		// Look for changes.
-		pts := changes(trc.Series)
+		pts := detector.Detect(trc.Series)
 		if len(pts) == 0 {
 			continue
 		}
+
 		l.Debug("completed change search", zap.Stringer("id", id), zap.Int("num_changes", len(pts)))
 
 		n++
@@ -104,10 +115,9 @@ func report(traces map[trace.ID]*trace.Trace, dir string, l *zap.Logger) error {
 
 		// Change points.
 		for _, pt := range pts {
-			idx := trc.Series[pt.Index].CommitIndex
-			fmt.Fprintf(buf, "<h3>%d %v</h3>\n", idx, pt.Difference)
+			fmt.Fprintf(buf, "<h3>idx=%d effect=%v</h3>\n", pt.CommitIndex, pt.EffectSize)
 
-			chgbase := fmt.Sprintf("trace%d-change%d.png", n, idx)
+			chgbase := fmt.Sprintf("trace%d-change%d.png", n, pt.CommitIndex)
 			chgpath := filepath.Join(dir, chgbase)
 			if err := plotChange(chgpath, trc, pt); err != nil {
 				return err
@@ -124,44 +134,19 @@ func report(traces map[trace.ID]*trace.Trace, dir string, l *zap.Logger) error {
 	return nil
 }
 
-func changes(series []trace.IndexedValue) []*change.ChangePoint {
-	windowSize := 120
-	stream := change.NewStream(windowSize, 50, 10, 0.995)
-	pts := []*change.ChangePoint{}
-	for i, v := range series {
-		pt := stream.Push(v.Value)
-		if pt != nil && significant(pt) {
-			pt.Index += i - windowSize
-			pts = append(pts, pt)
-		}
-	}
-	return pts
-}
-
-func significant(pt *change.ChangePoint) bool {
-	// Must be a certain percentage change.
-	pcnt := 100 * math.Abs(pt.Difference/pt.Before.Mean())
-	if pcnt < 5 {
-		return false
-	}
-
-	// How many standard deviations.
-	sigma := pt.Difference / max(pt.Before.Stddev(), pt.After.Stddev())
-	return sigma > 4
-}
-
 func plotTrace(filename string, t *trace.Trace) error {
 	return plotSeries(filename, t.ID.String(), t.Series)
 }
 
-func plotChange(filename string, t *trace.Trace, pt *change.ChangePoint) error {
+func plotChange(filename string, t *trace.Trace, pt change.Change) error {
 	around := 20
-	mid := pt.Index
-	l := intmax(mid-around, 0)
-	r := intmin(mid+around, len(t.Series))
-	window := t.Series[l:r]
-	idx := t.Series[pt.Index].CommitIndex
-	title := fmt.Sprintf("change %d difference %v", idx, pt.Difference)
+	window := []trace.IndexedValue{}
+	for _, v := range t.Series {
+		if intabs(v.CommitIndex-pt.CommitIndex) < around {
+			window = append(window, v)
+		}
+	}
+	title := fmt.Sprintf("change %d effect %v", pt.CommitIndex, pt.EffectSize)
 	return plotSeries(filename, title, window)
 }
 
@@ -212,23 +197,9 @@ func writeTestCase(filename string, s trace.Series) error {
 	return ioutil.WriteFile(filename, b, 0644)
 }
 
-func max(x, y float64) float64 {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-func intmax(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-func intmin(x, y int) int {
-	if x > y {
-		return y
+func intabs(x int) int {
+	if x < 0 {
+		return -x
 	}
 	return x
 }
