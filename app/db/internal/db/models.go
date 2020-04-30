@@ -66,7 +66,7 @@ type Benchmark struct {
 type Change struct {
 	BenchmarkUUID   uuid.UUID
 	EnvironmentUUID uuid.UUID
-	Index           int32
+	CommitIndex     int32
 	EffectSize      float64
 	PreN            int32
 	PreMean         float64

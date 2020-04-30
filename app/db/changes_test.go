@@ -14,7 +14,7 @@ func TestDBStoreChangesBatch(t *testing.T) {
 
 	// Ensure the dependenent objects exist.
 	ctx := context.Background()
-	err := db.StoreBenchmark(ctx, fixture.Change.Benchmark)
+	err := db.StoreBenchmark(ctx, fixture.Benchmark)
 	if err != nil {
 		t.Fatal(err)
 	}

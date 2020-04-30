@@ -46,6 +46,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.dataFileStmt, err = db.PrepareContext(ctx, dataFile); err != nil {
 		return nil, fmt.Errorf("error preparing query DataFile: %w", err)
 	}
+	if q.deleteChangesCommitRangeStmt, err = db.PrepareContext(ctx, deleteChangesCommitRange); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteChangesCommitRange: %w", err)
+	}
 	if q.insertBenchmarkStmt, err = db.PrepareContext(ctx, insertBenchmark); err != nil {
 		return nil, fmt.Errorf("error preparing query InsertBenchmark: %w", err)
 	}
@@ -173,6 +176,11 @@ func (q *Queries) Close() error {
 	if q.dataFileStmt != nil {
 		if cerr := q.dataFileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing dataFileStmt: %w", cerr)
+		}
+	}
+	if q.deleteChangesCommitRangeStmt != nil {
+		if cerr := q.deleteChangesCommitRangeStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteChangesCommitRangeStmt: %w", cerr)
 		}
 	}
 	if q.insertBenchmarkStmt != nil {
@@ -362,6 +370,7 @@ type Queries struct {
 	commitModuleWorkerErrorsStmt                  *sql.Stmt
 	createTaskStmt                                *sql.Stmt
 	dataFileStmt                                  *sql.Stmt
+	deleteChangesCommitRangeStmt                  *sql.Stmt
 	insertBenchmarkStmt                           *sql.Stmt
 	insertCommitStmt                              *sql.Stmt
 	insertCommitPositionStmt                      *sql.Stmt
@@ -404,6 +413,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		commitModuleWorkerErrorsStmt: q.commitModuleWorkerErrorsStmt,
 		createTaskStmt:               q.createTaskStmt,
 		dataFileStmt:                 q.dataFileStmt,
+		deleteChangesCommitRangeStmt: q.deleteChangesCommitRangeStmt,
 		insertBenchmarkStmt:          q.insertBenchmarkStmt,
 		insertCommitStmt:             q.insertCommitStmt,
 		insertCommitPositionStmt:     q.insertCommitPositionStmt,

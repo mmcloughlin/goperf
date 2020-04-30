@@ -81,6 +81,7 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 	traces := trace.Traces(ps)
 
 	// Find change points.
+	var changes []*entity.Change
 	for id, trc := range traces {
 		log := logger.With(zap.Stringer("trace", id))
 
@@ -94,7 +95,16 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 				zap.Int("commit_index", chg.CommitIndex),
 				zap.Float64("effect_size", chg.EffectSize),
 			)
+			changes = append(changes, &entity.Change{
+				ID:     id,
+				Change: chg,
+			})
 		}
+	}
+
+	// Insert into database.
+	if err := database.ReplaceChanges(ctx, cr, changes); err != nil {
+		return err
 	}
 
 	// Report ok.

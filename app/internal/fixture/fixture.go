@@ -10,6 +10,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/app/trace"
 	"github.com/mmcloughlin/cb/pkg/mod"
 )
 
@@ -108,8 +109,10 @@ var (
 	}
 
 	Change = &entity.Change{
-		Benchmark:       Benchmark,
-		EnvironmentUUID: Environment.UUID(),
+		ID: trace.ID{
+			BenchmarkUUID:   Benchmark.UUID(),
+			EnvironmentUUID: Environment.UUID(),
+		},
 		Change: change.Change{
 			CommitIndex: CommitPosition.Index,
 			EffectSize:  4.72,

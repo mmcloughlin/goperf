@@ -10,6 +10,7 @@ import (
 
 	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/id"
+	"github.com/mmcloughlin/cb/app/trace"
 )
 
 type Person struct {
@@ -141,8 +142,6 @@ func (b *Benchmark) UUID() uuid.UUID {
 }
 
 type Change struct {
+	trace.ID
 	change.Change
-
-	Benchmark       *Benchmark
-	EnvironmentUUID uuid.UUID
 }
