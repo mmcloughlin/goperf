@@ -83,6 +83,18 @@ resource "google_cloud_scheduler_job" "staletimeout_schedule" {
   }
 }
 
+resource "google_cloud_scheduler_job" "changedetect_schedule" {
+  name             = "schedule_changedetect"
+  schedule         = "33 */12 * * *"
+  time_zone        = "Etc/UTC"
+  attempt_deadline = "120s"
+
+  http_target {
+    http_method = "GET"
+    uri         = google_cloudfunctions_function.http_function["changedetect"].https_trigger_url
+  }
+}
+
 resource "google_cloudfunctions_function" "result_function" {
   for_each = toset([for k, v in var.functions : k if v.trigger_type == "result"])
 
