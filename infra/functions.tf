@@ -10,7 +10,7 @@ resource "google_storage_bucket" "functions_bucket" {
 }
 
 data "archive_file" "function_zip" {
-  for_each = toset(var.functions[*].name)
+  for_each = toset(keys(var.functions))
 
   type        = "zip"
   source_dir  = "fn/${each.key}/"
@@ -18,7 +18,7 @@ data "archive_file" "function_zip" {
 }
 
 resource "google_storage_bucket_object" "function_zip" {
-  for_each = toset(var.functions[*].name)
+  for_each = toset(keys(var.functions))
 
   name   = "${each.key}/${data.archive_file.function_zip[each.key].output_sha}.zip"
   bucket = google_storage_bucket.functions_bucket.name
@@ -36,10 +36,11 @@ locals {
 }
 
 resource "google_cloudfunctions_function" "http_function" {
-  for_each = toset([for f in var.functions : f.name if f.trigger_type == "http"])
+  for_each = { for k, v in var.functions : k => v if v.trigger_type == "http" }
 
   name                  = each.key
-  available_memory_mb   = 256
+  available_memory_mb   = lookup(each.value, "memory", 128)
+  timeout               = lookup(each.value, "timeout", 60)
   source_archive_bucket = google_storage_bucket.functions_bucket.name
   source_archive_object = google_storage_bucket_object.function_zip[each.key].name
   entry_point           = "Handle"
@@ -50,7 +51,7 @@ resource "google_cloudfunctions_function" "http_function" {
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
-  for_each = toset([for f in var.functions : f.name if f.trigger_type == "http"])
+  for_each = toset([for k, v in var.functions : k if v.trigger_type == "http"])
 
   cloud_function = google_cloudfunctions_function.http_function[each.key].name
 
@@ -83,7 +84,7 @@ resource "google_cloud_scheduler_job" "staletimeout_schedule" {
 }
 
 resource "google_cloudfunctions_function" "result_function" {
-  for_each = toset([for f in var.functions : f.name if f.trigger_type == "result"])
+  for_each = toset([for k, v in var.functions : k if v.trigger_type == "result"])
 
   name                  = each.key
   available_memory_mb   = 256

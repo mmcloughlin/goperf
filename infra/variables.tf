@@ -18,10 +18,7 @@ variable "zone" {
 }
 
 variable "functions" {
-  type = list(object({
-    name         = string,
-    trigger_type = string,
-  }))
+  type = map
 }
 
 variable "functions_runtime" {
