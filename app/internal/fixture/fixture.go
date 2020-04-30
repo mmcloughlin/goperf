@@ -71,15 +71,17 @@ var (
 		SHA256: decodesha256("a36064ebcadaea9b4b419ef66b487a6bdf1f0d5f90efa513d35f800d4dfceeb1"),
 	}
 
+	Environment = entity.Properties{
+		"a": "1",
+		"b": "2",
+	}
+
 	Result = &entity.Result{
-		File:      DataFile,
-		Line:      42,
-		Benchmark: Benchmark,
-		Commit:    Commit,
-		Environment: entity.Properties{
-			"a": "1",
-			"b": "2",
-		},
+		File:        DataFile,
+		Line:        42,
+		Benchmark:   Benchmark,
+		Commit:      Commit,
+		Environment: Environment,
 		Metadata: entity.Properties{
 			"c": "3",
 			"d": "4",
@@ -106,7 +108,8 @@ var (
 	}
 
 	Change = &entity.Change{
-		Benchmark: Benchmark,
+		Benchmark:       Benchmark,
+		EnvironmentUUID: Environment.UUID(),
 		Change: change.Change{
 			CommitIndex: CommitPosition.Index,
 			EffectSize:  4.72,

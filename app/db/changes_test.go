@@ -27,6 +27,10 @@ func TestDBStoreChangesBatch(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if err = db.StoreProperties(ctx, fixture.Environment); err != nil {
+		t.Fatal(err)
+	}
+
 	// Store change in batch mode.
 	err = db.StoreChangesBatch(ctx, []*entity.Change{fixture.Change})
 	if err != nil {

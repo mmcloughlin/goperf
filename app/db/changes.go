@@ -12,6 +12,7 @@ import (
 func (d *DB) StoreChangesBatch(ctx context.Context, cs []*entity.Change) error {
 	fields := []string{
 		"benchmark_uuid",
+		"environment_uuid",
 		"index",
 		"effect_size",
 		"pre_n",
@@ -25,6 +26,7 @@ func (d *DB) StoreChangesBatch(ctx context.Context, cs []*entity.Change) error {
 	for _, c := range cs {
 		values = append(values,
 			c.Benchmark.UUID(),
+			c.EnvironmentUUID,
 			c.CommitIndex,
 			c.EffectSize,
 			c.Pre.N,

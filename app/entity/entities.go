@@ -143,5 +143,6 @@ func (b *Benchmark) UUID() uuid.UUID {
 type Change struct {
 	change.Change
 
-	Benchmark *Benchmark
+	Benchmark       *Benchmark
+	EnvironmentUUID uuid.UUID
 }

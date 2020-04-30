@@ -1,6 +1,7 @@
 -- +goose Up
 CREATE TABLE changes (
     benchmark_uuid UUID NOT NULL REFERENCES benchmarks,
+    environment_uuid UUID NOT NULL REFERENCES properties,
     index INT NOT NULL REFERENCES commit_positions (index),
 
     effect_size DOUBLE PRECISION NOT NULL,
@@ -13,7 +14,7 @@ CREATE TABLE changes (
     post_mean DOUBLE PRECISION NOT NULL,
     post_stddev DOUBLE PRECISION NOT NULL,
 
-    UNIQUE(benchmark_uuid, index)
+    UNIQUE(benchmark_uuid, environment_uuid, index)
 );
 
 -- +goose Down
