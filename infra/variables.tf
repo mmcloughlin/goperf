@@ -33,12 +33,6 @@ variable "jobs_topic" {
   default = "jobs"
 }
 
-variable "worker_machine_type" {
-}
-
-variable "worker_min_cpu_platform" {
-}
-
 variable "network_tier" {
   default = "STANDARD"
 }

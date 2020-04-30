@@ -11,6 +11,3 @@ functions = {
   staletimeout = { trigger_type = "http" },
   dashboard    = { trigger_type = "http", memory = 512 },
 }
-
-worker_machine_type     = "n1-standard-2"
-worker_min_cpu_platform = "Intel Skylake"
