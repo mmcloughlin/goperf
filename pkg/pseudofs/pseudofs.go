@@ -24,7 +24,7 @@ func String(path string) (string, error) {
 }
 
 // WriteString writes a string to a file, followed by a newline.
-func WriteString(path string, s string) error {
+func WriteString(path, s string) error {
 	return WriteFile(path, []byte(s+"\n"), 0644)
 }
 
