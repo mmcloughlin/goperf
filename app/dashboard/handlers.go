@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"path"
 	"sort"
@@ -17,6 +18,7 @@ import (
 	analysis "golang.org/x/perf/analysis/app"
 
 	"github.com/mmcloughlin/cb/app/brand"
+	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/httputil"
@@ -76,6 +78,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.Handle("/result/", h.handlerFunc(h.Result))
 	h.mux.Handle("/file/", h.handlerFunc(h.File))
 	h.mux.Handle("/commit/", h.handlerFunc(h.Commit))
+	h.mux.Handle("/chgs/", h.handlerFunc(h.Changes))
 
 	// Static assets.
 	h.static = httputil.NewStatic(h.staticfs)
@@ -362,6 +365,99 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) error {
 	return h.render(ctx, w, "commit", map[string]interface{}{
 		"Commit": commit,
 	})
+}
+
+func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+
+	// Determine commit range.
+	cr, err := h.commitRange(r)
+	if err != nil {
+		return err
+	}
+
+	// Fetch changes.
+	chgs, err := h.db.ListChangeSummaries(ctx, cr)
+	if err != nil {
+		return err
+	}
+
+	// Write response.
+	return h.render(ctx, w, "chgs", map[string]interface{}{
+		"CommitChangeGroups": groupChanges(chgs),
+	})
+}
+
+// CommitChangeGroup is a group of significant changes for a commit.
+type CommitChangeGroup struct {
+	Index   int
+	SHA     string
+	Subject string
+	Changes []*Change
+}
+
+// Change is a single change.
+type Change struct {
+	Benchmark *entity.Benchmark
+	change.Change
+}
+
+func groupChanges(cs []*entity.ChangeSummary) []*CommitChangeGroup {
+	// Group by commit.
+	byidx := map[int]*CommitChangeGroup{}
+	for _, c := range cs {
+		if byidx[c.CommitIndex] == nil {
+			byidx[c.CommitIndex] = &CommitChangeGroup{
+				Index:   c.CommitIndex,
+				SHA:     c.CommitSHA,
+				Subject: c.CommitSubject,
+			}
+		}
+
+		byidx := byidx[c.CommitIndex]
+		byidx.Changes = append(byidx.Changes, &Change{
+			Benchmark: c.Benchmark,
+			Change:    c.Change,
+		})
+	}
+
+	// Convert to a list.
+	groups := make([]*CommitChangeGroup, 0, len(byidx))
+	for _, group := range byidx {
+		groups = append(groups, group)
+	}
+
+	// Most recent commits first.
+	sort.Slice(groups, func(i, j int) bool {
+		return groups[i].Index > groups[j].Index
+	})
+
+	// Within each group, sort on effect size.
+	for _, group := range byidx {
+		chgs := group.Changes
+		sort.Slice(chgs, func(i, j int) bool {
+			return math.Abs(chgs[i].EffectSize) > math.Abs(chgs[j].EffectSize)
+		})
+	}
+
+	return groups
+}
+
+// commitRange determines a specified commit range for the given request.
+func (h *Handlers) commitRange(r *http.Request) (entity.CommitIndexRange, error) {
+	ctx := r.Context()
+	n := 300
+
+	// Determine commit index.
+	idx, err := h.db.MostRecentCommitIndex(ctx)
+	if err != nil {
+		return entity.CommitIndexRange{}, err
+	}
+
+	return entity.CommitIndexRange{
+		Min: idx - n,
+		Max: idx,
+	}, nil
 }
 
 func (h *Handlers) render(ctx context.Context, w io.Writer, name string, data interface{}) error {

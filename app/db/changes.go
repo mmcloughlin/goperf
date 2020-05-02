@@ -3,7 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
 
+	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/db/internal/db"
 	"github.com/mmcloughlin/cb/app/entity"
 )
@@ -59,4 +63,68 @@ func (d *DB) storeChangesBatch(ctx context.Context, tx *sql.Tx, cs []*entity.Cha
 		)
 	}
 	return d.insert(ctx, tx, "changes", fields, values, "ON CONFLICT DO NOTHING")
+}
+
+// ListChangeSummaries returns changes with associated metadata.
+func (d *DB) ListChangeSummaries(ctx context.Context, r entity.CommitIndexRange) ([]*entity.ChangeSummary, error) {
+	var cs []*entity.ChangeSummary
+	err := d.txq(ctx, func(q *db.Queries) error {
+		var err error
+		cs, err = listChangeSummaries(ctx, q, r)
+		return err
+	})
+	return cs, err
+}
+
+func listChangeSummaries(ctx context.Context, q *db.Queries, r entity.CommitIndexRange) ([]*entity.ChangeSummary, error) {
+	rows, err := q.ChangeSummaries(ctx, db.ChangeSummariesParams{
+		CommitIndexMin: int32(r.Min),
+		CommitIndexMax: int32(r.Max),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cs := make([]*entity.ChangeSummary, len(rows))
+	for i, row := range rows {
+		params := map[string]string{}
+		if err := json.Unmarshal(row.Parameters, &params); err != nil {
+			return nil, fmt.Errorf("decode parameters: %w", err)
+		}
+
+		cs[i] = &entity.ChangeSummary{
+			Benchmark: &entity.Benchmark{
+				Package: &entity.Package{
+					Module: &entity.Module{
+						Path:    row.Path,
+						Version: row.Version,
+					},
+					RelativePath: row.RelativePath,
+				},
+				FullName:   row.FullName,
+				Name:       row.Name,
+				Parameters: params,
+				Unit:       row.Unit,
+			},
+			EnvironmentUUID: row.EnvironmentUUID,
+			CommitSHA:       hex.EncodeToString(row.CommitSHA),
+			CommitSubject:   row.CommitSubject,
+			Change: change.Change{
+				CommitIndex: int(row.CommitIndex),
+				EffectSize:  row.EffectSize,
+				Pre: change.Stats{
+					N:        int(row.PreN),
+					Mean:     row.PreMean,
+					Variance: row.PreStddev * row.PreStddev,
+				},
+				Post: change.Stats{
+					N:        int(row.PostN),
+					Mean:     row.PostMean,
+					Variance: row.PostStddev * row.PostStddev,
+				},
+			},
+		}
+	}
+
+	return cs, nil
 }

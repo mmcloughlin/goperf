@@ -5,7 +5,112 @@ package db
 
 import (
 	"context"
+	"encoding/json"
+
+	"github.com/google/uuid"
 )
+
+const changeSummaries = `-- name: ChangeSummaries :many
+SELECT
+    chg.benchmark_uuid, chg.environment_uuid, chg.commit_index, chg.effect_size, chg.pre_n, chg.pre_mean, chg.pre_stddev, chg.post_n, chg.post_mean, chg.post_stddev,
+    c.sha AS commit_sha,
+    SPLIT_PART(c.message, E'\n', 1)::TEXT AS commit_subject,
+
+    b.uuid, b.package_uuid, b.full_name, b.name, b.unit, b.parameters,
+    pkg.relative_path,
+    mod.path,
+    mod.version
+FROM
+    changes AS chg
+    INNER JOIN commit_positions AS p
+        ON chg.commit_index=p.index
+    INNER JOIN commits AS c
+        ON p.sha=c.sha
+    INNER JOIN benchmarks AS b
+        ON chg.benchmark_uuid=b.uuid
+    INNER JOIN packages AS pkg
+        ON b.package_uuid=pkg.uuid
+    INNER JOIN modules AS mod
+        ON pkg.module_uuid=mod.uuid
+WHERE 1=1
+    AND commit_index BETWEEN $1 AND $2
+ORDER BY
+    commit_index DESC
+`
+
+type ChangeSummariesParams struct {
+	CommitIndexMin int32
+	CommitIndexMax int32
+}
+
+type ChangeSummariesRow struct {
+	BenchmarkUUID   uuid.UUID
+	EnvironmentUUID uuid.UUID
+	CommitIndex     int32
+	EffectSize      float64
+	PreN            int32
+	PreMean         float64
+	PreStddev       float64
+	PostN           int32
+	PostMean        float64
+	PostStddev      float64
+	CommitSHA       []byte
+	CommitSubject   string
+	UUID            uuid.UUID
+	PackageUUID     uuid.UUID
+	FullName        string
+	Name            string
+	Unit            string
+	Parameters      json.RawMessage
+	RelativePath    string
+	Path            string
+	Version         string
+}
+
+func (q *Queries) ChangeSummaries(ctx context.Context, arg ChangeSummariesParams) ([]ChangeSummariesRow, error) {
+	rows, err := q.query(ctx, q.changeSummariesStmt, changeSummaries, arg.CommitIndexMin, arg.CommitIndexMax)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ChangeSummariesRow
+	for rows.Next() {
+		var i ChangeSummariesRow
+		if err := rows.Scan(
+			&i.BenchmarkUUID,
+			&i.EnvironmentUUID,
+			&i.CommitIndex,
+			&i.EffectSize,
+			&i.PreN,
+			&i.PreMean,
+			&i.PreStddev,
+			&i.PostN,
+			&i.PostMean,
+			&i.PostStddev,
+			&i.CommitSHA,
+			&i.CommitSubject,
+			&i.UUID,
+			&i.PackageUUID,
+			&i.FullName,
+			&i.Name,
+			&i.Unit,
+			&i.Parameters,
+			&i.RelativePath,
+			&i.Path,
+			&i.Version,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const deleteChangesCommitRange = `-- name: DeleteChangesCommitRange :exec
 DELETE FROM changes
