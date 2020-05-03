@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -195,16 +194,19 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// Determine commit range.
+	cr, err := h.commitRange(r)
+	if err != nil {
+		return err
+	}
+
 	// Fetch benchmark.
 	bench, err := h.db.FindBenchmarkByUUID(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	ref := "master"
-	end := time.Now()
-	start := end.Add(-60 * 24 * time.Hour)
-	points, err := h.db.ListBenchmarkPoints(ctx, bench, ref, start, end)
+	points, err := h.db.ListBenchmarkPoints(ctx, bench, cr)
 	if err != nil {
 		return err
 	}
@@ -217,8 +219,9 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 
 	// Write response.
 	return h.render(ctx, w, "bench", map[string]interface{}{
-		"Benchmark":    bench,
-		"PointsGroups": groups,
+		"Benchmark":        bench,
+		"CommitIndexRange": cr,
+		"PointsGroups":     groups,
 	})
 }
 

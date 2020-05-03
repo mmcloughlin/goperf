@@ -15,43 +15,37 @@ SELECT
     r.uuid AS result_uuid,
     r.environment_uuid,
     c.sha AS commit_sha,
-    c.commit_time,
+    p.index AS commit_index,
     r.value
 FROM
     results AS r
     LEFT JOIN commits AS c
         ON r.commit_sha = c.sha
-    INNER JOIN commit_refs AS refs
-        ON r.commit_sha = refs.sha AND refs.ref = $1
+    INNER JOIN commit_positions AS p
+        ON p.sha = c.sha
 WHERE 1=1
-    AND r.benchmark_uuid = $2
-    AND c.commit_time BETWEEN $3 AND $4
+    AND r.benchmark_uuid = $1
+    AND p.index BETWEEN $2 AND $3
 ORDER BY
-    c.commit_time DESC
+    p.index
 `
 
 type BenchmarkPointsParams struct {
-	Ref             string
-	BenchmarkUUID   uuid.UUID
-	CommitTimeStart time.Time
-	CommitTimeEnd   time.Time
+	BenchmarkUUID  uuid.UUID
+	CommitIndexMin int32
+	CommitIndexMax int32
 }
 
 type BenchmarkPointsRow struct {
 	ResultUUID      uuid.UUID
 	EnvironmentUUID uuid.UUID
 	CommitSHA       []byte
-	CommitTime      time.Time
+	CommitIndex     int32
 	Value           float64
 }
 
 func (q *Queries) BenchmarkPoints(ctx context.Context, arg BenchmarkPointsParams) ([]BenchmarkPointsRow, error) {
-	rows, err := q.query(ctx, q.benchmarkPointsStmt, benchmarkPoints,
-		arg.Ref,
-		arg.BenchmarkUUID,
-		arg.CommitTimeStart,
-		arg.CommitTimeEnd,
-	)
+	rows, err := q.query(ctx, q.benchmarkPointsStmt, benchmarkPoints, arg.BenchmarkUUID, arg.CommitIndexMin, arg.CommitIndexMax)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +57,7 @@ func (q *Queries) BenchmarkPoints(ctx context.Context, arg BenchmarkPointsParams
 			&i.ResultUUID,
 			&i.EnvironmentUUID,
 			&i.CommitSHA,
-			&i.CommitTime,
+			&i.CommitIndex,
 			&i.Value,
 		); err != nil {
 			return nil, err

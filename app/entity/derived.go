@@ -1,8 +1,6 @@
 package entity
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 
 	"github.com/mmcloughlin/cb/app/change"
@@ -13,7 +11,7 @@ type Point struct {
 	ResultUUID      uuid.UUID
 	EnvironmentUUID uuid.UUID
 	CommitSHA       string
-	CommitTime      time.Time
+	CommitIndex     int
 	Value           float64
 }
 

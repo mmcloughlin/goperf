@@ -9,7 +9,11 @@
         width: '85%',
         height: '95%'
       },
-      hAxis: { textPosition: 'none' },
+      hAxis: {
+        min: {{ .CommitIndexRange.Min }},
+        max: {{ .CommitIndexRange.Max }},
+        textPosition: 'none'
+      },
       axisTitlesPosition: 'none',
       legend: { position: 'none' },
       series: [
@@ -57,7 +61,7 @@
     var data = google.visualization.arrayToDataTable([
       ['commit_index', 'value', 'filtered'],
       {{ range $idx, $point := $group.Points -}}
-      [{{ $idx }}, {{ $point.Value }}, {{ index $group.Filtered $idx }}],
+      [{{ .CommitIndex }}, {{ $point.Value }}, {{ index $group.Filtered $idx }}],
       {{ end }}
     ]);
 

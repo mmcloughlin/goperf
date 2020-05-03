@@ -11,19 +11,19 @@ SELECT
     r.uuid AS result_uuid,
     r.environment_uuid,
     c.sha AS commit_sha,
-    c.commit_time,
+    p.index AS commit_index,
     r.value
 FROM
     results AS r
     LEFT JOIN commits AS c
         ON r.commit_sha = c.sha
-    INNER JOIN commit_refs AS refs
-        ON r.commit_sha = refs.sha AND refs.ref = sqlc.arg(ref)
+    INNER JOIN commit_positions AS p
+        ON p.sha = c.sha
 WHERE 1=1
     AND r.benchmark_uuid = sqlc.arg(benchmark_uuid)
-    AND c.commit_time BETWEEN sqlc.arg(commit_time_start) AND sqlc.arg(commit_time_end)
+    AND p.index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
 ORDER BY
-    c.commit_time DESC
+    p.index
 ;
 
 -- name: TracePoints :many

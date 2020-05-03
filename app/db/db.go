@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -572,23 +571,22 @@ func result(ctx context.Context, q *db.Queries, r db.Result) (*entity.Result, er
 	}, nil
 }
 
-// ListBenchmarkPoints returns timeseries points for the given benchmark and commit time range.
-func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, ref string, start, end time.Time) (entity.Points, error) {
+// ListBenchmarkPoints returns timeseries points for the given benchmark and commit index range.
+func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, r entity.CommitIndexRange) (entity.Points, error) {
 	var ps []*entity.Point
 	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
-		ps, err = listBenchmarkPoints(ctx, q, b, ref, start, end)
+		ps, err = listBenchmarkPoints(ctx, q, b, r)
 		return err
 	})
 	return ps, err
 }
 
-func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark, ref string, start, end time.Time) (entity.Points, error) {
+func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark, r entity.CommitIndexRange) (entity.Points, error) {
 	ps, err := q.BenchmarkPoints(ctx, db.BenchmarkPointsParams{
-		Ref:             ref,
-		BenchmarkUUID:   b.UUID(),
-		CommitTimeStart: start,
-		CommitTimeEnd:   end,
+		BenchmarkUUID:  b.UUID(),
+		CommitIndexMin: int32(r.Min),
+		CommitIndexMax: int32(r.Max),
 	})
 	if err != nil {
 		return nil, err
@@ -597,12 +595,11 @@ func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark
 	// Convert to point objects. Reverse at the same time, since the query returns in descending order.
 	output := make(entity.Points, len(ps))
 	for i, p := range ps {
-		j := len(output) - i - 1
-		output[j] = &entity.Point{
+		output[i] = &entity.Point{
 			ResultUUID:      p.ResultUUID,
 			EnvironmentUUID: p.EnvironmentUUID,
 			CommitSHA:       hex.EncodeToString(p.CommitSHA),
-			CommitTime:      p.CommitTime,
+			CommitIndex:     int(p.CommitIndex),
 			Value:           p.Value,
 		}
 	}
