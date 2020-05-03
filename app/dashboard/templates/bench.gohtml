@@ -16,7 +16,13 @@
         { color: {{ color "gopher-blue" | js }}, dataOpacity: 0.5, pointSize: 8 },
         { color: {{ color "fuchsia" | js }}, lineWidth: 3, pointSize: 0, enableInteractivity: false },
       ],
-      tooltip: { trigger: 'selection' }
+      tooltip: { trigger: 'selection' },
+      explorer: {
+        actions: ['dragToZoom', 'rightClickToReset'],
+        axis: 'horizontal',
+        keepInBounds: true,
+        maxZoomIn: 0.01
+      }
     };
 
     var chart = new google.visualization.ScatterChart(element)
