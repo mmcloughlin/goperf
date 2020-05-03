@@ -49,7 +49,8 @@ func (r *Runner) Init(ctx context.Context) {
 	goroot := r.w.Path("goroot")
 	r.tc.Install(r.w, goroot)
 
-	r.gobin = filepath.Join(goroot, "bin", "go")
+	gorootbin := filepath.Join(goroot, "bin")
+	r.gobin = filepath.Join(gorootbin, "go")
 
 	// Configure Go environment.
 	r.w.SetEnv("GOROOT", goroot)
@@ -61,6 +62,11 @@ func (r *Runner) Init(ctx context.Context) {
 	r.w.DefineTool("CC", "gcc")
 	r.w.DefineTool("CXX", "g++")
 	r.w.DefineTool("PKG_CONFIG", "pkg-config")
+
+	// Environment required by standard library tests.
+	// BenchmarkExecHostname calls "hostname".
+	// https://github.com/golang/go/blob/83610c90bbe4f5f0b18ac01da3f3921c2f7090e4/src/os/exec/bench_test.go#L11
+	r.w.ExposeTool("hostname")
 
 	// Environment checks.
 	r.GoExec(ctx, "version")
@@ -125,7 +131,10 @@ func (r *Runner) Benchmark(ctx context.Context, s job.Suite, output string) {
 	// Setup.
 	dir := r.w.Sandbox("bench")
 	r.GoExec(ctx, "mod", "init", "bench")
-	r.GoExec(ctx, "get", "-t", s.Module.String())
+
+	if !s.Module.IsMeta() {
+		r.GoExec(ctx, "get", "-t", s.Module.String())
+	}
 
 	// Open the output.
 	outputfile := filepath.Join(dir, "bench.out")
@@ -186,6 +195,9 @@ func suiteconfig(s job.Suite) cfg.Provider {
 
 // testargs builds "go test" arguments for the given suite.
 func testargs(s job.Suite) []string {
+	if s.Module.IsMeta() {
+		s.Tests = job.SkipTests
+	}
 	args := []string{"test"}
 	args = append(args, "-run", s.TestRegex())
 	if s.Short {
@@ -194,7 +206,11 @@ func testargs(s job.Suite) []string {
 	args = append(args, "-bench", s.BenchmarkRegex())
 	args = append(args, "-benchtime", s.BenchmarkTime().String())
 	args = append(args, "-timeout", durationdefault(s.Timeout, "0"))
-	args = append(args, s.Module.Path+"/...")
+	if s.Module.IsMeta() {
+		args = append(args, s.Module.Path)
+	} else {
+		args = append(args, s.Module.Path+"/...")
+	}
 	return args
 }
 

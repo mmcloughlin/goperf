@@ -22,18 +22,16 @@ import (
 // Keys defines which configuration keys hold critical parameters in results
 // loading.
 type Keys struct {
-	ToolchainRef  string // git ref for the go toolchain version under test
-	ModulePath    string // path to the go module under test
-	ModuleVersion string // version of the go module under test
-	Package       string // package under test
+	ToolchainRef string // git ref for the go toolchain version under test
+	Module       string // go module under test
+	Package      string // package under test
 }
 
 // All returns all special keys.
 func (k Keys) All() []string {
 	return []string{
 		k.ToolchainRef,
-		k.ModulePath,
-		k.ModuleVersion,
+		k.Module,
 		k.Package,
 	}
 }
@@ -41,10 +39,9 @@ func (k Keys) All() []string {
 // DefaultKeys defines the default configuration keys holding critical result
 // parameters.
 var DefaultKeys = Keys{
-	ToolchainRef:  "toolchain-ref",
-	ModulePath:    "suite-modpath",
-	ModuleVersion: "suite-modversion",
-	Package:       "pkg",
+	ToolchainRef: "toolchain-ref",
+	Module:       "suite-mod",
+	Package:      "pkg",
 }
 
 // Loader loads benchmark result files and associated data.
@@ -121,7 +118,7 @@ func (l *Loader) load(ctx context.Context, name string) (_ []*entity.Result, err
 	r := io.TeeReader(f, h)
 
 	// Parse.
-	results, err := parse.Reader(r)
+	collection, err := parse.Reader(r)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +128,8 @@ func (l *Loader) load(ctx context.Context, name string) (_ []*entity.Result, err
 	h.Sum(datafile.SHA256[:0])
 
 	// Process results.
-	output := make([]*entity.Result, 0, len(results))
-	for _, result := range results {
+	output := make([]*entity.Result, 0, len(collection.Results))
+	for _, result := range collection.Results {
 		out, err := l.convert(ctx, result)
 		if err != nil {
 			return nil, err
@@ -194,15 +191,12 @@ func (l *Loader) commit(ctx context.Context, r *parse.Result) (*entity.Commit, e
 // benchmark builds the benchmark object corresponding to this result.
 func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*entity.Benchmark, error) {
 	// Load module path, version and package.
-	modpath, err := lookup(r.Labels, l.keys.ModulePath)
+	module, err := lookup(r.Labels, l.keys.Module)
 	if err != nil {
 		return nil, err
 	}
 
-	modversion, err := lookup(r.Labels, l.keys.ModuleVersion)
-	if err != nil {
-		return nil, err
-	}
+	m := mod.Parse(module)
 
 	pkgpath, err := lookup(r.Labels, l.keys.Package)
 	if err != nil {
@@ -210,21 +204,24 @@ func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*entity.Benchm
 	}
 
 	// Resolve canonical version.
-	info, err := l.mod.Info(ctx, modpath, modversion)
+	v, err := l.version(ctx, m.Path, m.Version)
 	if err != nil {
 		return nil, err
 	}
 
 	// Extract package path relative to module.
-	relpath, err := rel(modpath, pkgpath)
-	if err != nil {
-		return nil, err
+	relpath := pkgpath
+	if !mod.IsMetaPackage(m.Path) {
+		relpath, err = rel(m.Path, pkgpath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Build entity objects.
 	mod := &entity.Module{
-		Path:    modpath,
-		Version: info.Version,
+		Path:    m.Path,
+		Version: v,
 	}
 
 	pkg := &entity.Package{
@@ -241,6 +238,25 @@ func (l *Loader) benchmark(ctx context.Context, r *parse.Result) (*entity.Benchm
 	}
 
 	return bench, nil
+}
+
+// version fetches the canonical module version.
+func (l *Loader) version(ctx context.Context, path, rev string) (string, error) {
+	// Special case for meta packages like standard library.
+	if mod.IsMetaPackage(path) {
+		if rev != "" {
+			return "", fmt.Errorf("unexpected version for meta package %q: got %q", path, rev)
+		}
+		return "", nil
+	}
+
+	// Fetch version.
+	info, err := l.mod.Info(ctx, path, rev)
+	if err != nil {
+		return "", err
+	}
+
+	return info.Version, nil
 }
 
 // environment extracts the environment fields from the benchmark labels.

@@ -4,6 +4,8 @@ package job
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/mmcloughlin/cb/pkg/mod"
 )
 
 type Job struct {
@@ -15,6 +17,9 @@ type Toolchain struct {
 	Type   string            `json:"type"`
 	Params map[string]string `json:"params"`
 }
+
+// SkipTests is a tests regular expression that will cause no tests to be run.
+const SkipTests = "none^"
 
 type Suite struct {
 	Module     Module        `json:"module"`
@@ -60,6 +65,12 @@ func (m Module) String() string {
 		s += "@" + m.Version
 	}
 	return s
+}
+
+// IsMeta reports whether m is a special-case module such as the standard
+// library.
+func (m Module) IsMeta() bool {
+	return mod.IsMetaPackage(m.Path)
 }
 
 func Marshal(j *Job) ([]byte, error) {

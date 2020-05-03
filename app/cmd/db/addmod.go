@@ -18,6 +18,8 @@ import (
 
 type AddMod struct {
 	command.Base
+
+	meta bool
 }
 
 func NewAddMod(b command.Base) *AddMod {
@@ -36,6 +38,10 @@ func (*AddMod) Usage() string {
 	return ""
 }
 
+func (cmd *AddMod) SetFlags(f *flag.FlagSet) {
+	f.BoolVar(&cmd.meta, "meta", false, "special-case meta module such as \"std\" or \"cmd\"")
+}
+
 func (cmd *AddMod) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) (status subcommands.ExitStatus) {
 	// Process arguments.
 	path := f.Arg(0)
@@ -44,21 +50,14 @@ func (cmd *AddMod) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{
 	}
 
 	// Fetch latest version.
-	mdb := mod.NewOfficialModuleProxy(http.DefaultClient)
-	latest, err := mdb.Latest(ctx, path)
+	v, err := cmd.version(ctx, path)
 	if err != nil {
 		return cmd.Error(err)
 	}
 
-	cmd.Log.Info("found latest version",
-		zap.String("path", path),
-		zap.String("version", latest.Version),
-		zap.Time("time", latest.Time),
-	)
-
 	m := &entity.Module{
 		Path:    path,
-		Version: latest.Version,
+		Version: v,
 	}
 
 	// Confirm.
@@ -89,4 +88,25 @@ func (cmd *AddMod) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{
 	}
 
 	return subcommands.ExitSuccess
+}
+
+func (cmd *AddMod) version(ctx context.Context, path string) (string, error) {
+	if cmd.meta {
+		cmd.Log.Info("meta module assumed versionless")
+		return "", nil
+	}
+
+	mdb := mod.NewOfficialModuleProxy(http.DefaultClient)
+	latest, err := mdb.Latest(ctx, path)
+	if err != nil {
+		return "", err
+	}
+
+	cmd.Log.Info("found latest version",
+		zap.String("path", path),
+		zap.String("version", latest.Version),
+		zap.Time("time", latest.Time),
+	)
+
+	return latest.Version, nil
 }

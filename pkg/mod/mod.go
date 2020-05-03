@@ -18,6 +18,23 @@ import (
 	"github.com/mmcloughlin/cb/internal/errutil"
 )
 
+// IsMetaPackage checks if name is a reserved package name that expands to multiple packages.
+func IsMetaPackage(name string) bool {
+	return name == "std" || name == "cmd" || name == "all"
+}
+
+// Parse module string into path and version.
+func Parse(s string) module.Version {
+	i := strings.LastIndexByte(s, '@')
+	if i < 0 {
+		return module.Version{Path: s}
+	}
+	return module.Version{
+		Path:    s[:i],
+		Version: s[i+1:],
+	}
+}
+
 // Reference: https://github.com/golang/go/blob/b5c66de0892d0e9f3f59126eeebc31070e79143b/src/cmd/go/internal/modfetch/repo.go#L56-L65
 //
 //	// A Rev describes a single revision in a module repository.

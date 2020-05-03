@@ -258,16 +258,16 @@ func TestWriteParseTagsRoundtrip(t *testing.T) {
 	fmt.Fprintln(buf, "BenchmarkEncodeDigitsSpeed1e4-8   	      30	    482808 ns/op")
 
 	// Parse out.
-	results, err := parse.Reader(buf)
+	collection, err := parse.Reader(buf)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Extract label.
-	if len(results) != 1 {
+	if len(collection.Results) != 1 {
 		t.Fatal("expected one result")
 	}
-	s := results[0].Labels["key"]
+	s := collection.Results[0].Labels["key"]
 
 	// Parse out value and tags.
 	v, tags := ParseValueTags(s)

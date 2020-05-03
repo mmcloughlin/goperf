@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/mod/module"
 
 	"github.com/mmcloughlin/cb/app/entity"
 	"github.com/mmcloughlin/cb/app/internal/fixture"
@@ -22,16 +23,14 @@ func TestLoader(t *testing.T) {
 
 	// Setup configuration lines.
 	keys := results.Keys{
-		ToolchainRef:  "ref",
-		ModulePath:    "modpath",
-		ModuleVersion: "modversion",
-		Package:       "pkg",
+		ToolchainRef: "ref",
+		Module:       "mod",
+		Package:      "pkg",
 	}
 
 	c := cfg.Configuration{
 		cfg.KeyValue(cfg.Key(keys.ToolchainRef), cfg.StringValue(ref)),
-		cfg.KeyValue(cfg.Key(keys.ModulePath), cfg.StringValue(fixture.Module.Path)),
-		cfg.KeyValue(cfg.Key(keys.ModuleVersion), cfg.StringValue(fixture.ModuleSHA)),
+		cfg.KeyValue(cfg.Key(keys.Module), module.Version{Path: fixture.Module.Path, Version: fixture.ModuleSHA}),
 		cfg.KeyValue(cfg.Key(keys.Package), cfg.StringValue(fixture.Package.ImportPath())),
 	}
 

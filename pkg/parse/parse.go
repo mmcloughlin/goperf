@@ -12,6 +12,12 @@ import (
 	"golang.org/x/perf/storage/benchfmt"
 )
 
+// Collection of results from parsing benchmark output.
+type Collection struct {
+	Results []*Result
+	Errors  []*Error
+}
+
 // Result is a benchmark result.
 type Result struct {
 	// FullName is the complete name of the benchmark, including parameters.
@@ -32,26 +38,43 @@ type Result struct {
 	Line int
 }
 
+// Error represents a single benchmark line that failed to parse.
+type Error struct {
+	Line    int
+	Content string
+	Reason  string
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("line %d: %s", e.Line, e.Reason)
+}
+
 // Bytes parses results from b.
-func Bytes(b []byte) ([]*Result, error) {
+func Bytes(b []byte) (*Collection, error) {
 	return Reader(bytes.NewReader(b))
 }
 
 // Reader parses results from the supplied reader.
-func Reader(r io.Reader) ([]*Result, error) {
+func Reader(r io.Reader) (*Collection, error) {
 	br := benchfmt.NewReader(r)
-	var all []*Result
+	c := &Collection{}
 	for br.Next() {
-		results, err := convert(br.Result())
+		res := br.Result()
+		results, err := convert(res)
 		if err != nil {
-			return nil, err
+			c.Errors = append(c.Errors, &Error{
+				Line:    res.LineNum,
+				Content: res.Content,
+				Reason:  err.Error(),
+			})
+			continue
 		}
-		all = append(all, results...)
+		c.Results = append(c.Results, results...)
 	}
 	if err := br.Err(); err != nil {
 		return nil, err
 	}
-	return all, nil
+	return c, nil
 }
 
 // convert parsed line into multiple results.

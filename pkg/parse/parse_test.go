@@ -20,36 +20,38 @@ func TestParse(t *testing.T) {
 		"c: c1",
 		"BenchmarkY-4 100 37.6 unitc",
 	}
-	expect := []*Result{
-		{
-			FullName:   "BenchmarkX/k1=v1/v2/k3=v3-8",
-			Name:       "X",
-			Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
-			Labels:     map[string]string{"a": "a1", "b": "b1"},
-			Iterations: 100,
-			Value:      42.42,
-			Unit:       "unita",
-			Line:       3,
-		},
-		{
-			FullName:   "BenchmarkX/k1=v1/v2/k3=v3-8",
-			Name:       "X",
-			Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
-			Labels:     map[string]string{"a": "a1", "b": "b1"},
-			Iterations: 100,
-			Value:      100,
-			Unit:       "unitb",
-			Line:       3,
-		},
-		{
-			FullName:   "BenchmarkY-4",
-			Name:       "Y",
-			Parameters: map[string]string{"gomaxprocs": "4"},
-			Labels:     map[string]string{"a": "a1", "b": "b2", "c": "c1"},
-			Iterations: 100,
-			Value:      37.6,
-			Unit:       "unitc",
-			Line:       6,
+	expect := &Collection{
+		Results: []*Result{
+			{
+				FullName:   "BenchmarkX/k1=v1/v2/k3=v3-8",
+				Name:       "X",
+				Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
+				Labels:     map[string]string{"a": "a1", "b": "b1"},
+				Iterations: 100,
+				Value:      42.42,
+				Unit:       "unita",
+				Line:       3,
+			},
+			{
+				FullName:   "BenchmarkX/k1=v1/v2/k3=v3-8",
+				Name:       "X",
+				Parameters: map[string]string{"k1": "v1", "sub2": "v2", "k3": "v3", "gomaxprocs": "8"},
+				Labels:     map[string]string{"a": "a1", "b": "b1"},
+				Iterations: 100,
+				Value:      100,
+				Unit:       "unitb",
+				Line:       3,
+			},
+			{
+				FullName:   "BenchmarkY-4",
+				Name:       "Y",
+				Parameters: map[string]string{"gomaxprocs": "4"},
+				Labels:     map[string]string{"a": "a1", "b": "b2", "c": "c1"},
+				Iterations: 100,
+				Value:      37.6,
+				Unit:       "unitc",
+				Line:       6,
+			},
 		},
 	}
 
@@ -65,16 +67,9 @@ func TestParse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(expect) != len(got) {
-		t.Fatalf("got %d results; expect %d", len(got), len(expect))
-	}
-
-	for i := range expect {
-		if diff := cmp.Diff(expect[i], got[i]); diff != "" {
-			t.Logf("index = %d", i)
-			t.Logf("diff  =\n%s", diff)
-			t.FailNow()
-		}
+	if diff := cmp.Diff(expect, got); diff != "" {
+		t.Logf("diff =\n%s", diff)
+		t.FailNow()
 	}
 }
 
@@ -91,12 +86,16 @@ func TestParseTestdata(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			rs, err := Bytes(b)
+			c, err := Bytes(b)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if len(rs) == 0 {
+			for _, e := range c.Errors {
+				t.Log(e)
+			}
+
+			if len(c.Results) == 0 {
 				t.Fatal("no results parsed")
 			}
 		})
