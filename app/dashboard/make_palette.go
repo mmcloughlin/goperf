@@ -82,7 +82,7 @@ func Palette(shades int) ([]byte, error) {
 
 	fmt.Fprintf(buf, ":root {\n")
 	for _, name := range brand.ColorNames {
-		fmt.Fprintf(buf, "  --%s: %s;\n", name, brand.Colors[name])
+		fmt.Fprintf(buf, "  --%s: %s;\n", name, strings.ToLower(brand.Colors[name]))
 		for s := 1; s <= shades; s++ {
 			shade, err := brand.Lighten(name, float64(s)/float64(shades+1))
 			if err != nil {

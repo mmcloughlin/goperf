@@ -12,6 +12,14 @@ type Change struct {
 	Post        Stats
 }
 
+func (c *Change) Delta() float64 {
+	return c.Post.Mean - c.Pre.Mean
+}
+
+func (c *Change) Percent() float64 {
+	return 100 * c.Delta() / c.Pre.Mean
+}
+
 // Type of a change: improvement or regression.
 type Type int
 

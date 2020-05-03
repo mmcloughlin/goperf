@@ -402,6 +402,10 @@ type Change struct {
 	change.Change
 }
 
+func (c *Change) Type() change.Type {
+	return change.Classify(c.Pre.Mean, c.Post.Mean, c.Benchmark.Unit)
+}
+
 func groupChanges(cs []*entity.ChangeSummary) []*CommitChangeGroup {
 	// Group by commit.
 	byidx := map[int]*CommitChangeGroup{}

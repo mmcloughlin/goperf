@@ -22,7 +22,14 @@ const (
 	CoolGray   = "#DBD9D6"
 )
 
-// Colors is a map of named brand colors.
+// Status colors.
+const (
+	Pass = "#36B37E"
+	Fail = "#FF5630"
+	Warn = "#FFAB00"
+)
+
+// Colors is a map of named colors.
 var Colors = map[string]string{
 	"gopher-blue": GopherBlue,
 	"light-blue":  LightBlue,
@@ -34,6 +41,10 @@ var Colors = map[string]string{
 	"slate":       Slate,
 	"purple":      Purple,
 	"cool-gray":   CoolGray,
+
+	"pass": Pass,
+	"fail": Fail,
+	"warn": Warn,
 }
 
 // ColorNames is the list of color names.
