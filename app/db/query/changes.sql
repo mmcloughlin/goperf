@@ -27,6 +27,7 @@ FROM
     INNER JOIN modules AS mod
         ON pkg.module_uuid=mod.uuid
 WHERE 1=1
+    AND ABS(chg.effect_size) > sqlc.arg(effect_size_min)
     AND commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
 ORDER BY
     commit_index DESC

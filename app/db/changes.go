@@ -66,18 +66,19 @@ func (d *DB) storeChangesBatch(ctx context.Context, tx *sql.Tx, cs []*entity.Cha
 }
 
 // ListChangeSummaries returns changes with associated metadata.
-func (d *DB) ListChangeSummaries(ctx context.Context, r entity.CommitIndexRange) ([]*entity.ChangeSummary, error) {
+func (d *DB) ListChangeSummaries(ctx context.Context, r entity.CommitIndexRange, minEffectSize float64) ([]*entity.ChangeSummary, error) {
 	var cs []*entity.ChangeSummary
 	err := d.txq(ctx, func(q *db.Queries) error {
 		var err error
-		cs, err = listChangeSummaries(ctx, q, r)
+		cs, err = listChangeSummaries(ctx, q, r, minEffectSize)
 		return err
 	})
 	return cs, err
 }
 
-func listChangeSummaries(ctx context.Context, q *db.Queries, r entity.CommitIndexRange) ([]*entity.ChangeSummary, error) {
+func listChangeSummaries(ctx context.Context, q *db.Queries, r entity.CommitIndexRange, minEffectSize float64) ([]*entity.ChangeSummary, error) {
 	rows, err := q.ChangeSummaries(ctx, db.ChangeSummariesParams{
+		EffectSizeMin:  minEffectSize,
 		CommitIndexMin: int32(r.Min),
 		CommitIndexMax: int32(r.Max),
 	})

@@ -33,12 +33,14 @@ FROM
     INNER JOIN modules AS mod
         ON pkg.module_uuid=mod.uuid
 WHERE 1=1
-    AND commit_index BETWEEN $1 AND $2
+    AND ABS(chg.effect_size) > $1
+    AND commit_index BETWEEN $2 AND $3
 ORDER BY
     commit_index DESC
 `
 
 type ChangeSummariesParams struct {
+	EffectSizeMin  float64
 	CommitIndexMin int32
 	CommitIndexMax int32
 }
@@ -68,7 +70,7 @@ type ChangeSummariesRow struct {
 }
 
 func (q *Queries) ChangeSummaries(ctx context.Context, arg ChangeSummariesParams) ([]ChangeSummariesRow, error) {
-	rows, err := q.query(ctx, q.changeSummariesStmt, changeSummaries, arg.CommitIndexMin, arg.CommitIndexMax)
+	rows, err := q.query(ctx, q.changeSummariesStmt, changeSummaries, arg.EffectSizeMin, arg.CommitIndexMin, arg.CommitIndexMax)
 	if err != nil {
 		return nil, err
 	}
