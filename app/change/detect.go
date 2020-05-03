@@ -65,7 +65,7 @@ func (d *Detector) Detect(series trace.Series) []Change {
 			}
 			pre := w.stats(j-d.WindowSize, j)
 			post := w.stats(j, j+d.WindowSize)
-			effect := cohen(pre, post)
+			effect := cohen(post, pre)
 			if math.Abs(effect) > math.Abs(chg.EffectSize) {
 				chg.CommitIndex = series[j].CommitIndex
 				chg.EffectSize = effect
