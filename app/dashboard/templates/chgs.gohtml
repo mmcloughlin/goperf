@@ -13,7 +13,7 @@
   </tr>
   {{ range .Changes }}
   <tr>
-    <td>{{ template "bench" .Benchmark }}</td>
+    <td>{{ template "change" . }}</td>
     <td>{{ printf "%+.2f" .EffectSize }}</td>
     <td>{{ printf "%.2f" .Pre.Mean }}</td>
     <td>{{ printf "%.2f" .Post.Mean }}</td>

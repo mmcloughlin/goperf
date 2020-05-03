@@ -453,7 +453,27 @@ func groupChanges(cs []*entity.ChangeSummary) []*CommitChangeGroup {
 // commitRange determines a specified commit range for the given request.
 func (h *Handlers) commitRange(r *http.Request) (entity.CommitIndexRange, error) {
 	ctx := r.Context()
-	n := 300
+
+	// Look for explicit min/max.
+	min := intparam(r, "min", -1)
+	max := intparam(r, "max", -1)
+	if 0 <= min && min < max {
+		return entity.CommitIndexRange{
+			Min: min,
+			Max: max,
+		}, nil
+	}
+
+	// Support center "c" and total number "n".
+	n := intparam(r, "n", 300)
+	mid := intparam(r, "c", -1)
+
+	if mid >= 0 {
+		return entity.CommitIndexRange{
+			Min: mid - n/2,
+			Max: mid + n/2,
+		}, nil
+	}
 
 	// Determine commit index.
 	idx, err := h.db.MostRecentCommitIndex(ctx)
@@ -503,4 +523,12 @@ func envName(e entity.Properties) string {
 		return strings.Join(fields, ", ")
 	}
 	return e.UUID().String()
+}
+
+func intparam(r *http.Request, key string, dflt int) int {
+	v, err := strconv.Atoi(r.URL.Query().Get(key))
+	if err != nil {
+		return dflt
+	}
+	return v
 }

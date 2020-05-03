@@ -7,12 +7,14 @@
     var options = {
       chartArea: {
         width: '85%',
-        height: '95%'
+        height: '80%'
       },
       hAxis: {
-        min: {{ .CommitIndexRange.Min }},
-        max: {{ .CommitIndexRange.Max }},
-        textPosition: 'none'
+        viewWindow: {
+          min: {{ .CommitIndexRange.Min }},
+          max: {{ .CommitIndexRange.Max }}
+        },
+        textPosition: 'out'
       },
       axisTitlesPosition: 'none',
       legend: { position: 'none' },
@@ -89,7 +91,7 @@
 
 {{ range $idx, $group := .PointsGroups }}
 <h2>environment {{ $group.Title }}</h2>
-<div id="chart{{ $idx }}"></div>
+<div id="chart{{ $idx }}" class="chart"></div>
 {{ end }}
 
 {{ end }}

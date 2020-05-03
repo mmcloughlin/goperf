@@ -1,6 +1,7 @@
 {{ define "mod" }}<a href="/mod/{{ .UUID }}">{{ .Path }}</a>{{ end }}
 {{ define "pkg" }}<a href="/pkg/{{ .UUID }}">{{ .ImportPath }}</a>{{ end }}
 {{ define "bench" }}<a href="/bench/{{ .UUID }}">{{ .FullName }} {{ .Unit }}</a>{{ end }}
+{{ define "change" }}<a href="/bench/{{ .Benchmark.UUID }}?c={{ .Change.CommitIndex }}">{{ .Benchmark.FullName }} {{ .Benchmark.Unit }}</a>{{ end }}
 {{ define "sha" }}<a href="/commit/{{ . }}"><code>{{ slice . 0 10 }}</code></a>{{ end }}
 {{ define "commit" }}{{ template "sha" .SHA }}{{ end }}
 {{ define "file" }}<a href="/file/{{ .UUID }}"><code>{{ template "uuidshort" .UUID }}</code></a>{{ end }}
