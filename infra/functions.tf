@@ -96,11 +96,11 @@ resource "google_cloud_scheduler_job" "changedetect_schedule" {
 }
 
 resource "google_cloudfunctions_function" "result_function" {
-  for_each = toset([for k, v in var.functions : k if v.trigger_type == "result"])
+  for_each = { for k, v in var.functions : k => v if v.trigger_type == "result" }
 
   name                  = each.key
-  available_memory_mb   = 256
-  timeout               = 480
+  available_memory_mb   = lookup(each.value, "memory", 128)
+  timeout               = lookup(each.value, "timeout", 60)
   source_archive_bucket = google_storage_bucket.functions_bucket.name
   source_archive_object = google_storage_bucket_object.function_zip[each.key].name
   entry_point           = "Handle"
