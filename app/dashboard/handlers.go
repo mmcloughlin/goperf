@@ -180,9 +180,45 @@ func (h *Handlers) Package(w http.ResponseWriter, r *http.Request) error {
 
 	// Write response.
 	return h.render(ctx, w, "pkg", map[string]interface{}{
-		"Package":    pkg,
-		"Benchmarks": benchs,
+		"Package":         pkg,
+		"BenchmarkGroups": benchmarkGroups(benchs),
 	})
+}
+
+type BenchmarkGroup struct {
+	Name  string
+	Units []*entity.Benchmark
+}
+
+func benchmarkGroups(benchs []*entity.Benchmark) []*BenchmarkGroup {
+	// Group by name.
+	byname := map[string]*BenchmarkGroup{}
+	for _, bench := range benchs {
+		name := bench.FullName
+		if _, ok := byname[name]; !ok {
+			byname[name] = &BenchmarkGroup{Name: name}
+		}
+		byname[name].Units = append(byname[name].Units, bench)
+	}
+
+	// Convert to list.
+	groups := []*BenchmarkGroup{}
+	for _, group := range byname {
+		groups = append(groups, group)
+	}
+
+	sort.Slice(groups, func(i, j int) bool {
+		return groups[i].Name < groups[j].Name
+	})
+
+	for _, group := range groups {
+		u := group.Units
+		sort.Slice(u, func(i, j int) bool {
+			return units.Less(u[i].Unit, u[j].Unit)
+		})
+	}
+
+	return groups
 }
 
 func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {

@@ -11,6 +11,24 @@ const (
 	Allocs         = "allocs/op"
 )
 
+var priority = map[string]int{
+	Runtime:        4,
+	DataRate:       3,
+	BytesAllocated: 2,
+	Allocs:         1,
+}
+
+// Less is a comparison function for units.
+func Less(a, b string) bool {
+	if priority[a] > priority[b] {
+		return true
+	}
+	if priority[a] == priority[b] {
+		return a < b
+	}
+	return false
+}
+
 // Quantity is a value in some unit.
 type Quantity struct {
 	Value float64

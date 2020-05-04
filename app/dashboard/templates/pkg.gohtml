@@ -6,8 +6,22 @@
   </dl>
 </div>
 <ul>
-  {{ range .Benchmarks }}
-  <li><a href="/bench/{{ .UUID }}">{{ .Name }}</a></li>
-  {{ end }}
 </ul>
+<table>
+  <tr>
+    <th>Benchmark</th>
+    <th>Units</th>
+  </tr>
+  {{ range .BenchmarkGroups }}
+  <tr>
+    <td>{{ .Name }}</td>
+    <td>
+      {{ range $i, $bench := .Units }}
+      {{ if ne $i 0 }}&middot;{{ end }}
+      <a href="/bench/{{ $bench.UUID }}">{{ $bench.Unit }}</a>
+      {{ end }}
+    </td>
+  </tr>
+  {{ end }}
+</table>
 {{ end }}

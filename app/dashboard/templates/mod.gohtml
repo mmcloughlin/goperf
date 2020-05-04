@@ -5,9 +5,15 @@
     <dt>Version</dt> <dd>{{ .Module.Version }}</dd>
   </dl>
 </div>
-<ul>
+
+<table>
+  <tr>
+    <th>Package</th>
+  </tr>
   {{ range .Packages }}
-  <li>{{ template "pkg" . }}</li>
+  <tr>
+    <td>{{ template "pkg" . }}</td>
+  </tr>
   {{ end }}
-</ul>
+</table>
 {{ end }}
