@@ -33,7 +33,7 @@ func initialize(ctx context.Context, l *zap.Logger) error {
 		dashboard.WithLogger(l),
 		dashboard.WithDataFileSystem(datafs),
 		dashboard.WithCacheControl(httputil.CacheControl{
-			MaxAge:     time.Hour,
+			MaxAge:     10 * time.Minute,
 			Directives: []string{"public"},
 		}),
 	)
