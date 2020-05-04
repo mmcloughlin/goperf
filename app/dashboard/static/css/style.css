@@ -162,14 +162,52 @@ header {
 
 header nav {
   margin: 0 auto;
+  padding: 0;
   max-width: 70em;
+  display: flex;
+  justify-content: flex-end;
 }
 
-header .logo {
+nav .logo {
   display: block;
   width: 5rem;
   margin: 0;
   padding: 0;
+}
+
+nav a.logo {
+  margin-right: auto;
+}
+
+nav ul.menu {
+  display: flex;
+  justify-content: flex-end;
+  list-style: none;
+  margin: 0 5em;
+  padding: 0;
+}
+
+nav ul.menu li {
+  display: inline-flex;
+  flex: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav ul.menu li a {
+  border-bottom: 5px solid transparent;
+  border-top: 5px solid transparent;
+  color: white;
+  display: inline-block;
+  margin: 0 15px;
+  padding: 20px 15px;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+nav ul.menu li a:hover {
+  border-top-color: var(--fuchsia);
 }
 
 main {
