@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -20,6 +21,7 @@ import (
 	"github.com/mmcloughlin/cb/app/change"
 	"github.com/mmcloughlin/cb/app/db"
 	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/cb/app/env"
 	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/internal/errutil"
 	"github.com/mmcloughlin/cb/pkg/fs"
@@ -35,6 +37,7 @@ type Handlers struct {
 	mux       *http.ServeMux
 	static    *httputil.Static
 	templates *Templates
+	envcache  sync.Map
 	log       *zap.Logger
 }
 
@@ -285,13 +288,13 @@ func (h *Handlers) groups(ctx context.Context, points entity.Points) ([]*PointsG
 	// Fetch environment objects and build groups.
 	groups := []*PointsGroup{}
 	for id, points := range byenv {
-		env, err := h.db.FindPropertiesByUUID(ctx, id)
+		e, err := h.env(ctx, id)
 		if err != nil {
 			return nil, err
 		}
 		groups = append(groups, &PointsGroup{
-			Title:       envName(env),
-			Environment: env,
+			Title:       env.Title(e),
+			Environment: e,
 			Points:      points,
 		})
 	}
@@ -428,9 +431,14 @@ func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	groups, err := h.groupChanges(ctx, chgs)
+	if err != nil {
+		return err
+	}
+
 	// Write response.
 	return h.render(ctx, w, "chgs", map[string]interface{}{
-		"CommitChangeGroups": groupChanges(chgs),
+		"CommitChangeGroups": groups,
 	})
 }
 
@@ -444,7 +452,8 @@ type CommitChangeGroup struct {
 
 // Change is a single change.
 type Change struct {
-	Benchmark *entity.Benchmark
+	Benchmark   *entity.Benchmark
+	Environment string
 	change.Change
 }
 
@@ -452,7 +461,7 @@ func (c *Change) Type() change.Type {
 	return change.Classify(c.Pre.Mean, c.Post.Mean, c.Benchmark.Unit)
 }
 
-func groupChanges(cs []*entity.ChangeSummary) []*CommitChangeGroup {
+func (h *Handlers) groupChanges(ctx context.Context, cs []*entity.ChangeSummary) ([]*CommitChangeGroup, error) {
 	// Group by commit.
 	byidx := map[int]*CommitChangeGroup{}
 	for _, c := range cs {
@@ -464,10 +473,16 @@ func groupChanges(cs []*entity.ChangeSummary) []*CommitChangeGroup {
 			}
 		}
 
+		e, err := h.env(ctx, c.EnvironmentUUID)
+		if err != nil {
+			return nil, err
+		}
+
 		byidx := byidx[c.CommitIndex]
 		byidx.Changes = append(byidx.Changes, &Change{
-			Benchmark: c.Benchmark,
-			Change:    c.Change,
+			Benchmark:   c.Benchmark,
+			Environment: env.Short(e),
+			Change:      c.Change,
 		})
 	}
 
@@ -490,7 +505,7 @@ func groupChanges(cs []*entity.ChangeSummary) []*CommitChangeGroup {
 		})
 	}
 
-	return groups
+	return groups, nil
 }
 
 // commitRange determines a specified commit range for the given request.
@@ -534,6 +549,22 @@ func (h *Handlers) render(ctx context.Context, w io.Writer, name string, data in
 	return h.templates.ExecuteTemplate(ctx, w, name+".gohtml", "main", data)
 }
 
+// env looks up the environment with the given ID, returning from a cache if it's been accessed before.
+func (h *Handlers) env(ctx context.Context, id uuid.UUID) (entity.Properties, error) {
+	v, ok := h.envcache.Load(id)
+	if ok {
+		return v.(entity.Properties), nil
+	}
+
+	e, err := h.db.FindPropertiesByUUID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	h.envcache.Store(id, e)
+	return e, nil
+}
+
 func parseuuid(path, prefix string) (uuid.UUID, error) {
 	rest, err := stripprefix(path, prefix)
 	if err != nil {
@@ -547,25 +578,6 @@ func stripprefix(path, prefix string) (string, error) {
 		return "", fmt.Errorf("path %q expected to have prefix %q", path, prefix)
 	}
 	return path[len(prefix):], nil
-}
-
-func envName(e entity.Properties) string {
-	keys := []string{
-		"go-os",
-		"go-arch",
-		"affinecpu-cpu0-modelname",
-		"affinecpufreq-cpu0-cpuinfomaxfreq",
-	}
-	fields := []string{}
-	for _, key := range keys {
-		if v, ok := e[key]; ok {
-			fields = append(fields, v)
-		}
-	}
-	if len(fields) > 0 {
-		return strings.Join(fields, ", ")
-	}
-	return e.UUID().String()
 }
 
 func intparam(r *http.Request, key string, dflt int) int {

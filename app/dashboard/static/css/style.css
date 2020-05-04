@@ -148,6 +148,14 @@ th {
   text-align: left;
 }
 
+table code {
+  color: var(--slate);
+}
+
+table .numeric {
+  text-align: right;
+}
+
 .sep {
   color: var(--slate);
   font-weight: bold;
@@ -276,10 +284,22 @@ table.properties td.value {
   overflow-wrap: anywhere;
 }
 
+table.changes .numeric {
+  width: 5rem;
+}
+
+table.changes .change {
+  font-weight: bold;
+}
+
 table.changes .regression {
-  background-color: var(--fail-1);
+  color: var(--fail);
 }
 
 table.changes .improvement {
-  background-color: var(--pass-1);
+  color: var(--pass);
+}
+
+table.changes .unknown {
+  color: var(--warn);
 }
