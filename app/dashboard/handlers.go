@@ -30,6 +30,7 @@ type Handlers struct {
 	db       *db.DB
 	staticfs fs.Readable
 	datafs   fs.Readable
+	cc       httputil.CacheControl
 
 	mux       *http.ServeMux
 	static    *httputil.Static
@@ -51,6 +52,10 @@ func WithDataFileSystem(r fs.Readable) Option {
 	return func(h *Handlers) { h.datafs = r }
 }
 
+func WithCacheControl(cc httputil.CacheControl) Option {
+	return func(h *Handlers) { h.cc = cc }
+}
+
 func WithLogger(l *zap.Logger) Option {
 	return func(h *Handlers) { h.log = l.Named("handlers") }
 }
@@ -61,6 +66,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 		db:        d,
 		staticfs:  StaticFileSystem,
 		datafs:    fs.Null,
+		cc:        httputil.CacheControlNever,
 		mux:       http.NewServeMux(),
 		templates: NewTemplates(TemplateFileSystem),
 		log:       zap.NewNop(),
@@ -88,10 +94,10 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 }
 
 func (h *Handlers) handler(handler httputil.Handler) http.Handler {
-	return httputil.ErrorHandler{
+	return httputil.CacheHandler(h.cc, httputil.ErrorHandler{
 		Handler: handler,
 		Log:     h.log,
-	}
+	})
 }
 
 func (h *Handlers) handlerFunc(handler httputil.HandlerFunc) http.Handler { return h.handler(handler) }

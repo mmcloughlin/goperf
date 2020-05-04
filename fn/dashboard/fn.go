@@ -3,10 +3,12 @@ package coordinator
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/app/dashboard"
+	"github.com/mmcloughlin/cb/app/httputil"
 	"github.com/mmcloughlin/cb/app/service"
 )
 
@@ -30,6 +32,10 @@ func initialize(ctx context.Context, l *zap.Logger) error {
 	handler = dashboard.NewHandlers(d,
 		dashboard.WithLogger(l),
 		dashboard.WithDataFileSystem(datafs),
+		dashboard.WithCacheControl(httputil.CacheControl{
+			MaxAge:     time.Hour,
+			Directives: []string{"public"},
+		}),
 	)
 
 	if err := handler.Init(ctx); err != nil {

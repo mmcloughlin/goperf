@@ -5,42 +5,15 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/mmcloughlin/cb/pkg/fs"
 )
-
-// CacheControl specifies Cache-Control header options.
-type CacheControl struct {
-	MaxAge       time.Duration
-	SharedMaxAge time.Duration
-	Directives   []string
-}
-
-// CacheControlImmutable provides suitable cache control headers for immutable files.
-var CacheControlImmutable = CacheControl{
-	MaxAge:       24 * time.Hour,
-	SharedMaxAge: 365 * 24 * time.Hour,
-	Directives:   []string{"public", "immutable"},
-}
-
-func (c CacheControl) String() string {
-	directives := c.Directives
-	if c.MaxAge != 0 {
-		directives = append(directives, fmt.Sprintf("max-age=%d", c.MaxAge/time.Second))
-	}
-	if c.SharedMaxAge != 0 {
-		directives = append(directives, fmt.Sprintf("s-maxage=%d", c.SharedMaxAge/time.Second))
-	}
-	return strings.Join(directives, ", ")
-}
 
 // Static serves static content from a filesystem. Filenames are extended with a
 // content hash for cache busting.
