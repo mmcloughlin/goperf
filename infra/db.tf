@@ -27,6 +27,10 @@ resource "google_sql_database_instance" "primary" {
     disk_autoresize   = true
     disk_type         = "PD_HDD"
 
+    location_preference {
+      zone = var.zone
+    }
+
     ip_configuration {
       ipv4_enabled    = true
       private_network = data.google_compute_network.default.self_link
