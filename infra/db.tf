@@ -25,7 +25,7 @@ resource "google_sql_database_instance" "primary" {
     tier              = "db-f1-micro"
     availability_type = "ZONAL"
     disk_autoresize   = true
-    disk_type         = "PD_HDD"
+    disk_type         = "PD_SSD"
 
     location_preference {
       zone = var.zone
