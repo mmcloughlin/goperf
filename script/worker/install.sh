@@ -59,7 +59,7 @@ cat > /etc/supervisor/conf.d/${project_name}.conf <<EOF
 programs=worker,athens
 
 [program:worker]
-command=${deploy_dir}/bin/worker run -coordinator ${coordinator} -name ${name} -artifacts ${artifacts_dir} -goproxy http://localhost:${athens_port}
+command=${deploy_dir}/bin/worker run -coordinator ${coordinator} -name ${name} -shieldnumcpu 1 -artifacts ${artifacts_dir} -goproxy http://localhost:${athens_port}
 autostart=false
 autorestart=false
 stdout_logfile=${log_dir}/worker.out
