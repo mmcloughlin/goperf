@@ -63,22 +63,19 @@ func (i *Ingester) Task(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("load results: %w", err)
 	}
 
-	// Write to storage.
+	// Sanity check.
 	for _, r := range rs {
-		// Sanity check.
 		if r.File.SHA256 != f.SHA256 {
 			return errutil.AssertionFailure("data file hash mismatch")
 		}
-
-		if err := i.db.StoreResult(ctx, r); err != nil {
-			return err
-		}
-
-		i.log.Debug("inserted result",
-			zap.Stringer("uuid", r.UUID()),
-			zap.String("benchmark_name", r.Benchmark.FullName),
-		)
 	}
+
+	// Write to storage.
+	if err := i.db.StoreResults(ctx, rs); err != nil {
+		return err
+	}
+
+	i.log.Debug("inserted results", zap.Int("num_results", len(rs)))
 
 	// Record successful ingestion.
 	from := []entity.TaskStatus{entity.TaskStatusResultUploaded}
