@@ -14,6 +14,7 @@ import (
 
 type Platform struct {
 	shieldname string
+	shieldn    int
 	sysname    string
 	sysn       int
 
@@ -36,8 +37,9 @@ func (p *Platform) Wrappers() []subcommands.Command {
 
 func (p *Platform) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.shieldname, "shield", "shield", "shield cpuset name")
+	f.IntVar(&p.shieldn, "shieldnumcpu", 0, "number of cpus in shield cpuset (0 for max)")
 	f.StringVar(&p.sysname, "sys", "sys", "system cpuset name")
-	f.IntVar(&p.sysn, "sysnumcpu", 1, "number of cpus in system cpuset")
+	f.IntVar(&p.sysn, "sysnumcpu", 1, "minimum number of cpus in system cpuset")
 }
 
 // ConfigureRunner sets benchmark runner options.
@@ -60,6 +62,7 @@ func (p *Platform) ConfigureRunner(r *runner.Runner) error {
 	// Setup CPU shield.
 	s := shield.NewShield(
 		shield.WithShieldName(p.shieldname),
+		shield.WithShieldNumCPU(p.shieldn),
 		shield.WithSystemName(p.sysname),
 		shield.WithSystemNumCPU(p.sysn),
 		shield.WithLogger(p.base.Log),

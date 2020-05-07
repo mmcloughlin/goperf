@@ -2,6 +2,7 @@
 package shield
 
 import (
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -12,11 +13,12 @@ import (
 
 // Shield uses cpusets to setup exclusive access to some CPUs.
 type Shield struct {
-	root   string      // root cpuset
-	shield string      // shield cpuset (relative to root)
-	sys    string      // system cpuset name (relative to root)
-	sysn   int         // number of cpus in system cpuset
-	log    *zap.Logger // logger
+	root    string      // root cpuset
+	shield  string      // shield cpuset (relative to root)
+	shieldn int         // number of cpus in shield cpuset (0 for max)
+	sys     string      // system cpuset name (relative to root)
+	sysn    int         // minimum number of cpus in system cpuset
+	log     *zap.Logger // logger
 
 	deferred []func() error
 }
@@ -49,13 +51,18 @@ func WithShieldName(name string) Option {
 	return func(s *Shield) { s.shield = name }
 }
 
+// WithShieldNumCPU configures the number of CPUs assigned to the shield cpuset.
+func WithShieldNumCPU(n int) Option {
+	return func(s *Shield) { s.shieldn = n }
+}
+
 // WithSystemName configures the name of the system cpuset. Note this is interpreted
 // relative to the root.
 func WithSystemName(name string) Option {
 	return func(s *Shield) { s.sys = name }
 }
 
-// WithSystemNumCPU configures the number of CPUs assigned to the system cpuset.
+// WithSystemNumCPU configures the minimum number of CPUs assigned to the system cpuset.
 func WithSystemNumCPU(n int) Option {
 	return func(s *Shield) { s.sysn = n }
 }
@@ -79,7 +86,7 @@ func (s *Shield) ShieldName() string {
 func (s *Shield) Available() bool {
 	root := cpuset.NewCPUSet(s.root)
 	allcpu, err := root.CPUs()
-	return err == nil && len(allcpu) > s.sysn
+	return err == nil && len(allcpu) >= s.mincpus()
 }
 
 // Apply the configured shielding.
@@ -108,12 +115,16 @@ func (s *Shield) apply() error {
 		return fmt.Errorf("not enough cpus: require %d for system but root has %d", s.sysn, len(allcpu))
 	}
 
-	// Pick CPUs for the system set.
-	syscpu, err := pick(allcpu, s.sysn)
+	// Assign CPUs to the two sets.
+	shieldcpu, syscpu, err := s.assign(allcpu)
 	if err != nil {
-		return fmt.Errorf("could not pick system cpus: %w", err)
+		return fmt.Errorf("could not assign cpus: %w", err)
 	}
-	s.log.Debug("selected system cpus", zap.Stringer("cpus", syscpu))
+
+	s.log.Debug("chosen cpus",
+		zap.Stringer("shield", shieldcpu),
+		zap.Stringer("sys", syscpu),
+	)
 
 	// Create system cpuset.
 	sys, err := cpuset.Create(s.sys)
@@ -152,12 +163,10 @@ func (s *Shield) apply() error {
 	}
 	s.cleanup(shield.Remove)
 
-	// Assign CPUs for exclusive use.
-	shieldcpu := allcpu.Difference(syscpu)
+	// Configure shield CPUs.
 	if err := shield.SetCPUs(shieldcpu); err != nil {
 		return err
 	}
-	s.log.Debug("selected shield cpus", zap.Stringer("cpus", shieldcpu))
 
 	// Memory nodes.
 	if err := shield.SetMems(mems); err != nil {
@@ -204,11 +213,32 @@ func (s *Shield) movetasks(src, dst *cpuset.CPUSet) error {
 	return nil
 }
 
-// pick an n-element subset of s.
-func pick(s cpuset.Set, n int) (cpuset.Set, error) {
-	if n > len(s) {
-		return nil, fmt.Errorf("cannot pick an %d element subset of a set of size %d", n, len(s))
+// assign cpus to shield and system.
+func (s *Shield) assign(cpus cpuset.Set) (shield, sys cpuset.Set, err error) {
+	if len(cpus) < s.mincpus() {
+		return nil, nil, errors.New("not enough cpus")
 	}
-	m := s.SortedMembers()
-	return cpuset.NewSet(m[len(s)-n:]...), nil
+
+	m := cpus.SortedMembers()
+
+	// Shield CPUs 0 value means assign the max.
+	n := s.shieldn
+	if n == 0 {
+		n = len(m) - s.sysn
+	}
+
+	return cpuset.NewSet(m[:n]...), cpuset.NewSet(m[n:]...), nil
+}
+
+// mincpus returns the minimum number of CPUs required to satisfy configuration.
+func (s *Shield) mincpus() int {
+	return max(s.shieldn, 1) + s.sysn
+}
+
+// max is integer maximum.
+func max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
 }
