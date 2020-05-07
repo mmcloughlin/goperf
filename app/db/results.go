@@ -146,25 +146,38 @@ func (d *DB) storeResults(ctx context.Context, tx *sql.Tx, rs []*entity.Result) 
 	}
 
 	// Results.
+	fields := []string{
+		"uuid",
+		"datafile_uuid",
+		"line",
+		"benchmark_uuid",
+		"commit_sha",
+		"environment_uuid",
+		"metadata_uuid",
+		"iterations",
+		"value",
+	}
+	values := []interface{}{}
 	for _, r := range b.Results {
 		sha, err := hex.DecodeString(r.Commit.SHA)
 		if err != nil {
 			return fmt.Errorf("invalid sha: %w", err)
 		}
+		values = append(values,
+			r.UUID(),
+			r.File.UUID(),
+			int32(r.Line),
+			r.Benchmark.UUID(),
+			sha,
+			r.Environment.UUID(),
+			r.Metadata.UUID(),
+			int64(r.Iterations),
+			r.Value,
+		)
+	}
 
-		if err := q.InsertResult(ctx, db.InsertResultParams{
-			UUID:            r.UUID(),
-			DatafileUUID:    r.File.UUID(),
-			Line:            int32(r.Line),
-			BenchmarkUUID:   r.Benchmark.UUID(),
-			CommitSHA:       sha,
-			EnvironmentUUID: r.Environment.UUID(),
-			MetadataUUID:    r.Metadata.UUID(),
-			Iterations:      int64(r.Iterations),
-			Value:           r.Value,
-		}); err != nil {
-			return err
-		}
+	if err := d.insert(ctx, tx, "results", fields, values); err != nil {
+		return err
 	}
 
 	return nil

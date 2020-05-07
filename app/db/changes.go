@@ -62,7 +62,7 @@ func (d *DB) storeChangesBatch(ctx context.Context, tx *sql.Tx, cs []*entity.Cha
 			c.Post.Stddev(),
 		)
 	}
-	return d.insert(ctx, tx, "changes", fields, values, "ON CONFLICT DO NOTHING")
+	return d.insert(ctx, tx, "changes", fields, values)
 }
 
 // ListChangeSummaries returns changes with associated metadata.

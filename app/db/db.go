@@ -91,7 +91,7 @@ func (d *DB) txq(ctx context.Context, fn func(q *db.Queries) error) error {
 }
 
 // insert executes a batch insert.
-func (d *DB) insert(ctx context.Context, tx *sql.Tx, table string, fields []string, values []interface{}, trailer string) error {
+func (d *DB) insert(ctx context.Context, tx *sql.Tx, table string, fields []string, values []interface{}) error {
 	n := len(values)
 	if n%len(fields) != 0 {
 		return errutil.AssertionFailure("number of values must be a multiple of the number of fields")
@@ -112,7 +112,7 @@ func (d *DB) insert(ctx context.Context, tx *sql.Tx, table string, fields []stri
 		buf.WriteByte(')')
 		sep = ','
 	}
-	buf.WriteString(" " + trailer)
+	buf.WriteString(" ON CONFLICT DO NOTHING")
 	q := buf.String()
 	// Execute.
 	_, err := tx.ExecContext(ctx, q, values...)

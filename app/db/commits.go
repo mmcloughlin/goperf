@@ -100,7 +100,7 @@ func (d *DB) StoreCommits(ctx context.Context, cs []*entity.Commit) error {
 		)
 	}
 	return d.tx(ctx, func(tx *sql.Tx) error {
-		return d.insert(ctx, tx, "commits", fields, values, "ON CONFLICT DO NOTHING")
+		return d.insert(ctx, tx, "commits", fields, values)
 	})
 }
 
@@ -219,7 +219,7 @@ func (d *DB) StoreCommitRefs(ctx context.Context, rs []*entity.CommitRef) error 
 		)
 	}
 	return d.tx(ctx, func(tx *sql.Tx) error {
-		return d.insert(ctx, tx, "commit_refs", fields, values, "ON CONFLICT DO NOTHING")
+		return d.insert(ctx, tx, "commit_refs", fields, values)
 	})
 }
 
