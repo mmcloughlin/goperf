@@ -38,7 +38,7 @@ func Create(name string) (*CPUSet, error) {
 
 // CreatePath creates a cpuset at a custom path.
 func CreatePath(path string) (*CPUSet, error) {
-	if err := unix.Mkdir(path, 0755); err != nil {
+	if err := unix.Mkdir(path, 0o755); err != nil {
 		return nil, err
 	}
 	return NewCPUSetPath(path), nil

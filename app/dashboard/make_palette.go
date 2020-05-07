@@ -66,7 +66,7 @@ func mainerr() error {
 	}
 
 	// Write back.
-	if err := ioutil.WriteFile(*style, out.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(*style, out.Bytes(), 0o644); err != nil {
 		return err
 	}
 

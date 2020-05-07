@@ -18,5 +18,5 @@ func listfile(path string) (Set, error) {
 
 func writelistfile(path string, s Set) error {
 	data := s.FormatList() + "\n"
-	return pseudofs.WriteFile(path, []byte(data), 0644)
+	return pseudofs.WriteFile(path, []byte(data), 0o644)
 }

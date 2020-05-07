@@ -57,7 +57,7 @@ func NewLocal(root string) Interface {
 
 func (l *local) Create(ctx context.Context, name string) (io.WriteCloser, error) {
 	path := l.path(name)
-	if err := os.MkdirAll(filepath.Dir(path), 0777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o777); err != nil {
 		return nil, err
 	}
 	return os.Create(path)

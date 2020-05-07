@@ -51,7 +51,7 @@ func mainerr() error {
 	}
 
 	if *output != "" {
-		err = ioutil.WriteFile(*output, b, 0644)
+		err = ioutil.WriteFile(*output, b, 0o644)
 	} else {
 		_, err = os.Stdout.Write(b)
 	}

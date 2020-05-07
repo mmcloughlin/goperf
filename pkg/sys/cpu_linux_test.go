@@ -53,7 +53,7 @@ func TestCPUGolden(t *testing.T) {
 			// Update golden file if requested.
 			golden := strings.ReplaceAll(filename, ".input", ".golden")
 			if *update {
-				if err := ioutil.WriteFile(golden, got, 0666); err != nil {
+				if err := ioutil.WriteFile(golden, got, 0o666); err != nil {
 					t.Fatal(err)
 				}
 			}

@@ -25,7 +25,7 @@ func String(path string) (string, error) {
 
 // WriteString writes a string to a file, followed by a newline.
 func WriteString(path, s string) error {
-	return WriteFile(path, []byte(s+"\n"), 0644)
+	return WriteFile(path, []byte(s+"\n"), 0o644)
 }
 
 // Int reads an integer from a file.
@@ -65,7 +65,7 @@ func WriteFlag(path string, enabled bool) error {
 	if enabled {
 		data = "1\n"
 	}
-	return WriteFile(path, []byte(data), 0644)
+	return WriteFile(path, []byte(data), 0o644)
 }
 
 // Ints reads a list of integers from a file.

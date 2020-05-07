@@ -205,7 +205,7 @@ func (w *Workspace) Path(rel string) string {
 func (w *Workspace) EnsureDir(rel string) string {
 	dir := w.Path(rel)
 	if !w.cancelled() {
-		w.seterr(os.MkdirAll(dir, 0777))
+		w.seterr(os.MkdirAll(dir, 0o777))
 	}
 	return dir
 }

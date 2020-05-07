@@ -20,7 +20,7 @@ func TestModuleProxyNetworkInfo(t *testing.T) {
 
 	expect := &RevInfo{
 		Version: "v0.0.0-20200221170553-0f24fbd83dfb",
-		Time:    time.Date(2020, 2, 21, 17, 05, 53, 0, time.UTC),
+		Time:    time.Date(2020, 2, 21, 17, 5, 53, 0, time.UTC),
 	}
 
 	if info.Version != expect.Version {
