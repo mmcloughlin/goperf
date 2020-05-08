@@ -84,24 +84,24 @@ func (q *Queries) CommitModuleWorkerErrors(ctx context.Context, arg CommitModule
 
 const recentCommitModulePairsWithoutWorkerTasks = `-- name: RecentCommitModulePairsWithoutWorkerTasks :many
 SELECT
-    c.sha AS commit_sha,
-    c.commit_time,
+    p.sha AS commit_sha,
+    p.commit_time,
     m.uuid AS module_uuid
 FROM
-    commits AS c,
+    commit_positions AS p,
     modules AS m
 WHERE NOT EXISTS (
         SELECT uuid, worker, commit_sha, type, target_uuid, status, last_status_update, datafile_uuid
         FROM tasks AS t
         WHERE 1=1
-            AND t.commit_sha = c.sha
+            AND t.commit_sha = p.sha
             AND t.type = 'module'
             AND t.target_uuid = m.uuid
             AND t.status = ANY ($1::task_status[])
             AND t.worker = $2
     )
 ORDER BY
-    c.commit_time DESC,
+    p.commit_time DESC,
     m.uuid
 LIMIT
     $3
