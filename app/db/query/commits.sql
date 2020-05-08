@@ -84,3 +84,12 @@ SELECT
 FROM
     commit_positions
 ;
+
+-- name: CommitIndexForSHA :one
+SELECT
+    index
+FROM
+    commit_positions
+WHERE 1=1
+    AND sha = sqlc.arg(sha)
+;

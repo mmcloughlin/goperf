@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -178,6 +179,57 @@ func (d *DB) storeResults(ctx context.Context, tx *sql.Tx, rs []*entity.Result) 
 
 	if err := d.insert(ctx, tx, "results", fields, values); err != nil {
 		return err
+	}
+
+	// Points.
+	fields = []string{
+		"result_uuid",
+		"benchmark_uuid",
+		"environment_uuid",
+		"commit_sha",
+		"commit_index",
+		"value",
+	}
+	values = []interface{}{}
+	idxs := map[string]int{}
+	for _, r := range b.Results {
+		sha := r.Commit.SHA
+		shabytes, err := hex.DecodeString(r.Commit.SHA)
+		if err != nil {
+			return fmt.Errorf("invalid sha: %w", err)
+		}
+
+		// Lookup commit index.
+		if _, ok := idxs[sha]; !ok {
+			i, err := q.CommitIndexForSHA(ctx, shabytes)
+			switch {
+			case errors.Is(err, sql.ErrNoRows):
+				i = -1
+			case err != nil:
+				return err
+			}
+			idxs[sha] = int(i)
+		}
+
+		// Skip if there is no commit index.
+		if idxs[sha] < 0 {
+			continue
+		}
+
+		values = append(values,
+			r.UUID(),
+			r.Benchmark.UUID(),
+			r.Environment.UUID(),
+			shabytes,
+			idxs[sha],
+			r.Value,
+		)
+	}
+
+	if len(values) > 0 {
+		if err := d.insert(ctx, tx, "points", fields, values); err != nil {
+			return err
+		}
 	}
 
 	return nil

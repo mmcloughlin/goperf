@@ -40,6 +40,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.commitStmt, err = db.PrepareContext(ctx, commit); err != nil {
 		return nil, fmt.Errorf("error preparing query Commit: %w", err)
 	}
+	if q.commitIndexForSHAStmt, err = db.PrepareContext(ctx, commitIndexForSHA); err != nil {
+		return nil, fmt.Errorf("error preparing query CommitIndexForSHA: %w", err)
+	}
 	if q.commitModuleWorkerErrorsStmt, err = db.PrepareContext(ctx, commitModuleWorkerErrors); err != nil {
 		return nil, fmt.Errorf("error preparing query CommitModuleWorkerErrors: %w", err)
 	}
@@ -169,6 +172,11 @@ func (q *Queries) Close() error {
 	if q.commitStmt != nil {
 		if cerr := q.commitStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing commitStmt: %w", cerr)
+		}
+	}
+	if q.commitIndexForSHAStmt != nil {
+		if cerr := q.commitIndexForSHAStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing commitIndexForSHAStmt: %w", cerr)
 		}
 	}
 	if q.commitModuleWorkerErrorsStmt != nil {
@@ -376,6 +384,7 @@ type Queries struct {
 	buildCommitPositionsStmt                      *sql.Stmt
 	changeSummariesStmt                           *sql.Stmt
 	commitStmt                                    *sql.Stmt
+	commitIndexForSHAStmt                         *sql.Stmt
 	commitModuleWorkerErrorsStmt                  *sql.Stmt
 	createTaskStmt                                *sql.Stmt
 	dataFileStmt                                  *sql.Stmt
@@ -420,6 +429,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		buildCommitPositionsStmt:     q.buildCommitPositionsStmt,
 		changeSummariesStmt:          q.changeSummariesStmt,
 		commitStmt:                   q.commitStmt,
+		commitIndexForSHAStmt:        q.commitIndexForSHAStmt,
 		commitModuleWorkerErrorsStmt: q.commitModuleWorkerErrorsStmt,
 		createTaskStmt:               q.createTaskStmt,
 		dataFileStmt:                 q.dataFileStmt,

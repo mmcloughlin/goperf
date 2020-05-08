@@ -53,6 +53,22 @@ func (q *Queries) Commit(ctx context.Context, sha []byte) (Commit, error) {
 	return i, err
 }
 
+const commitIndexForSHA = `-- name: CommitIndexForSHA :one
+SELECT
+    index
+FROM
+    commit_positions
+WHERE 1=1
+    AND sha = $1
+`
+
+func (q *Queries) CommitIndexForSHA(ctx context.Context, sha []byte) (int32, error) {
+	row := q.queryRow(ctx, q.commitIndexForSHAStmt, commitIndexForSHA, sha)
+	var index int32
+	err := row.Scan(&index)
+	return index, err
+}
+
 const insertCommit = `-- name: InsertCommit :exec
 INSERT INTO commits (
     sha,

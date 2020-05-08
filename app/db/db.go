@@ -119,6 +119,13 @@ func (d *DB) insert(ctx context.Context, tx *sql.Tx, table string, fields []stri
 	return err
 }
 
+// StoreModule writes module to the database.
+func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
+	return d.txq(ctx, func(q *db.Queries) error {
+		return storeModule(ctx, q, m)
+	})
+}
+
 func storeModule(ctx context.Context, q *db.Queries, m *entity.Module) error {
 	return q.InsertModule(ctx, db.InsertModuleParams{
 		UUID:    m.UUID(),
@@ -447,8 +454,9 @@ func (d *DB) ListBenchmarkPoints(ctx context.Context, b *entity.Benchmark, r ent
 }
 
 func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark, r entity.CommitIndexRange) (entity.Points, error) {
+	benchmarkUUID := b.UUID()
 	ps, err := q.BenchmarkPoints(ctx, db.BenchmarkPointsParams{
-		BenchmarkUUID:  b.UUID(),
+		BenchmarkUUID:  benchmarkUUID,
 		CommitIndexMin: int32(r.Min),
 		CommitIndexMax: int32(r.Max),
 	})
@@ -461,6 +469,7 @@ func listBenchmarkPoints(ctx context.Context, q *db.Queries, b *entity.Benchmark
 	for i, p := range ps {
 		output[i] = &entity.Point{
 			ResultUUID:      p.ResultUUID,
+			BenchmarkUUID:   benchmarkUUID,
 			EnvironmentUUID: p.EnvironmentUUID,
 			CommitSHA:       hex.EncodeToString(p.CommitSHA),
 			CommitIndex:     int(p.CommitIndex),

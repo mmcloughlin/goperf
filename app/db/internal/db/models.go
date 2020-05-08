@@ -118,6 +118,15 @@ type Package struct {
 	RelativePath string
 }
 
+type Point struct {
+	ResultUUID      uuid.UUID
+	BenchmarkUUID   uuid.UUID
+	EnvironmentUUID uuid.UUID
+	CommitSHA       []byte
+	CommitIndex     int32
+	Value           float64
+}
+
 type Property struct {
 	UUID   uuid.UUID
 	Fields json.RawMessage

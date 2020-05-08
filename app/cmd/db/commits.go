@@ -212,3 +212,44 @@ func (b *BatchIterator) Next() ([]*entity.Commit, error) {
 	}
 	return batch, nil
 }
+
+type Positions struct {
+	command.Base
+}
+
+func NewPositions(b command.Base) *Positions {
+	return &Positions{
+		Base: b,
+	}
+}
+
+func (*Positions) Name() string { return "positions" }
+
+func (*Positions) Synopsis() string {
+	return "rebuild commit positions table"
+}
+
+func (*Positions) Usage() string {
+	return ""
+}
+
+func (cmd *Positions) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) (status subcommands.ExitStatus) {
+	// Open database.
+	sqldb, err := open()
+	if err != nil {
+		return cmd.Error(err)
+	}
+
+	d, err := db.New(ctx, sqldb)
+	if err != nil {
+		return cmd.Error(err)
+	}
+	defer cmd.CheckClose(&status, d)
+
+	// Rebuild.
+	if err := d.BuildCommitPositions(ctx); err != nil {
+		return cmd.Error(err)
+	}
+
+	return subcommands.ExitSuccess
+}

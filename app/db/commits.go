@@ -274,10 +274,3 @@ func (d *DB) MostRecentCommitIndex(ctx context.Context) (int, error) {
 	})
 	return idx, err
 }
-
-// StoreModule writes module to the database.
-func (d *DB) StoreModule(ctx context.Context, m *entity.Module) error {
-	return d.txq(ctx, func(q *db.Queries) error {
-		return storeModule(ctx, q, m)
-	})
-}
