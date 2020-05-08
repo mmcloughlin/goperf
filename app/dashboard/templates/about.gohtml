@@ -1,0 +1,80 @@
+{{ define "content" }}
+<h1>About</h1>
+
+<p>GoPerf evaluates the performance of programs produced by the <a
+href="https://golang.org">Go</a> compiler by running a <a href="/mods/">fixed
+benchmark suite</a> against every commit and identifying <a
+href="/chgs/">significant changes</a>.</p>
+
+<p>GoPerf is not an official Go project.</p>
+
+<h2>Feedback</h2>
+
+<p>Bug reports and feedback are welcome on the <a
+href="https://github.com/mmcloughlin/cb/issues">Github issue tracker</a>.</p>
+
+<h2>Methodology</h1>
+
+<h3>Benchmarks</h3>
+
+<p>GoPerf watches the <a href="https://go.googlesource.com/go/">Go git
+repository</a> for new commits. The <em>coordinator</em> server distributes
+benchmark jobs to benchmark runners, with the goal of running benchmarks on
+every recent commit in the Go project. Each benchmark job installs the target
+Go version and runs <code>go test -bench .</code> on a specified Go
+module.</p>
+
+<p>The <a href="/mods/">benchmark suites</a> are a fixed set of Go modules,
+including the standard library, <code>golang.org/x</code> sub-repos and open
+source third-party packages. Modules were selected based on their prominence
+in the Go ecosystem, as well as the size, quality and stability of their
+benchmark tests. Apart from the special-case of the standard library, module
+versions are fixed, allowing us to judge the effects of changes in the Go
+compiler.</p>
+
+<h3>Execution Environment</h3>
+
+<p>Benchmark variance reduction is critical for evaluating performance
+changes. This project employs a number of benchmark isolation strategies,
+relying on low-level Linux features.</p>
+
+<ul>
+
+    <li><em>Simultaneous multi-threading</em> (known as HyperThreading on Intel
+    processors) is disabled via the <code>/sys/devices/system/cpu/smt</code>
+    filesystem.</li>
+
+    <li><em>Intel Turbo</em> is disabled through the
+    <code>/sys/devices/system/cpu/intel_pstate/no_turbo</code>
+    file.</li>
+
+    <li>CPU <em>scaling governor</em> on all CPUs is set to
+    <code>performance</code>.</li>
+
+    <li>CPUSets are used to setup a <em>CPU shield</em>: benchmarks are run
+    in a CPUSet with exclusive use of assigned CPUs, while all other system
+    processes are moved to a disjoint CPUSet. This is the same technique as
+    the <a
+    href="https://github.com/lpechacek/cpuset"><code>lpechacek/cpuset</code></a>
+    tool.</li>
+
+</ul>
+
+<p>In addition to performance isolation, the execution system also prepends
+extensive configuration lines about the execution environment in accordance
+with the <a
+href="https://go.googlesource.com/proposal/+/refs/heads/master/design/14313-benchmark-format.md">Go
+Benchmark Data Format</a>. These are divided into <em>environment</em> and
+<em>metadata</em> properties, where environment properties are considered
+performance-critical. GoPerf will only consider results comparable if they
+agree on <em>all</em> environment properties. In benchmark output files,
+environment property values are distinguished by a <code>[perf]</code>
+suffix.</p>
+
+<h2>License</h2>
+
+<p>The GoPerf project is open source under the <a
+href="https://github.com/mmcloughlin/cb/blob/master/LICENSE">BSD 3-Clause
+License</a>.</p>
+
+{{ end }}

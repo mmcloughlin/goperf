@@ -88,6 +88,8 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	h.mux.Handle("/commit/", h.handlerFunc(h.Commit))
 	h.mux.Handle("/chgs/", h.handlerFunc(h.Changes))
 
+	h.mux.Handle("/about/", h.handlerFunc(h.About))
+
 	// Static assets.
 	h.static = httputil.NewStatic(h.staticfs)
 	h.static.SetLogger(h.log)
@@ -543,6 +545,11 @@ func (h *Handlers) commitRange(r *http.Request) (entity.CommitIndexRange, error)
 		Min: idx - n,
 		Max: idx,
 	}, nil
+}
+
+func (h *Handlers) About(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	return h.render(ctx, w, "about", nil)
 }
 
 func (h *Handlers) render(ctx context.Context, w io.Writer, name string, data interface{}) error {
