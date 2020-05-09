@@ -4,7 +4,7 @@
 {{ with .Commit }}
 <h1>Commit {{ .SHA }}</h1>
 <pre>
-{{ .Message }}
+{{ linkify .Message }}
 </pre>
 {{ end }}
 {{ end }}

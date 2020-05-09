@@ -120,6 +120,9 @@ func (h *Handlers) Init(ctx context.Context) error {
 	// Color scheme.
 	h.templates.Func("color", brand.Color)
 
+	// Linkify.
+	h.templates.Func("linkify", linkify)
+
 	return h.templates.Init(ctx)
 }
 

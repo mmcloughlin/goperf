@@ -47,4 +47,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 	google.golang.org/api v0.20.0
 	google.golang.org/genproto v0.0.0-20200402124713-8ff61da6d932
+	mvdan.cc/xurls/v2 v2.2.0
 )
