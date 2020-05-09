@@ -264,6 +264,25 @@ main {
   max-width: 60em;
 }
 
+figure {
+  background-color: var(--cool-gray-4);
+  margin: 0;
+  padding: 1em;
+}
+
+figure img {
+  margin-left: 1em;
+}
+
+figure img:first-child {
+  margin-left: 0;
+}
+
+figure figcaption {
+  color: var(--slate);
+  margin-top: 0.5em;
+}
+
 div.chart {
   width: 100%;
   height: 400px;

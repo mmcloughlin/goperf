@@ -71,6 +71,34 @@ agree on <em>all</em> environment properties. In benchmark output files,
 environment property values are distinguished by a <code>[perf]</code>
 suffix.</p>
 
+<h2>Runners</h2>
+
+<p>Standard cloud virtual machines give high-variance results, and instance
+types offering CPU frequency control were well outside the budget of the
+GoPerf project. Therefore, cheap dedicated machines were acquired for
+benchmark runners.</p>
+
+<ul>
+
+    <li><code>gopherplex</code> is a Dell Optiplex 9020 with the quad core <a
+    href="https://ark.intel.com/content/www/us/en/ark/products/80808/intel-core-i7-4790s-processor-8m-cache-up-to-4-00-ghz.html">Intel
+    i7-4790S</a> and 4 GiB RAM, used for <code>amd64</code> benchmarks.</li>
+
+    <li><code>gopherpi</code> is a <a
+    href="https://www.raspberrypi.org/products/raspberry-pi-4-model-b/">Raspberry
+    Pi 4 Model B</a> with quad core Cortex-A72 64-bit ARM processor, used for
+    <code>arm64</code> benchmarks.</li>
+
+</ul>
+
+<p>These benchmark runners are housed in a <del>state-of-the-art data center</del> <ins>closet</ins> in San Francisco.</p>
+
+<figure>
+    <img src="{{ static "img/gopherpi.jpg" }}" alt="Photograph of gopherpi, the Raspberry Pi arm64 benchmark runner" /><!--
+    --><img src="{{ static "img/closet.jpg" }}" alt="" />
+    <figcaption>Benchmark runners <code>gopherpi</code> and <code>gopherplex</code> nestled in the closet.</figcaption>
+</figure>
+
 <h2>License</h2>
 
 <p>The GoPerf project is open source under the <a
