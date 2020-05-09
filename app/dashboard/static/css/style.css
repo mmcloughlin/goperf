@@ -265,6 +265,23 @@ main {
   max-width: 60em;
 }
 
+p.note,
+p.warn {
+  border-left-width: 5px;
+  border-left-style: solid;
+  padding: 1rem;
+}
+
+p.note {
+  background-color: var(--light-blue-5);
+  border-left-color: var(--light-blue);
+}
+
+p.warn {
+  background-color: var(--yellow-5);
+  border-left-color: var(--yellow);
+}
+
 figure {
   background-color: var(--cool-gray-4);
   margin: 0;
