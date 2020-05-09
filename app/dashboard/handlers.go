@@ -262,7 +262,7 @@ func (h *Handlers) Benchmark(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Group by environment.
-	groups, err := h.groups(ctx, points)
+	groups, err := h.groups(ctx, points, bench.Unit)
 	if err != nil {
 		return err
 	}
@@ -281,9 +281,10 @@ type PointsGroup struct {
 	Environment entity.Properties
 	Points      entity.Points
 	Filtered    []float64
+	Quantities  []units.Quantity
 }
 
-func (h *Handlers) groups(ctx context.Context, points entity.Points) ([]*PointsGroup, error) {
+func (h *Handlers) groups(ctx context.Context, points entity.Points, unit string) ([]*PointsGroup, error) {
 	// Group by environment.
 	byenv := map[uuid.UUID]entity.Points{}
 	for _, point := range points {
@@ -307,6 +308,14 @@ func (h *Handlers) groups(ctx context.Context, points entity.Points) ([]*PointsG
 	// Apply KZA filtering.
 	for _, group := range groups {
 		group.Filtered = analysis.AdaptiveKolmogorovZurbenko(group.Points.Values(), 31, 5)
+	}
+
+	// Convert to quantity.
+	for _, group := range groups {
+		for _, p := range group.Points {
+			q := units.Quantity{Value: p.Value, Unit: unit}
+			group.Quantities = append(group.Quantities, units.Humanize(q))
+		}
 	}
 
 	// Sort by descending size.

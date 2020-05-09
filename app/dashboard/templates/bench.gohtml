@@ -62,10 +62,13 @@
   google.charts.setOnLoadCallback(function () {
     var element = document.getElementById('chart{{ $idx }}');
 
-    var data = google.visualization.arrayToDataTable([
-      ['commit_index', 'value', 'filtered'],
+    var data = new google.visualization.DataTable();
+    data.addColumn('number', 'Commit Index');
+    data.addColumn('number', 'Value');
+    data.addColumn('number', 'Filtered');
+    data.addRows([
       {{ range $idx, $point := $group.Points -}}
-      [{{ .CommitIndex }}, {{ $point.Value }}, {{ index $group.Filtered $idx }}],
+      [{v: {{ .CommitIndex }}, f: {{ printf "#%d" .CommitIndex }}}, {v: {{ $point.Value }}, f: {{ index $group.Quantities $idx }} }, {{ index $group.Filtered $idx }}],
       {{ end }}
     ]);
 
