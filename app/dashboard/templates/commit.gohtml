@@ -3,8 +3,6 @@
 {{ define "content" }}
 {{ with .Commit }}
 <h1>Commit {{ .SHA }}</h1>
-<pre>
-{{ .Message }}
-</pre>
+<pre>{{ linkify .Message }}</pre>
 {{ end }}
 {{ end }}
