@@ -35,6 +35,7 @@ func (q *Queries) InsertPkg(ctx context.Context, arg InsertPkgParams) error {
 const modulePkgs = `-- name: ModulePkgs :many
 SELECT uuid, module_uuid, relative_path FROM packages
 WHERE module_uuid = $1
+ORDER BY relative_path
 `
 
 func (q *Queries) ModulePkgs(ctx context.Context, moduleUuid uuid.UUID) ([]Package, error) {

@@ -45,7 +45,16 @@ func (q *Queries) Module(ctx context.Context, uuid uuid.UUID) (Module, error) {
 }
 
 const modules = `-- name: Modules :many
-SELECT uuid, path, version FROM modules
+SELECT
+    uuid, path, version
+FROM
+    modules
+ORDER BY
+    CASE
+        WHEN path='std' THEN '0' || path
+        WHEN path LIKE 'golang.org/x/%' THEN '1' || path
+        ELSE '2' || path
+    END
 `
 
 func (q *Queries) Modules(ctx context.Context) ([]Module, error) {

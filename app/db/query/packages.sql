@@ -4,7 +4,8 @@ WHERE uuid = $1 LIMIT 1;
 
 -- name: ModulePkgs :many
 SELECT * FROM packages
-WHERE module_uuid = $1;
+WHERE module_uuid = $1
+ORDER BY relative_path;
 
 -- name: InsertPkg :exec
 INSERT INTO packages (
