@@ -14,7 +14,7 @@
 
 {{ with .Quantity }}
 <div class="bignumber">
-    <p class="number">{{ .Value }}</p>
+    <p class="number">{{ .FormatValue }}</p>
     <p class="unit">{{ .Unit }}</p>
 </div>
 {{ end }}

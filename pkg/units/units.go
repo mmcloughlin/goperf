@@ -1,7 +1,11 @@
 // Package units implements human-friendly representations of common units.
 package units
 
-import "time"
+import (
+	"math"
+	"strconv"
+	"time"
+)
 
 // Standard library testing package units.
 const (
@@ -51,6 +55,30 @@ func Humanize(q Quantity) Quantity {
 	}
 	return q
 }
+
+// FormatValue formats the value with precision suitable for the unit.
+func (q Quantity) FormatValue() string {
+	return q.FormatValueWithPrecision(3)
+}
+
+// FormatValueWithPrecision formats the value with up to prec significant digits.
+func (q Quantity) FormatValueWithPrecision(prec int) string {
+	e := math.Pow10(prec)
+	r := math.Round(q.Value*e) / e
+	return strconv.FormatFloat(r, 'f', -1, 64)
+}
+
+// Format quantity with precision suitable for the unit.
+func (q Quantity) Format() string {
+	return q.FormatValue() + " " + q.Unit
+}
+
+// FormatWithPrecision formats the quantity with up to prec significant digits.
+func (q Quantity) FormatWithPrecision(prec int) string {
+	return q.FormatValueWithPrecision(prec) + " " + q.Unit
+}
+
+func (q Quantity) String() string { return q.Format() }
 
 // Duration represents a nanosecond quantity in time units up to hours.
 func Duration(ns float64) Quantity {

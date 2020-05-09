@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -62,27 +61,31 @@ func (t TimeValue) String() string { return time.Time(t).Format(time.RFC3339) }
 // TemperatureValue is a temperature in celsius.
 type TemperatureValue float64
 
-func (t TemperatureValue) String() string { return formatfloat(float64(t), 3) + " degC" }
+func (t TemperatureValue) String() string {
+	q := units.Quantity{Value: float64(t), Unit: "degC"}
+	return q.FormatWithPrecision(3)
+}
 
 // BytesValue represents bytes.
 type BytesValue uint64
 
 func (b BytesValue) String() string {
-	return formatquantity(units.BytesBinary(float64(b)), 2)
+	return units.BytesBinary(float64(b)).FormatWithPrecision(2)
 }
 
 // FrequencyValue represents frequency in Hz.
 type FrequencyValue float64
 
 func (f FrequencyValue) String() string {
-	return formatquantity(units.Frequency(float64(f)), 2)
+	return units.Frequency(float64(f)).FormatWithPrecision(2)
 }
 
 // PercentageValue represents a percentage, therefore must be in the range 0 to 100.
 type PercentageValue float64
 
 func (p PercentageValue) String() string {
-	return formatfloat(float64(p), 1) + "%"
+	q := units.Quantity{Value: float64(p), Unit: "%"}
+	return q.FormatWithPrecision(1)
 }
 
 // Validate checks the p is between 0 and 100.
@@ -91,16 +94,6 @@ func (p PercentageValue) Validate() error {
 		return errors.New("percentage must be between 0 and 100")
 	}
 	return nil
-}
-
-func formatquantity(q units.Quantity, prec int) string {
-	return formatfloat(q.Value, prec) + " " + q.Unit
-}
-
-func formatfloat(x float64, prec int) string {
-	e := math.Pow10(prec)
-	r := math.Round(x*e) / e
-	return strconv.FormatFloat(r, 'f', -1, 64)
 }
 
 // Configuration is a nested key-value structure. It is a list of entries, where
