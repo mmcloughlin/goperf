@@ -274,3 +274,19 @@ func (d *DB) MostRecentCommitIndex(ctx context.Context) (int, error) {
 	})
 	return idx, err
 }
+
+// FindCommitIndexBySHA looks up the commit index for a SHA.
+func (d *DB) FindCommitIndexBySHA(ctx context.Context, sha string) (int, error) {
+	shabytes, err := hex.DecodeString(sha)
+	if err != nil {
+		return 0, fmt.Errorf("invalid sha: %w", err)
+	}
+
+	idx := 0
+	err = d.txq(ctx, func(q *db.Queries) error {
+		i, err := q.CommitIndexForSHA(ctx, shabytes)
+		idx = int(i)
+		return err
+	})
+	return idx, err
+}

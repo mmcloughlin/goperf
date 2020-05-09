@@ -414,9 +414,16 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// Attempt to find index.
+	idx, err := h.db.FindCommitIndexBySHA(ctx, sha)
+	if err != nil {
+		idx = -1
+	}
+
 	// Write response.
 	return h.render(ctx, w, "commit", map[string]interface{}{
-		"Commit": commit,
+		"Commit":      commit,
+		"CommitIndex": idx,
 	})
 }
 

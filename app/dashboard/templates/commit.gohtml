@@ -3,6 +3,27 @@
 {{ define "content" }}
 {{ with .Commit }}
 <h1>Commit {{ .SHA }}</h1>
+
+<table class="properties">
+    <tr><td class="key code">author</td><td class="value">{{ .Author.Name }} &lt;{{ .Author.Email }}&gt;</td></tr>
+    <tr><td class="key code">author time</td><td class="value">{{ .AuthorTime }}</td></tr>
+    <tr><td class="key code">committer</td><td class="value">{{ .Committer.Name }} &lt;{{ .Committer.Email }}&gt;</td></tr>
+    <tr><td class="key code">commit time</td><td class="value">{{ .CommitTime }}</td></tr>
+    {{ if ge $.CommitIndex 0 }}<tr><td class="key code">commit index</td><td class="value">{{ $.CommitIndex }}</td></tr>{{ end }}
+    <tr>
+        <td class="key code">parent</td>
+        <td class="value">{{ range .Parents }}{{ template "sha" . }} {{ end }}</td>
+    </tr>
+    <tr>
+        <td class="key code">browse</td>
+        <td class="value">
+            <a href="https://go.googlesource.com/go/+/{{ .SHA }}">gitiles</a>
+            &middot;
+            <a href="https://github.com/golang/go/commit/{{ .SHA }}">github</a>
+        </td>
+    </tr>
+</table>
+
 <pre>{{ linkify .Message }}</pre>
 {{ end }}
 {{ end }}

@@ -2,10 +2,10 @@
 {{ define "pkg" }}<a href="/pkg/{{ .UUID }}">{{ .ImportPath }}</a>{{ end }}
 {{ define "bench" }}<a href="/bench/{{ .UUID }}">{{ .FullName }} {{ .Unit }}</a>{{ end }}
 {{ define "change" }}<a href="/bench/{{ .Benchmark.UUID }}?c={{ .Change.CommitIndex }}">{{ .Benchmark.FullName }}{{ template "sep" }}{{ .Benchmark.Unit }}</a>{{ end }}
-{{ define "sha" }}<a href="/commit/{{ . }}"><code>{{ slice . 0 10 }}</code></a>{{ end }}
+{{ define "sha" }}<a href="/commit/{{ . }}" class="code">{{ slice . 0 10 }}</a>{{ end }}
 {{ define "commit" }}{{ template "sha" .SHA }}{{ end }}
-{{ define "file" }}<a href="/file/{{ .UUID }}"><code>{{ template "uuidshort" .UUID }}</code></a>{{ end }}
-{{ define "loc" }}<a href="/file/{{ .File.UUID }}?hl={{ .Line }}#L{{ .Line }}"><code>{{ template "uuidshort" .File.UUID }}#{{ .Line }}</code></a>{{ end }}
+{{ define "file" }}<a href="/file/{{ .UUID }}" class="code">{{ template "uuidshort" .UUID }}</a>{{ end }}
+{{ define "loc" }}<a href="/file/{{ .File.UUID }}?hl={{ .Line }}#L{{ .Line }}" class="code">{{ template "uuidshort" .File.UUID }}#{{ .Line }}</a>{{ end }}
 
 {{ define "uuidshort" }}{{ slice .String 0 8 }}{{ end }}
 {{ define "sep" }} <span class="sep">/</span> {{ end }}
