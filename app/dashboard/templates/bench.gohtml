@@ -84,12 +84,11 @@
 {{ define "content" }}
 <h1>{{ .Benchmark.FullName }}{{ template "sep" }}{{ .Benchmark.Unit }}</h1>
 
-<div class="meta">
-  <dl>
-    <dt>Package</dt> <dd>{{ template "pkg" .Benchmark.Package }}</dd>
-    <dt>Version</dt> <dd>{{ .Benchmark.Package.Module.Version }}</dd>
-  </dl>
-</div>
+<dl class="meta">
+  <div><dt>Package</dt><dd>{{ template "pkg" .Benchmark.Package }}</dd></div>
+  <div><dt>Module</dt><dd>{{ template "mod" .Benchmark.Package.Module }}</dd></div>
+  <div><dt>Version</dt><dd>{{ .Benchmark.Package.Module.Version }}</dd></div>
+</dl>
 
 <p class="note">Click and drag left-right to zoom in. Click a dot to see
 results and commit. Right click to zoom out.</p>

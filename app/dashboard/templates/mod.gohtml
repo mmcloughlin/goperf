@@ -2,11 +2,10 @@
 
 {{ define "content" }}
 <h1>Module {{ .Module.Path }}</h1>
-<div class="meta">
-  <dl>
-    <dt>Version</dt> <dd>{{ .Module.Version }}</dd>
-  </dl>
-</div>
+
+<dl class="meta">
+  <div><dt>Version</dt> <dd>{{ .Module.Version }}</dd></div>
+</dl>
 
 <table>
   <tr>

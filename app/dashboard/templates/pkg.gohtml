@@ -2,11 +2,12 @@
 
 {{ define "content" }}
 <h1>Package {{ .Package.ImportPath }}</h1>
-<div class="meta">
-  <dl>
-    <dt>Module</dt> <dd>{{ template "mod" .Package.Module }}</dd>
-  </dl>
-</div>
+
+<dl class="meta">
+  <div><dt>Module</dt><dd>{{ template "mod" .Package.Module }}</dd></div>
+  <div><dt>Version</dt><dd>{{ .Package.Module.Version }}</dd></div>
+</dl>
+
 <ul>
 </ul>
 <table>

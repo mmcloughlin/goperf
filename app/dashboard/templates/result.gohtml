@@ -4,14 +4,13 @@
 
 <h1>{{ .Result.Benchmark.FullName }} {{ template "sep" }} Result</h1>
 
-<div class="meta">
-  <dl>
-    <dt>Benchmark</dt> <dd>{{ template "bench" .Result.Benchmark }}</dd>
-    <dt>Package</dt> <dd>{{ template "pkg" .Result.Benchmark.Package }}</dd>
-    <dt>Commit</dt> <dd>{{ template "commit" .Result.Commit }}</dd>
-    <dt>Source</dt> <dd>{{ template "loc" .Result }}</dd>
-  </dl>
-</div>
+<dl class="meta">
+  <div><dt>Benchmark</dt><dd>{{ template "bench" .Result.Benchmark }}</dd></div>
+  <div><dt>Package</dt><dd>{{ template "pkg" .Result.Benchmark.Package }}</dd></div>
+  <div><dt>Module</dt><dd>{{ template "mod" .Result.Benchmark.Package.Module }}</dd></div>
+  <div><dt>Commit</dt><dd>{{ template "commit" .Result.Commit }}</dd></div>
+  <div><dt>Source</dt><dd>{{ template "loc" .Result }}</dd></div>
+</dl>
 
 {{ with .Quantity }}
 <div class="bignumber">

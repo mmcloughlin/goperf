@@ -306,33 +306,26 @@ div.chart {
   height: 400px;
 }
 
-.meta {
-  overflow-x: hidden;
+dl.meta div {
+  display: inline-block;
+  padding-right: 0.5rem;
 }
 
-.meta dl {
-  position: relative;
-  left: -0.75rem;
-}
-
-.meta dt,
-.meta dd {
+dl.meta dt,
+dl.meta dd {
   display: inline-block;
   padding: 0;
   margin: 0;
 }
 
-.meta dt {
-  border-left: 1px solid var(--slate);
-  padding-left: 0.75rem;
+dl.meta div:not(:last-child)::after {
+  content: "\b7";
+  padding-left: 0.6rem;
 }
 
-.meta dt::after {
+dl.meta dt::after {
   content: ":";
-}
-
-.meta dd {
-  padding-right: 0.75rem;
+  padding-right: 0.3rem;
 }
 
 .bignumber {
