@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"fmt"
+	"html"
 	"html/template"
 	"net/url"
 	"strings"
@@ -11,23 +12,36 @@ import (
 
 // linkify converts URLs from whitelisted hosts into HTML links.
 func linkify(s string) template.HTML {
-	return template.HTML(urlregexp.ReplaceAllStringFunc(s, func(match string) string {
-		u, err := url.Parse(match)
-		if err != nil {
-			return match
-		}
-		if u.Scheme != "http" && u.Scheme != "https" {
-			return match
-		}
-		if !linkifyhost(u.Host) {
-			return match
-		}
-		return fmt.Sprintf(`<a href="%s">%s</a>`, u, u)
-	}))
+	output := ""
+	i := 0
+	matches := urlregexp.FindAllStringIndex(s, -1)
+	for _, idxs := range matches {
+		start, end := idxs[0], idxs[1]
+		output += html.EscapeString(s[i:start])
+		output += linkreplace(s[start:end])
+		i = end
+	}
+	output += html.EscapeString(s[i:])
+	return template.HTML(output)
 }
 
 // Regular expression for extracting URLs.
 var urlregexp = xurls.Strict()
+
+func linkreplace(match string) string {
+	linkhtml := html.EscapeString(match)
+	u, err := url.Parse(match)
+	if err != nil {
+		return linkhtml
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return linkhtml
+	}
+	if !linkifyhost(u.Host) {
+		return linkhtml
+	}
+	return fmt.Sprintf(`<a href="%s">%s</a>`, u, linkhtml)
+}
 
 // URLs from linkifyhosts and their subdomains will be turned into links.
 var linkifyhosts = []string{
