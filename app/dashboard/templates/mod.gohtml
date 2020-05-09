@@ -1,5 +1,7 @@
+{{ define "title" }}{{ .Module.Path }}{{ end }}
+
 {{ define "content" }}
-<h1>module {{ .Module.Path }}</h1>
+<h1>Module {{ .Module.Path }}</h1>
 <div class="meta">
   <dl>
     <dt>Version</dt> <dd>{{ .Module.Version }}</dd>

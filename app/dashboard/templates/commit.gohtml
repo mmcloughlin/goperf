@@ -1,6 +1,8 @@
+{{ define "title" }}Commit {{ .Commit.SHA }}{{ end }}
+
 {{ define "content" }}
 {{ with .Commit }}
-<h1>commit {{ .SHA }}</h1>
+<h1>Commit {{ .SHA }}</h1>
 <pre>
 {{ .Message }}
 </pre>

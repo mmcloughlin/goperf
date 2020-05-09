@@ -1,5 +1,7 @@
+{{ define "title" }}{{ .Package.ImportPath }}{{ end }}
+
 {{ define "content" }}
-<h1>package {{ .Package.ImportPath }}</h1>
+<h1>Package {{ .Package.ImportPath }}</h1>
 <div class="meta">
   <dl>
     <dt>Module</dt> <dd>{{ template "mod" .Package.Module }}</dd>
