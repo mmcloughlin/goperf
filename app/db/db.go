@@ -517,3 +517,37 @@ func listTracePoints(ctx context.Context, q *db.Queries, r entity.CommitIndexRan
 
 	return output, nil
 }
+
+// Trace returns a specific trace between the given commit range.
+func (d *DB) Trace(ctx context.Context, id trace.ID, r entity.CommitIndexRange) (*trace.Trace, error) {
+	var t *trace.Trace
+	err := d.txq(ctx, func(q *db.Queries) error {
+		var err error
+		t, err = getTrace(ctx, q, id, r)
+		return err
+	})
+	return t, err
+}
+
+func getTrace(ctx context.Context, q *db.Queries, id trace.ID, r entity.CommitIndexRange) (*trace.Trace, error) {
+	rows, err := q.Trace(ctx, db.TraceParams{
+		BenchmarkUUID:   id.BenchmarkUUID,
+		EnvironmentUUID: id.EnvironmentUUID,
+		CommitIndexMin:  int32(r.Min),
+		CommitIndexMax:  int32(r.Max),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to trace series.
+	t := &trace.Trace{ID: id}
+	for _, row := range rows {
+		t.Series = append(t.Series, trace.IndexedValue{
+			CommitIndex: int(row.CommitIndex),
+			Value:       row.Value,
+		})
+	}
+
+	return t, nil
+}

@@ -38,6 +38,7 @@ func run(ctx context.Context, l *zap.Logger) int {
 	subcommands.Register(NewAddMod(base), "data ingestion")
 
 	subcommands.Register(NewTraces(base), "data access")
+	subcommands.Register(NewChangeTest(base), "data access")
 
 	// Help.
 	subcommands.Register(subcommands.HelpCommand(), "help")

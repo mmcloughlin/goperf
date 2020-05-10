@@ -34,6 +34,20 @@ WHERE 1=1
     AND commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
 ;
 
+-- name: Trace :many
+SELECT
+    commit_index,
+    value
+FROM
+    points
+WHERE 1=1
+    AND benchmark_uuid = sqlc.arg(benchmark_uuid)
+    AND environment_uuid = sqlc.arg(environment_uuid)
+    AND commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
+ORDER BY
+    commit_index
+;
+
 -- name: InsertResult :exec
 INSERT INTO results (
     uuid,

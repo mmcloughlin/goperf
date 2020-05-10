@@ -179,6 +179,60 @@ func (q *Queries) Result(ctx context.Context, uuid uuid.UUID) (Result, error) {
 	return i, err
 }
 
+const trace = `-- name: Trace :many
+SELECT
+    commit_index,
+    value
+FROM
+    points
+WHERE 1=1
+    AND benchmark_uuid = $1
+    AND environment_uuid = $2
+    AND commit_index BETWEEN $3 AND $4
+ORDER BY
+    commit_index
+`
+
+type TraceParams struct {
+	BenchmarkUUID   uuid.UUID
+	EnvironmentUUID uuid.UUID
+	CommitIndexMin  int32
+	CommitIndexMax  int32
+}
+
+type TraceRow struct {
+	CommitIndex int32
+	Value       float64
+}
+
+func (q *Queries) Trace(ctx context.Context, arg TraceParams) ([]TraceRow, error) {
+	rows, err := q.query(ctx, q.traceStmt, trace,
+		arg.BenchmarkUUID,
+		arg.EnvironmentUUID,
+		arg.CommitIndexMin,
+		arg.CommitIndexMax,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TraceRow
+	for rows.Next() {
+		var i TraceRow
+		if err := rows.Scan(&i.CommitIndex, &i.Value); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const tracePoints = `-- name: TracePoints :many
 SELECT
     benchmark_uuid,

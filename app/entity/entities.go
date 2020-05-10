@@ -2,6 +2,7 @@ package entity
 
 import (
 	"crypto/sha256"
+	"fmt"
 	"path"
 	"strconv"
 	"time"
@@ -48,6 +49,8 @@ type CommitIndexRange struct {
 func SingleCommitIndexRange(idx int) CommitIndexRange {
 	return CommitIndexRange{Min: idx, Max: idx}
 }
+
+func (r CommitIndexRange) String() string { return fmt.Sprintf("[%d,%d]", r.Min, r.Max) }
 
 type DataFile struct {
 	Name   string

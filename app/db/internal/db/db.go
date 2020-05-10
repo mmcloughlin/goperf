@@ -124,6 +124,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.tasksWithStatusStmt, err = db.PrepareContext(ctx, tasksWithStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query TasksWithStatus: %w", err)
 	}
+	if q.traceStmt, err = db.PrepareContext(ctx, trace); err != nil {
+		return nil, fmt.Errorf("error preparing query Trace: %w", err)
+	}
 	if q.tracePointsStmt, err = db.PrepareContext(ctx, tracePoints); err != nil {
 		return nil, fmt.Errorf("error preparing query TracePoints: %w", err)
 	}
@@ -314,6 +317,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing tasksWithStatusStmt: %w", cerr)
 		}
 	}
+	if q.traceStmt != nil {
+		if cerr := q.traceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing traceStmt: %w", cerr)
+		}
+	}
 	if q.tracePointsStmt != nil {
 		if cerr := q.tracePointsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing tracePointsStmt: %w", cerr)
@@ -412,6 +420,7 @@ type Queries struct {
 	setTaskDataFileStmt                           *sql.Stmt
 	taskStmt                                      *sql.Stmt
 	tasksWithStatusStmt                           *sql.Stmt
+	traceStmt                                     *sql.Stmt
 	tracePointsStmt                               *sql.Stmt
 	transitionTaskStatusStmt                      *sql.Stmt
 	transitionTaskStatusesBeforeStmt              *sql.Stmt
@@ -457,6 +466,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		setTaskDataFileStmt:              q.setTaskDataFileStmt,
 		taskStmt:                         q.taskStmt,
 		tasksWithStatusStmt:              q.tasksWithStatusStmt,
+		traceStmt:                        q.traceStmt,
 		tracePointsStmt:                  q.tracePointsStmt,
 		transitionTaskStatusStmt:         q.transitionTaskStatusStmt,
 		transitionTaskStatusesBeforeStmt: q.transitionTaskStatusesBeforeStmt,
