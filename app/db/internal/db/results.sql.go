@@ -5,29 +5,24 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const benchmarkPoints = `-- name: BenchmarkPoints :many
 SELECT
-    r.uuid AS result_uuid,
-    r.environment_uuid,
-    c.sha AS commit_sha,
-    p.index AS commit_index,
-    r.value
+    result_uuid,
+    environment_uuid,
+    commit_sha,
+    commit_index,
+    value
 FROM
-    results AS r
-    LEFT JOIN commits AS c
-        ON r.commit_sha = c.sha
-    INNER JOIN commit_positions AS p
-        ON p.sha = c.sha
+    points
 WHERE 1=1
-    AND r.benchmark_uuid = $1
-    AND p.index BETWEEN $2 AND $3
+    AND benchmark_uuid = $1
+    AND commit_index BETWEEN $2 AND $3
 ORDER BY
-    p.index
+    commit_index
 `
 
 type BenchmarkPointsParams struct {
@@ -186,17 +181,14 @@ func (q *Queries) Result(ctx context.Context, uuid uuid.UUID) (Result, error) {
 
 const tracePoints = `-- name: TracePoints :many
 SELECT
-    r.benchmark_uuid,
-    r.environment_uuid,
-    p.index AS commit_index,
-    p.commit_time,
-    r.value
+    benchmark_uuid,
+    environment_uuid,
+    commit_index,
+    value
 FROM
-    results AS r
-    INNER JOIN commit_positions AS p
-        ON r.commit_sha=p.sha
+    points
 WHERE 1=1
-    AND p.index BETWEEN $1 AND $2
+    AND commit_index BETWEEN $1 AND $2
 `
 
 type TracePointsParams struct {
@@ -208,7 +200,6 @@ type TracePointsRow struct {
 	BenchmarkUUID   uuid.UUID
 	EnvironmentUUID uuid.UUID
 	CommitIndex     int32
-	CommitTime      time.Time
 	Value           float64
 }
 
@@ -225,7 +216,6 @@ func (q *Queries) TracePoints(ctx context.Context, arg TracePointsParams) ([]Tra
 			&i.BenchmarkUUID,
 			&i.EnvironmentUUID,
 			&i.CommitIndex,
-			&i.CommitTime,
 			&i.Value,
 		); err != nil {
 			return nil, err

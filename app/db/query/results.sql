@@ -8,37 +8,30 @@ WHERE benchmark_uuid = $1;
 
 -- name: BenchmarkPoints :many
 SELECT
-    r.uuid AS result_uuid,
-    r.environment_uuid,
-    c.sha AS commit_sha,
-    p.index AS commit_index,
-    r.value
+    result_uuid,
+    environment_uuid,
+    commit_sha,
+    commit_index,
+    value
 FROM
-    results AS r
-    LEFT JOIN commits AS c
-        ON r.commit_sha = c.sha
-    INNER JOIN commit_positions AS p
-        ON p.sha = c.sha
+    points
 WHERE 1=1
-    AND r.benchmark_uuid = sqlc.arg(benchmark_uuid)
-    AND p.index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
+    AND benchmark_uuid = sqlc.arg(benchmark_uuid)
+    AND commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
 ORDER BY
-    p.index
+    commit_index
 ;
 
 -- name: TracePoints :many
 SELECT
-    r.benchmark_uuid,
-    r.environment_uuid,
-    p.index AS commit_index,
-    p.commit_time,
-    r.value
+    benchmark_uuid,
+    environment_uuid,
+    commit_index,
+    value
 FROM
-    results AS r
-    INNER JOIN commit_positions AS p
-        ON r.commit_sha=p.sha
+    points
 WHERE 1=1
-    AND p.index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
+    AND commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
 ;
 
 -- name: InsertResult :exec
