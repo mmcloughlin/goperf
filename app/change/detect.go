@@ -30,7 +30,7 @@ type Detector struct {
 
 // DefaultDetector has sensible default parameter choices.
 var DefaultDetector = &Detector{
-	WindowSize:    30,
+	WindowSize:    20,
 	MinEffectSize: 2,
 
 	M:                15,
