@@ -282,7 +282,7 @@ p.warn {
   border-left-color: var(--yellow);
 }
 
-.na {
+.empty {
   font-style: italic;
   color: var(--slate-2);
 }

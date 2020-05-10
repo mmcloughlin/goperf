@@ -1,8 +1,17 @@
 {{ define "title" }}Commit {{ .Commit.SHA }}{{ end }}
 
 {{ define "content" }}
+<h1>Commit {{ .Commit.SHA }}</h1>
+
+<h2>Changes</h2>
+{{ if .Changes }}
+{{ template "changes" .Changes }}
+{{ else }}
+<p class="empty">No significant changes identified.</p>
+{{ end }}
+
 {{ with .Commit }}
-<h1>Commit {{ .SHA }}</h1>
+<h2>Metadata</h2>
 
 <table class="properties">
     <tr><td class="key code">author</td><td class="value">{{ .Author.Name }} &lt;{{ .Author.Email }}&gt;</td></tr>
@@ -26,4 +35,5 @@
 
 <pre>{{ linkify .Message }}</pre>
 {{ end }}
+
 {{ end }}

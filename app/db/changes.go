@@ -65,6 +65,11 @@ func (d *DB) storeChangesBatch(ctx context.Context, tx *sql.Tx, cs []*entity.Cha
 	return d.insert(ctx, tx, "changes", fields, values)
 }
 
+// ListChangeSummariesForCommitIndex returns changes at a specific commit.
+func (d *DB) ListChangeSummariesForCommitIndex(ctx context.Context, idx int, minEffectSize float64) ([]*entity.ChangeSummary, error) {
+	return d.ListChangeSummaries(ctx, entity.SingleCommitIndexRange(idx), minEffectSize)
+}
+
 // ListChangeSummaries returns changes with associated metadata.
 func (d *DB) ListChangeSummaries(ctx context.Context, r entity.CommitIndexRange, minEffectSize float64) ([]*entity.ChangeSummary, error) {
 	var cs []*entity.ChangeSummary

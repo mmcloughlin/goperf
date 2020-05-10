@@ -45,6 +45,10 @@ type CommitIndexRange struct {
 	Max int
 }
 
+func SingleCommitIndexRange(idx int) CommitIndexRange {
+	return CommitIndexRange{Min: idx, Max: idx}
+}
+
 type DataFile struct {
 	Name   string
 	SHA256 [sha256.Size]byte

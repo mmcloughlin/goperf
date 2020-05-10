@@ -5,26 +5,7 @@
 
 {{ range .CommitChangeGroups }}
 <h2>{{ template "sha" .SHA }} <code>{{ .Subject }}</code></h2>
-<table class="changes">
-  <tr>
-    <th>Benchmark</th>
-    <th>Env</th>
-    <th class="numeric">Effect Size</th>
-    <th class="numeric">Pre</th>
-    <th class="numeric">Post</th>
-    <th class="numeric">Change</th>
-  </tr>
-  {{ range .Changes }}
-  <tr>
-    <td>{{ template "change" . }}<br /><code>{{ .Benchmark.Package.ImportPath }}</td>
-    <td><code>{{ .Environment }}</code></td>
-    <td class="numeric">{{ printf "%+.2f" .EffectSize }}</td>
-    <td class="numeric">{{ printf "%.2f" .Pre.Mean }}</td>
-    <td class="numeric">{{ printf "%.2f" .Post.Mean }}</td>
-    <td class="numeric change {{ .Type }}">{{ printf "%.2f" .Percent }}%</td>
-  </tr>
-  {{ end }}
-</table>
+{{ template "changes" .Changes }}
 {{ end }}
 
 {{ end }}

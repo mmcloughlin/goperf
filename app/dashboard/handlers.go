@@ -429,11 +429,44 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) error {
 		idx = -1
 	}
 
+	// Find associated changes, if we have a commit index. Use 0 as effect size
+	// threshold to return everything.
+	var changes []*Change
+	if idx >= 0 {
+		changes, err = h.changesForCommit(ctx, idx)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Write response.
 	return h.render(ctx, w, "commit", map[string]interface{}{
 		"Commit":      commit,
 		"CommitIndex": idx,
+		"Changes":     changes,
 	})
+}
+
+func (h *Handlers) changesForCommit(ctx context.Context, idx int) ([]*Change, error) {
+	chgs, err := h.db.ListChangeSummariesForCommitIndex(ctx, idx, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(chgs) == 0 {
+		return nil, nil
+	}
+
+	groups, err := h.groupChanges(ctx, chgs)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(groups) != 1 {
+		return nil, errutil.AssertionFailure("expected one change group")
+	}
+
+	return groups[0].Changes, nil
 }
 
 func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {

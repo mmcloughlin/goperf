@@ -1,5 +1,5 @@
 {{ define "mod" }}<a href="/mod/{{ .UUID }}">{{ .Path }}</a>{{ end }}
-{{ define "modver" }}{{ if .Version }}{{ .Version }}{{ else }}<span class="na">n/a</span>{{ end }}{{ end }}
+{{ define "modver" }}{{ if .Version }}{{ .Version }}{{ else }}<span class="empty">n/a</span>{{ end }}{{ end }}
 {{ define "pkg" }}<a href="/pkg/{{ .UUID }}">{{ .ImportPath }}</a>{{ end }}
 {{ define "bench" }}<a href="/bench/{{ .UUID }}">{{ .FullName }} {{ .Unit }}</a>{{ end }}
 {{ define "change" }}<a href="/bench/{{ .Benchmark.UUID }}?c={{ .Change.CommitIndex }}">{{ .Benchmark.FullName }}{{ template "sep" }}{{ .Benchmark.Unit }}</a>{{ end }}
@@ -20,6 +20,29 @@
         <td class="value">{{ $value }}</td>
     </tr>
 {{ end }}
+</table>
+{{ end }}
+
+{{ define "changes" }}
+<table class="changes">
+  <tr>
+    <th>Benchmark</th>
+    <th>Env</th>
+    <th class="numeric">Effect Size</th>
+    <th class="numeric">Pre</th>
+    <th class="numeric">Post</th>
+    <th class="numeric">Change</th>
+  </tr>
+  {{ range . }}
+  <tr>
+    <td>{{ template "change" . }}<br /><code>{{ .Benchmark.Package.ImportPath }}</td>
+    <td><code>{{ .Environment }}</code></td>
+    <td class="numeric">{{ printf "%+.2f" .EffectSize }}</td>
+    <td class="numeric">{{ printf "%.2f" .Pre.Mean }}</td>
+    <td class="numeric">{{ printf "%.2f" .Post.Mean }}</td>
+    <td class="numeric change {{ .Type }}">{{ printf "%.2f" .Percent }}%</td>
+  </tr>
+  {{ end }}
 </table>
 {{ end }}
 
