@@ -10,7 +10,7 @@
   {{ range .Modules }}
   <tr>
     <td>{{ template "mod" . }}</td>
-    <td>{{ .Version }}</td>
+    <td>{{ template "modver" . }}</td>
   </tr>
   {{ end }}
 </table>

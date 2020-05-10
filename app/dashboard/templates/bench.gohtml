@@ -90,7 +90,7 @@
 <dl class="meta">
   <div><dt>Package</dt><dd>{{ template "pkg" .Benchmark.Package }}</dd></div>
   <div><dt>Module</dt><dd>{{ template "mod" .Benchmark.Package.Module }}</dd></div>
-  <div><dt>Version</dt><dd>{{ .Benchmark.Package.Module.Version }}</dd></div>
+  <div><dt>Version</dt><dd>{{ template "modver" .Benchmark.Package.Module }}</dd></div>
 </dl>
 
 <p class="note">Click and drag left-right to zoom in. Click a dot to see

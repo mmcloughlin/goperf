@@ -282,6 +282,11 @@ p.warn {
   border-left-color: var(--yellow);
 }
 
+.na {
+  font-style: italic;
+  color: var(--slate-2);
+}
+
 figure {
   background-color: var(--cool-gray-4);
   margin: 0;

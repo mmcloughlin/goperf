@@ -4,7 +4,7 @@
 <h1>Module {{ .Module.Path }}</h1>
 
 <dl class="meta">
-  <div><dt>Version</dt> <dd>{{ .Module.Version }}</dd></div>
+  <div><dt>Version</dt> <dd>{{ template "modver" .Module }}</dd></div>
 </dl>
 
 <table>

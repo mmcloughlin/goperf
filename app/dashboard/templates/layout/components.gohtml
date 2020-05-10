@@ -1,4 +1,5 @@
 {{ define "mod" }}<a href="/mod/{{ .UUID }}">{{ .Path }}</a>{{ end }}
+{{ define "modver" }}{{ if .Version }}{{ .Version }}{{ else }}<span class="na">n/a</span>{{ end }}{{ end }}
 {{ define "pkg" }}<a href="/pkg/{{ .UUID }}">{{ .ImportPath }}</a>{{ end }}
 {{ define "bench" }}<a href="/bench/{{ .UUID }}">{{ .FullName }} {{ .Unit }}</a>{{ end }}
 {{ define "change" }}<a href="/bench/{{ .Benchmark.UUID }}?c={{ .Change.CommitIndex }}">{{ .Benchmark.FullName }}{{ template "sep" }}{{ .Benchmark.Unit }}</a>{{ end }}
@@ -9,6 +10,7 @@
 
 {{ define "uuidshort" }}{{ slice .String 0 8 }}{{ end }}
 {{ define "sep" }} <span class="sep">/</span> {{ end }}
+
 
 {{ define "properties" }}
 <table class="properties">
