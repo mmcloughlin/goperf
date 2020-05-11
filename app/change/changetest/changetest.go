@@ -48,7 +48,7 @@ func WriteNewCaseFile(filename string, series trace.Series) error {
 	})
 }
 
-// Filename returns a recommended filename for the given trace ID.
+// Filename returns a recommended test case filename for the given trace ID.
 func Filename(id trace.ID) string {
 	return strings.ReplaceAll(id.String(), "/", "_") + ".json"
 }

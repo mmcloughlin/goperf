@@ -1,8 +1,10 @@
 package change
 
 import (
+	"flag"
 	"math/rand"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -10,6 +12,8 @@ import (
 	"github.com/mmcloughlin/cb/app/change/changetest"
 	"github.com/mmcloughlin/cb/app/trace"
 )
+
+var plot = flag.Bool("plot", false, "generate plots for test cases")
 
 func TestDetectTestData(t *testing.T) {
 	filenames, err := filepath.Glob("testdata/*.json")
@@ -21,20 +25,29 @@ func TestDetectTestData(t *testing.T) {
 
 	for _, filename := range filenames {
 		filename := filename // scopelint
-		t.Run(filepath.Base(filename), func(t *testing.T) {
+		name := filepath.Base(filename)
+		t.Run(name, func(t *testing.T) {
 			// Read test case.
 			tc, err := changetest.ReadCaseFile(filename)
 			if err != nil {
 				t.Fatal(err)
 			}
 
+			// Debug plot.
+			if *plot {
+				plotname := strings.TrimSuffix(filename, ".json") + ".png"
+				if err := changetest.PlotSeries(plotname, name, tc.Series); err != nil {
+					t.Fatal(err)
+				}
+			}
+
 			// Detect changes.
 			changes := detector.Detect(tc.Series)
+			LogChanges(t, changes)
 
 			// Extract change points.
 			points := []int{}
 			for _, c := range changes {
-				t.Logf("%d: %v", c.CommitIndex, c.EffectSize)
 				points = append(points, c.CommitIndex)
 			}
 
@@ -53,17 +66,33 @@ func TestDetectGenerated(t *testing.T) {
 
 	// Detect changes.
 	changes := DefaultDetector.Detect(series)
+	LogChanges(t, changes)
 
-	if len(changes) != 1 {
-		t.Fatalf("expect 1 change; got %d", len(changes))
-	}
+	// Expect change at 100.
+	AssertOneChangeAt(t, changes, 100)
+}
 
-	change := changes[0]
-	t.Logf("change = %#v", change)
+func TestDetectWindowClipped(t *testing.T) {
+	detector := DefaultDetector
 
-	if change.CommitIndex != 100 {
-		t.Fatalf("expected change at index 100; got %d", change.CommitIndex)
-	}
+	// Test case with *massive* step change, but a window on one side that's
+	// "clipped", meaning smaller than the window of the detector. It's possible
+	// in this case that the change will still be detected, but not at the right
+	// position.
+
+	w := detector.WindowSize
+
+	// Generate an absurdly obvious step change, but with not enough of a window
+	// on one side.
+	var series trace.Series
+	series = AppendRandNormSeries(series, 17, 1, 100)
+	series = AppendRandNormSeries(series, 100, 1, w-3)
+
+	// Detect changes.
+	changes := detector.Detect(series)
+	LogChanges(t, changes)
+
+	AssertOneChangeAt(t, changes, 100)
 }
 
 // RandNorm samples from normal distribution with mean m and standard deviation
@@ -87,4 +116,22 @@ func AppendRandNormSeries(series trace.Series, m, s float64, n int) trace.Series
 	}
 
 	return series
+}
+
+func LogChanges(t *testing.T, changes []Change) {
+	for _, c := range changes {
+		t.Logf("%d: %v", c.CommitIndex, c.EffectSize)
+	}
+}
+
+func AssertOneChangeAt(t *testing.T, changes []Change, expect int) {
+	if len(changes) != 1 {
+		t.Fatalf("expect 1 change; got %d", len(changes))
+	}
+
+	change := changes[0]
+
+	if change.CommitIndex != expect {
+		t.Fatalf("expected change at index %d; got %d", expect, change.CommitIndex)
+	}
 }

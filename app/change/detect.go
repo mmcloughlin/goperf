@@ -31,7 +31,7 @@ type Detector struct {
 // DefaultDetector has sensible default parameter choices.
 var DefaultDetector = &Detector{
 	WindowSize:    20,
-	MinEffectSize: 2,
+	MinEffectSize: 3,
 
 	M:                15,
 	K:                3,
@@ -61,11 +61,8 @@ func (d *Detector) Detect(series trace.Series) []Change {
 		// Find largest effect size in a small window around this candidate.
 		chg := Change{}
 		for j := i - d.Context; j <= i+d.Context; j++ {
-			if j < d.WindowSize || j+d.WindowSize >= len(values) {
-				continue
-			}
-			pre := w.stats(j-d.WindowSize, j)
-			post := w.stats(j, j+d.WindowSize)
+			pre := w.stats(max(j-d.WindowSize, 0), j)
+			post := w.stats(j, min(j+d.WindowSize, len(values)))
 			effect := cohen(post, pre)
 			if math.Abs(effect) > math.Abs(chg.EffectSize) {
 				chg.CommitIndex = series[j].CommitIndex
@@ -82,4 +79,18 @@ func (d *Detector) Detect(series trace.Series) []Change {
 	}
 
 	return changes
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
 }
