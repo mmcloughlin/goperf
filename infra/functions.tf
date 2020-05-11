@@ -73,7 +73,7 @@ resource "google_cloud_scheduler_job" "watch_schedule" {
 
 resource "google_cloud_scheduler_job" "staletimeout_schedule" {
   name             = "staletimeout"
-  schedule         = "*/15 * * * *"
+  schedule         = "23 * * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "120s"
 
