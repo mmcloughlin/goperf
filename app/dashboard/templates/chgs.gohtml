@@ -3,6 +3,21 @@
 {{ define "content" }}
 <h1>Changes</h1>
 
+<p class="note">Changes are listed by commit in <code>git log</code> order,
+omitting commits for which no significant changes were identified. Changes
+for a given commit are ordered by <dfn>effect size</dfn>, a measure of
+confidence in the change calculated with <a
+href="https://en.wikipedia.org/wiki/Effect_size#Cohen's_d">Cohen's d</a>.
+Note that the effect size is <em>not the same as percentage change</em>:
+effect size could be very high for a small percentage change if the variance
+is low.</p>
+
+<p class="warn">Change detection is non-trivial and subject to mistakes. Some
+real changes can be misattributed to nearby commits. Noisy benchmarks can
+also produce false positives. Please <a
+href="https://github.com/mmcloughlin/cb/issues/new">report false changes</a>
+so we can refine the detection algorithm.</p>
+
 {{ range .CommitChangeGroups }}
 <h2>{{ template "sha" .SHA }} <code>{{ .Subject }}</code></h2>
 {{ template "changes" .Changes }}
