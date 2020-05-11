@@ -51,6 +51,7 @@ func (d *Detector) Detect(series trace.Series) []Change {
 	// Pre-process with KZA.
 	f := analysis.AdaptiveKolmogorovZurbenko(values, d.M, d.K)
 
+	hasChange := map[int]bool{}
 	for i := 1; i < len(f); i++ {
 		percent := 100 * math.Abs((f[i]-f[i-1])/f[i-1])
 		if percent < d.PercentThreshold {
@@ -74,8 +75,9 @@ func (d *Detector) Detect(series trace.Series) []Change {
 			}
 		}
 
-		if math.Abs(chg.EffectSize) > d.MinEffectSize {
+		if math.Abs(chg.EffectSize) > d.MinEffectSize && !hasChange[chg.CommitIndex] {
 			changes = append(changes, chg)
+			hasChange[chg.CommitIndex] = true
 		}
 	}
 
