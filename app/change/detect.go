@@ -60,7 +60,7 @@ func (d *Detector) Detect(series trace.Series) []Change {
 
 		// Find largest effect size in a small window around this candidate.
 		chg := Change{}
-		for j := i - d.Context; j <= i+d.Context; j++ {
+		for j := max(i-d.Context, 0); j <= i+d.Context && j < len(values); j++ {
 			pre := w.stats(max(j-d.WindowSize, 0), j)
 			post := w.stats(j, min(j+d.WindowSize, len(values)))
 			effect := cohen(post, pre)
