@@ -38,7 +38,7 @@ func (q *Queries) BuildChangesRanked(ctx context.Context) error {
 
 const changeSummaries = `-- name: ChangeSummaries :many
 SELECT
-    chg.benchmark_uuid, chg.environment_uuid, chg.commit_index, chg.effect_size, chg.pre_n, chg.pre_mean, chg.pre_stddev, chg.post_n, chg.post_mean, chg.post_stddev,
+    chg.benchmark_uuid, chg.environment_uuid, chg.commit_index, chg.effect_size, chg.pre_n, chg.pre_mean, chg.pre_stddev, chg.post_n, chg.post_mean, chg.post_stddev, chg.rank_by_effect_size, chg.rank_by_abs_percent_change,
     c.sha AS commit_sha,
     SPLIT_PART(c.message, E'\n', 1)::TEXT AS commit_subject,
 
@@ -47,7 +47,7 @@ SELECT
     mod.path,
     mod.version
 FROM
-    changes AS chg
+    changes_ranked AS chg
     INNER JOIN commit_positions AS p
         ON chg.commit_index=p.index
     INNER JOIN commits AS c
@@ -60,43 +60,55 @@ FROM
         ON pkg.module_uuid=mod.uuid
 WHERE 1=1
     AND ABS(chg.effect_size) > $1
-    AND commit_index BETWEEN $2 AND $3
+    AND chg.commit_index BETWEEN $2 AND $3
+    AND chg.rank_by_effect_size <= $4
+    AND chg.rank_by_abs_percent_change <= $5
 ORDER BY
     commit_index DESC
 `
 
 type ChangeSummariesParams struct {
-	EffectSizeMin  float64
-	CommitIndexMin int32
-	CommitIndexMax int32
+	EffectSizeMin             float64
+	CommitIndexMin            int32
+	CommitIndexMax            int32
+	RankByEffectSizeMax       int32
+	RankByAbsPercentChangeMax int32
 }
 
 type ChangeSummariesRow struct {
-	BenchmarkUUID   uuid.UUID
-	EnvironmentUUID uuid.UUID
-	CommitIndex     int32
-	EffectSize      float64
-	PreN            int32
-	PreMean         float64
-	PreStddev       float64
-	PostN           int32
-	PostMean        float64
-	PostStddev      float64
-	CommitSHA       []byte
-	CommitSubject   string
-	UUID            uuid.UUID
-	PackageUUID     uuid.UUID
-	FullName        string
-	Name            string
-	Unit            string
-	Parameters      json.RawMessage
-	RelativePath    string
-	Path            string
-	Version         string
+	BenchmarkUUID          uuid.UUID
+	EnvironmentUUID        uuid.UUID
+	CommitIndex            int32
+	EffectSize             float64
+	PreN                   int32
+	PreMean                float64
+	PreStddev              float64
+	PostN                  int32
+	PostMean               float64
+	PostStddev             float64
+	RankByEffectSize       int32
+	RankByAbsPercentChange int32
+	CommitSHA              []byte
+	CommitSubject          string
+	UUID                   uuid.UUID
+	PackageUUID            uuid.UUID
+	FullName               string
+	Name                   string
+	Unit                   string
+	Parameters             json.RawMessage
+	RelativePath           string
+	Path                   string
+	Version                string
 }
 
 func (q *Queries) ChangeSummaries(ctx context.Context, arg ChangeSummariesParams) ([]ChangeSummariesRow, error) {
-	rows, err := q.query(ctx, q.changeSummariesStmt, changeSummaries, arg.EffectSizeMin, arg.CommitIndexMin, arg.CommitIndexMax)
+	rows, err := q.query(ctx, q.changeSummariesStmt, changeSummaries,
+		arg.EffectSizeMin,
+		arg.CommitIndexMin,
+		arg.CommitIndexMax,
+		arg.RankByEffectSizeMax,
+		arg.RankByAbsPercentChangeMax,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +127,8 @@ func (q *Queries) ChangeSummaries(ctx context.Context, arg ChangeSummariesParams
 			&i.PostN,
 			&i.PostMean,
 			&i.PostStddev,
+			&i.RankByEffectSize,
+			&i.RankByAbsPercentChange,
 			&i.CommitSHA,
 			&i.CommitSubject,
 			&i.UUID,

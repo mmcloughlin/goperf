@@ -15,7 +15,7 @@ SELECT
     mod.path,
     mod.version
 FROM
-    changes AS chg
+    changes_ranked AS chg
     INNER JOIN commit_positions AS p
         ON chg.commit_index=p.index
     INNER JOIN commits AS c
@@ -28,7 +28,9 @@ FROM
         ON pkg.module_uuid=mod.uuid
 WHERE 1=1
     AND ABS(chg.effect_size) > sqlc.arg(effect_size_min)
-    AND commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
+    AND chg.commit_index BETWEEN sqlc.arg(commit_index_min) AND sqlc.arg(commit_index_max)
+    AND chg.rank_by_effect_size <= sqlc.arg(rank_by_effect_size_max)
+    AND chg.rank_by_abs_percent_change <= sqlc.arg(rank_by_abs_percent_change_max)
 ORDER BY
     commit_index DESC
 ;
