@@ -382,3 +382,23 @@ table.changes .improvement {
 table.changes .unknown {
   color: var(--warn);
 }
+
+table.changes td.env {
+  width: 3rem;
+}
+
+code.env {
+  border-radius: 0.2rem;
+  font-size: 0.7rem;
+  padding: 0.2rem;
+}
+
+code.env.amd64 {
+  color: white;
+  background-color: var(--black-2);
+}
+
+code.env.arm64 {
+  color: white;
+  background-color: #0091bd;
+}

@@ -36,7 +36,7 @@
   {{ range . }}
   <tr>
     <td>{{ template "change" . }}<br /><code>{{ .Benchmark.Package.ImportPath }}</td>
-    <td><code>{{ .Environment }}</code></td>
+    <td class="env"><code class="env {{ .Environment }}">{{ .Environment }}</code></td>
     <td class="numeric">{{ printf "%+.2f" .EffectSize }}</td>
     <td class="numeric">{{ printf "%.2f" .Pre.Mean }}</td>
     <td class="numeric">{{ printf "%.2f" .Post.Mean }}</td>
