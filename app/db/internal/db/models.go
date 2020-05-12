@@ -76,6 +76,21 @@ type Change struct {
 	PostStddev      float64
 }
 
+type ChangesRanked struct {
+	BenchmarkUUID          uuid.UUID
+	EnvironmentUUID        uuid.UUID
+	CommitIndex            int32
+	EffectSize             float64
+	PreN                   int32
+	PreMean                float64
+	PreStddev              float64
+	PostN                  int32
+	PostMean               float64
+	PostStddev             float64
+	RankByEffectSize       int32
+	RankByAbsPercentChange int32
+}
+
 type Commit struct {
 	SHA            []byte
 	Tree           []byte

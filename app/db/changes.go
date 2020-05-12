@@ -65,6 +65,13 @@ func (d *DB) storeChangesBatch(ctx context.Context, tx *sql.Tx, cs []*entity.Cha
 	return d.insert(ctx, tx, "changes", fields, values)
 }
 
+// BuildChangesRanked derives the ranked changes table from the changes table.
+func (d *DB) BuildChangesRanked(ctx context.Context) error {
+	return d.txq(ctx, func(q *db.Queries) error {
+		return q.BuildChangesRanked(ctx)
+	})
+}
+
 // ListChangeSummariesForCommitIndex returns changes at a specific commit.
 func (d *DB) ListChangeSummariesForCommitIndex(ctx context.Context, idx int, minEffectSize float64) ([]*entity.ChangeSummary, error) {
 	return d.ListChangeSummaries(ctx, entity.SingleCommitIndexRange(idx), minEffectSize)

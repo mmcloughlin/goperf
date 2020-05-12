@@ -31,6 +31,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.benchmarkResultsStmt, err = db.PrepareContext(ctx, benchmarkResults); err != nil {
 		return nil, fmt.Errorf("error preparing query BenchmarkResults: %w", err)
 	}
+	if q.buildChangesRankedStmt, err = db.PrepareContext(ctx, buildChangesRanked); err != nil {
+		return nil, fmt.Errorf("error preparing query BuildChangesRanked: %w", err)
+	}
 	if q.buildCommitPositionsStmt, err = db.PrepareContext(ctx, buildCommitPositions); err != nil {
 		return nil, fmt.Errorf("error preparing query BuildCommitPositions: %w", err)
 	}
@@ -160,6 +163,11 @@ func (q *Queries) Close() error {
 	if q.benchmarkResultsStmt != nil {
 		if cerr := q.benchmarkResultsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing benchmarkResultsStmt: %w", cerr)
+		}
+	}
+	if q.buildChangesRankedStmt != nil {
+		if cerr := q.buildChangesRankedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing buildChangesRankedStmt: %w", cerr)
 		}
 	}
 	if q.buildCommitPositionsStmt != nil {
@@ -389,6 +397,7 @@ type Queries struct {
 	benchmarkStmt                                 *sql.Stmt
 	benchmarkPointsStmt                           *sql.Stmt
 	benchmarkResultsStmt                          *sql.Stmt
+	buildChangesRankedStmt                        *sql.Stmt
 	buildCommitPositionsStmt                      *sql.Stmt
 	changeSummariesStmt                           *sql.Stmt
 	commitStmt                                    *sql.Stmt
@@ -435,6 +444,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		benchmarkStmt:                q.benchmarkStmt,
 		benchmarkPointsStmt:          q.benchmarkPointsStmt,
 		benchmarkResultsStmt:         q.benchmarkResultsStmt,
+		buildChangesRankedStmt:       q.buildChangesRankedStmt,
 		buildCommitPositionsStmt:     q.buildCommitPositionsStmt,
 		changeSummariesStmt:          q.changeSummariesStmt,
 		commitStmt:                   q.commitStmt,

@@ -108,6 +108,12 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 	}
 	logger.Info("inserted changes", zap.Int("num_changes", len(changes)))
 
+	// Update the ranking.
+	if err := database.BuildChangesRanked(ctx); err != nil {
+		return err
+	}
+	logger.Info("updated changes ranking")
+
 	// Report ok.
 	httputil.OK(w)
 

@@ -32,3 +32,24 @@ WHERE 1=1
 ORDER BY
     commit_index DESC
 ;
+
+-- name: BuildChangesRanked :exec
+INSERT INTO changes_ranked (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY commit_index
+            ORDER BY effect_size DESC
+        ) AS rank_by_effect_size,
+        ROW_NUMBER() OVER (
+            PARTITION BY commit_index
+            ORDER BY ABS((post_mean/pre_mean)-1.0) DESC
+        ) AS rank_by_abs_percent_change
+    FROM
+        changes
+)
+ON CONFLICT (benchmark_uuid, environment_uuid, commit_index)
+DO UPDATE SET
+    rank_by_effect_size = EXCLUDED.rank_by_effect_size,
+    rank_by_abs_percent_change = EXCLUDED.rank_by_abs_percent_change
+;
