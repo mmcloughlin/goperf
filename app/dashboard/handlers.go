@@ -448,7 +448,9 @@ func (h *Handlers) Commit(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *Handlers) changesForCommit(ctx context.Context, idx int) ([]*Change, error) {
-	chgs, err := h.db.ListChangeSummariesForCommitIndex(ctx, idx, 0)
+	chgs, err := h.db.ListChangeSummariesForCommitIndex(ctx, idx, db.ChangeFilter{
+		MinEffectSize: 0, // everything
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -479,8 +481,10 @@ func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Fetch changes.
-	minEffectSize := 4.0
-	chgs, err := h.db.ListChangeSummaries(ctx, cr, minEffectSize)
+	chgs, err := h.db.ListChangeSummaries(ctx, cr, db.ChangeFilter{
+		MinEffectSize:       4,
+		MaxRankByEffectSize: 5,
+	})
 	if err != nil {
 		return err
 	}
