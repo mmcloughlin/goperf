@@ -91,7 +91,7 @@ func handle(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		for _, chg := range chgs {
-			log.Info("change found",
+			log.Debug("change found",
 				zap.Int("commit_index", chg.CommitIndex),
 				zap.Float64("effect_size", chg.EffectSize),
 			)
