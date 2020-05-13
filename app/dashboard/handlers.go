@@ -482,7 +482,7 @@ func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
 
 	// Fetch changes.
 	chgs, err := h.db.ListChangeSummaries(ctx, cr, db.ChangeFilter{
-		MinEffectSize:       4,
+		MinEffectSize:       10,
 		MaxRankByEffectSize: 5,
 	})
 	if err != nil {
