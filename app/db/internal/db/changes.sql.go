@@ -16,7 +16,7 @@ INSERT INTO changes_ranked (
         benchmark_uuid, environment_uuid, commit_index, effect_size, pre_n, pre_mean, pre_stddev, post_n, post_mean, post_stddev,
         ROW_NUMBER() OVER (
             PARTITION BY commit_index
-            ORDER BY effect_size DESC
+            ORDER BY ABS(effect_size) DESC
         ) AS rank_by_effect_size,
         ROW_NUMBER() OVER (
             PARTITION BY commit_index

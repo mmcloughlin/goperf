@@ -41,7 +41,7 @@ INSERT INTO changes_ranked (
         *,
         ROW_NUMBER() OVER (
             PARTITION BY commit_index
-            ORDER BY effect_size DESC
+            ORDER BY ABS(effect_size) DESC
         ) AS rank_by_effect_size,
         ROW_NUMBER() OVER (
             PARTITION BY commit_index
