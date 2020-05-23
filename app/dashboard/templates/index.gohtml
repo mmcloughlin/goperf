@@ -1,0 +1,16 @@
+{{ define "title" }}Go Performance Dashboard{{ end }}
+
+{{ define "content" }}
+<h1>Change Highlights</h1>
+
+<p class="note">The following list shows a selection of the most significant
+recent changes, sorted by max percentage change observed. See the <a
+href="/chgs/">changes page</a> for a more extensive list in <code>git
+log</code> order.</p>
+
+{{ range .CommitChangeGroups }}
+<h2>{{ template "sha" .SHA }} <code>{{ .Subject }}</code></h2>
+{{ template "changes" .Changes }}
+{{ end }}
+
+{{ end }}

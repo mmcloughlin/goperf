@@ -79,6 +79,7 @@ func NewHandlers(d *db.DB, opts ...Option) *Handlers {
 	}
 
 	// Setup mux.
+	h.mux.Handle("/", h.handlerFunc(h.Index))
 	h.mux.Handle("/mods/", h.handlerFunc(h.Modules))
 	h.mux.Handle("/mod/", h.handlerFunc(h.Module))
 	h.mux.Handle("/pkg/", h.handlerFunc(h.Package))
@@ -128,6 +129,16 @@ func (h *Handlers) Init(ctx context.Context) error {
 
 func (h *Handlers) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
+}
+
+func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) error {
+	bymaxpercent := func(g *CommitChangeGroup) float64 {
+		return -g.MaxAbsPercentChange()
+	}
+	return h.changes(w, r, "index", db.ChangeFilter{
+		MinEffectSize:             20,
+		MaxRankByAbsPercentChange: 3,
+	}, bymaxpercent)
 }
 
 func (h *Handlers) Modules(w http.ResponseWriter, r *http.Request) error {
@@ -472,6 +483,16 @@ func (h *Handlers) changesForCommit(ctx context.Context, idx int) ([]*Change, er
 }
 
 func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
+	byindex := func(g *CommitChangeGroup) float64 {
+		return -float64(g.Index)
+	}
+	return h.changes(w, r, "chgs", db.ChangeFilter{
+		MinEffectSize:       10,
+		MaxRankByEffectSize: 5,
+	}, byindex)
+}
+
+func (h *Handlers) changes(w http.ResponseWriter, r *http.Request, tmpl string, filter db.ChangeFilter, sortby func(*CommitChangeGroup) float64) error {
 	ctx := r.Context()
 
 	// Determine commit range.
@@ -481,10 +502,7 @@ func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Fetch changes.
-	chgs, err := h.db.ListChangeSummaries(ctx, cr, db.ChangeFilter{
-		MinEffectSize:       10,
-		MaxRankByEffectSize: 5,
-	})
+	chgs, err := h.db.ListChangeSummaries(ctx, cr, filter)
 	if err != nil {
 		return err
 	}
@@ -494,8 +512,12 @@ func (h *Handlers) Changes(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	sort.Slice(groups, func(i, j int) bool {
+		return sortby(groups[i]) < sortby(groups[j])
+	})
+
 	// Write response.
-	return h.render(ctx, w, "chgs", map[string]interface{}{
+	return h.render(ctx, w, tmpl, map[string]interface{}{
 		"CommitChangeGroups": groups,
 	})
 }
@@ -506,6 +528,14 @@ type CommitChangeGroup struct {
 	SHA     string
 	Subject string
 	Changes []*Change
+}
+
+func (g *CommitChangeGroup) MaxAbsPercentChange() float64 {
+	max := math.Inf(-1)
+	for _, c := range g.Changes {
+		max = math.Max(max, math.Abs(c.Percent()))
+	}
+	return max
 }
 
 // Change is a single change.
