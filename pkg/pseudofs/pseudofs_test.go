@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
 	"github.com/mmcloughlin/cb/internal/test"
 )
 
@@ -39,7 +40,7 @@ func TestInts(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			d := test.TempDir(t)
 			path := filepath.Join(d, "ints")
-			err := ioutil.WriteFile(path, []byte(c.Data), 0644)
+			err := ioutil.WriteFile(path, []byte(c.Data), 0o644)
 			if err != nil {
 				t.Fatal(err)
 			}
