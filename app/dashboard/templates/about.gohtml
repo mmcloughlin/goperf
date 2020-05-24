@@ -46,6 +46,13 @@ relying on low-level Linux features.</p>
     processors) is disabled via the <code>/sys/devices/system/cpu/smt</code>
     filesystem.</li>
 
+    <li><em>Frequency</em> of all online CPUs is pinned to 20% of the range
+    between the allowed minimum and maximum (or the nearest available
+    frequency when the governor only supports fixed values). This is the same
+    method as the <a
+    href="https://github.com/aclements/perflock"><code>perflock</code>
+    tool</a>.</li>
+
     <li><em>Intel Turbo</em> is disabled through the
     <code>/sys/devices/system/cpu/intel_pstate/no_turbo</code>
     file.</li>
