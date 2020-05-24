@@ -78,6 +78,7 @@ func Ints(path string) (_ []int, err error) {
 
 	var ns []int
 	s := bufio.NewScanner(f)
+	s.Split(bufio.ScanWords)
 	for s.Scan() {
 		n, err := strconv.Atoi(s.Text())
 		if err != nil {
