@@ -3,6 +3,7 @@ package pseudofs
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -18,7 +19,7 @@ import (
 func String(path string) (string, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("read %s: %w", path, err)
 	}
 	return strings.TrimSpace(string(b)), nil
 }
@@ -44,18 +45,18 @@ func WriteInt(path string, n int) error {
 
 // Flag reads a boolean from a file, represented as 0 or 1.
 func Flag(path string) (bool, error) {
-	b, err := ioutil.ReadFile(path)
+	s, err := String(path)
 	if err != nil {
 		return false, err
 	}
 
-	switch string(b) {
-	case "1\n":
+	switch s {
+	case "1":
 		return true, nil
-	case "0\n":
+	case "0":
 		return false, nil
 	default:
-		return false, errutil.AssertionFailure("unexpected file contents %q", b)
+		return false, errutil.AssertionFailure("unexpected file contents %q", s)
 	}
 }
 
@@ -78,6 +79,7 @@ func Ints(path string) (_ []int, err error) {
 
 	var ns []int
 	s := bufio.NewScanner(f)
+	s.Split(bufio.ScanWords)
 	for s.Scan() {
 		n, err := strconv.Atoi(s.Text())
 		if err != nil {
@@ -108,6 +110,12 @@ func WriteInts(path string, ns []int) error {
 
 // WriteFile writes data to path with a single write syscall.
 func WriteFile(path string, data []byte, perm uint32) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("write %s: %w", path, err)
+		}
+	}()
+
 	// Open.
 	mode := unix.O_WRONLY | unix.O_CREAT | unix.O_TRUNC
 	fd, err := unix.Open(path, mode, perm)

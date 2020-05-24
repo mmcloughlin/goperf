@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -364,7 +365,7 @@ func (s SetScalingGovernor) Name() string { return fmt.Sprintf("%s_scaling_gover
 
 // Available reports whether the process can write to the scaling governor files.
 func (s SetScalingGovernor) Available() bool {
-	cpus, err := s.onlineCPUPaths()
+	cpus, err := onlineCPUPaths()
 	if err != nil {
 		return false
 	}
@@ -397,7 +398,7 @@ func (s SetScalingGovernor) Reset() error { return s.set("powersave") }
 
 // set all scaling governors to gov.
 func (s SetScalingGovernor) set(gov string) error {
-	cpus, err := s.onlineCPUPaths()
+	cpus, err := onlineCPUPaths()
 	if err != nil {
 		return err
 	}
@@ -412,7 +413,146 @@ func (s SetScalingGovernor) set(gov string) error {
 	return nil
 }
 
-func (s SetScalingGovernor) onlineCPUPaths() ([]string, error) {
+// SetFrequency is a tuner that sets the frequency of all CPUs to a given
+// percentage of the allowed range.
+//
+// This technique is the same as perflock: https://github.com/aclements/perflock.
+type SetFrequency struct {
+	Percent float64
+
+	prev []*freqState // previous state for resetting
+}
+
+// Name of the tuning method.
+func (s *SetFrequency) Name() string { return fmt.Sprintf("set_frequency(%v%%)", s.Percent) }
+
+// Available reports whether the process can write to the frequency files.
+func (s *SetFrequency) Available() bool {
+	cpus, err := onlineCPUPaths()
+	if err != nil {
+		return false
+	}
+
+	// Check if the frequency range files are writable.
+	for _, cpu := range cpus {
+		if !proc.Writable(filepath.Join(cpu, "cpufreq/scaling_min_freq")) {
+			return false
+		}
+		if !proc.Writable(filepath.Join(cpu, "cpufreq/scaling_max_freq")) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Apply sets frequency on all online CPUs to the configured percentage within their range.
+func (s *SetFrequency) Apply() error {
+	cpus, err := onlineCPUPaths()
+	if err != nil {
+		return err
+	}
+
+	for _, cpu := range cpus {
+		// Read current state.
+		f, err := readFreqState(cpu)
+		if err != nil {
+			return err
+		}
+
+		// Save to restore later.
+		s.prev = append(s.prev, f)
+
+		// Configure range.
+		target := lerpFreq(f, s.Percent/100)
+		if err := setFreqRange(cpu, target, target); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Reset frequencies to values prior to the Apply() call.
+func (s *SetFrequency) Reset() error {
+	var err error
+	for _, f := range s.prev {
+		if errset := setFreqRange(f.path, f.min, f.max); errset != nil {
+			err = errset
+		}
+	}
+	s.prev = nil
+	return err
+}
+
+// freqState describes frequency configuration of a CPU.
+type freqState struct {
+	path      string // path to cpu in sysfs
+	min, max  int    // min/max of frequency range
+	available []int  // available frequencies
+}
+
+// readFreqState queries the sysfs filesystem for the frequency state of a given CPU.
+func readFreqState(path string) (*freqState, error) {
+	min, err := pseudofs.Int(filepath.Join(path, "cpufreq/cpuinfo_min_freq"))
+	if err != nil {
+		return nil, fmt.Errorf("read min frequency: %w", err)
+	}
+
+	max, err := pseudofs.Int(filepath.Join(path, "cpufreq/cpuinfo_max_freq"))
+	if err != nil {
+		return nil, fmt.Errorf("read max frequency: %w", err)
+	}
+
+	available, err := pseudofs.Ints(filepath.Join(path, "cpufreq/scaling_available_frequencies"))
+	if err != nil && !os.IsNotExist(err) {
+		return nil, fmt.Errorf("read available frequencies: %w", err)
+	}
+
+	return &freqState{
+		path:      path,
+		min:       min,
+		max:       max,
+		available: available,
+	}, nil
+}
+
+// setFreqRange configures the range of frequencies for the given CPU path.
+func setFreqRange(path string, min, max int) error {
+	// Don't know which order to set min/max in, so try both.
+	// See: https://github.com/aclements/perflock/blob/8402f33a418d634ac7954e96cda56b8eb6e7bee0/internal/cpupower/cpupower.go#L96-L98
+	errmin := pseudofs.WriteInt(filepath.Join(path, "cpufreq/scaling_min_freq"), min)
+	errmax := pseudofs.WriteInt(filepath.Join(path, "cpufreq/scaling_max_freq"), max)
+	if errmax != nil {
+		return fmt.Errorf("write max frequency: %w", errmax)
+	}
+	if errmin != nil {
+		errmin = pseudofs.WriteInt(filepath.Join(path, "cpufreq/scaling_min_freq"), min)
+	}
+	if errmin != nil {
+		return fmt.Errorf("write min frequency: %w", errmin)
+	}
+	return nil
+}
+
+// lerpFreq picks a frequency between min and max range according to the proportion p (between 0 and 1).
+// Pins to the nearest available frequency, if applicable.
+func lerpFreq(f *freqState, p float64) int {
+	target := int((1-p)*float64(f.min) + p*float64(f.max))
+	if len(f.available) == 0 {
+		return target
+	}
+	closest := f.available[0]
+	for _, a := range f.available[1:] {
+		if abs(a-target) < abs(closest-target) {
+			closest = a
+		}
+	}
+	return closest
+}
+
+// onlineCPUPaths returns sysfs paths to CPUs that are online.
+func onlineCPUPaths() ([]string, error) {
 	paths, err := filepath.Glob("/sys/devices/system/cpu/cpu[0-9]*")
 	if err != nil {
 		return nil, err
@@ -426,7 +566,7 @@ func (s SetScalingGovernor) onlineCPUPaths() ([]string, error) {
 		case err == nil && online:
 			cpus = append(cpus, path)
 		// Edge case where cpu0 is typically exclided from hotplug and does not have an "online" file.
-		case os.IsNotExist(err) && strings.HasSuffix(path, "cpu0"):
+		case errors.Is(err, os.ErrNotExist) && strings.HasSuffix(path, "cpu0"):
 			cpus = append(cpus, path)
 		case err != nil:
 			return nil, err
@@ -443,4 +583,11 @@ func contains(strs []string, target string) bool {
 		}
 	}
 	return false
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }

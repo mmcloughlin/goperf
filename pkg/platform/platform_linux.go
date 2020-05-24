@@ -17,6 +17,7 @@ type Platform struct {
 	shieldn    int
 	sysname    string
 	sysn       int
+	freqpcnt   float64
 
 	base   command.Base
 	cfg    subcommands.Command
@@ -40,6 +41,7 @@ func (p *Platform) SetFlags(f *flag.FlagSet) {
 	f.IntVar(&p.shieldn, "shieldnumcpu", 0, "number of cpus in shield cpuset (0 for max)")
 	f.StringVar(&p.sysname, "sys", "sys", "system cpuset name")
 	f.IntVar(&p.sysn, "sysnumcpu", 1, "minimum number of cpus in system cpuset")
+	f.Float64Var(&p.freqpcnt, "freqpcnt", 20, "set frequency to this percent between min and max")
 }
 
 // ConfigureRunner sets benchmark runner options.
@@ -58,6 +60,7 @@ func (p *Platform) ConfigureRunner(r *runner.Runner) error {
 	r.Tune(sys.DeactivateSMT{})
 	r.Tune(sys.DisableIntelTurbo{})
 	r.Tune(sys.SetScalingGovernor{Governor: "performance"})
+	r.Tune(&sys.SetFrequency{Percent: p.freqpcnt})
 
 	// Setup CPU shield.
 	s := shield.NewShield(
