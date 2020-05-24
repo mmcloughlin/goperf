@@ -1,6 +1,7 @@
 package cpuset
 
 import (
+	"errors"
 	"syscall"
 
 	"golang.org/x/sys/unix"
@@ -47,8 +48,8 @@ func MoveTasks(src, dst *CPUSet) (*MoveResult, error) {
 		}
 
 		// Inspect errno.
-		errno, ok := err.(syscall.Errno)
-		if !ok {
+		var errno syscall.Errno
+		if !errors.As(err, &errno) {
 			return nil, errutil.AssertionFailure("error %q should be errno", err)
 		}
 

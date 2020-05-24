@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -434,10 +435,10 @@ func (s *SetFrequency) Available() bool {
 
 	// Check if the frequency range files are writable.
 	for _, cpu := range cpus {
-		if !proc.Writable(filepath.Join(cpu, "cpufreq/cpuinfo_min_freq")) {
+		if !proc.Writable(filepath.Join(cpu, "cpufreq/scaling_min_freq")) {
 			return false
 		}
-		if !proc.Writable(filepath.Join(cpu, "cpufreq/cpuinfo_max_freq")) {
+		if !proc.Writable(filepath.Join(cpu, "cpufreq/scaling_max_freq")) {
 			return false
 		}
 	}
@@ -495,17 +496,17 @@ type freqState struct {
 func readFreqState(path string) (*freqState, error) {
 	min, err := pseudofs.Int(filepath.Join(path, "cpufreq/cpuinfo_min_freq"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read min frequency: %w", err)
 	}
 
 	max, err := pseudofs.Int(filepath.Join(path, "cpufreq/cpuinfo_max_freq"))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read max frequency: %w", err)
 	}
 
 	available, err := pseudofs.Ints(filepath.Join(path, "cpufreq/scaling_available_frequencies"))
 	if err != nil && !os.IsNotExist(err) {
-		return nil, err
+		return nil, fmt.Errorf("read available frequencies: %w", err)
 	}
 
 	return &freqState{
@@ -520,15 +521,18 @@ func readFreqState(path string) (*freqState, error) {
 func setFreqRange(path string, min, max int) error {
 	// Don't know which order to set min/max in, so try both.
 	// See: https://github.com/aclements/perflock/blob/8402f33a418d634ac7954e96cda56b8eb6e7bee0/internal/cpupower/cpupower.go#L96-L98
-	errmin := pseudofs.WriteInt(filepath.Join(path, "cpufreq/cpuinfo_min_freq"), min)
-	errmax := pseudofs.WriteInt(filepath.Join(path, "cpufreq/cpuinfo_max_freq"), max)
+	errmin := pseudofs.WriteInt(filepath.Join(path, "cpufreq/scaling_min_freq"), min)
+	errmax := pseudofs.WriteInt(filepath.Join(path, "cpufreq/scaling_max_freq"), max)
 	if errmax != nil {
-		return errmax
+		return fmt.Errorf("write max frequency: %w", errmax)
 	}
 	if errmin != nil {
-		errmin = pseudofs.WriteInt(filepath.Join(path, "cpufreq/cpuinfo_min_freq"), min)
+		errmin = pseudofs.WriteInt(filepath.Join(path, "cpufreq/scaling_min_freq"), min)
 	}
-	return errmin
+	if errmin != nil {
+		return fmt.Errorf("write min frequency: %w", errmin)
+	}
+	return nil
 }
 
 // lerpFreq picks a frequency between min and max range according to the proportion p (between 0 and 1).
@@ -562,7 +566,7 @@ func onlineCPUPaths() ([]string, error) {
 		case err == nil && online:
 			cpus = append(cpus, path)
 		// Edge case where cpu0 is typically exclided from hotplug and does not have an "online" file.
-		case os.IsNotExist(err) && strings.HasSuffix(path, "cpu0"):
+		case errors.Is(err, os.ErrNotExist) && strings.HasSuffix(path, "cpu0"):
 			cpus = append(cpus, path)
 		case err != nil:
 			return nil, err
