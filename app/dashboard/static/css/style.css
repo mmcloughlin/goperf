@@ -212,7 +212,7 @@ header {
 header nav {
   margin: 0 auto;
   padding: 0;
-  max-width: 70em;
+  max-width: 72em;
   display: flex;
   justify-content: flex-end;
 }
@@ -224,15 +224,30 @@ nav .logo {
   padding: 0;
 }
 
-nav a.logo {
-  margin-right: auto;
+nav a.banner {
+  display: block;
+  color: white;
+  font-size: 1.44rem;
+  margin: auto;
+  margin-left: 1rem;
+  text-decoration: none;
+}
+
+nav .badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-style: normal;
+  vertical-align: middle;
+  border-radius: 0.3rem;
+  padding: 0.2rem;
+  background-color: var(--fuchsia);
 }
 
 nav ul.menu {
   display: flex;
   justify-content: flex-end;
   list-style: none;
-  margin: 0 5em;
+  margin: 0 6em;
   padding: 0;
 }
 
