@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-project_name="cb"
+project_name="goperf"
 deploy_dir="/opt/${project_name}"
 log_dir="/var/log/${project_name}"
 tmp_dir="/var/tmp/${project_name}"

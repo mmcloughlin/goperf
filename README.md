@@ -1,4 +1,4 @@
-# cb
+# goperf
 
 Continuous Benchmarking for the Go compiler.
 

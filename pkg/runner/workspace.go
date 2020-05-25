@@ -71,7 +71,7 @@ func NewWorkspace(opts ...Option) (*Workspace, error) {
 
 	// Use a temporary directory if none was specified.
 	if w.root == "" {
-		dir, err := ioutil.TempDir("", "contbench")
+		dir, err := ioutil.TempDir("", "bench")
 		if err != nil {
 			return nil, fmt.Errorf("create working directory: %w", err)
 		}

@@ -4,7 +4,7 @@ archive=$1
 
 # Parameters ----------------------------------------------------------------
 
-name="cb"
+name="goperf"
 pkg="github.com/mmcloughlin/${name}"
 version=$(git describe --always --dirty)
 gitsha=$(git rev-parse HEAD)

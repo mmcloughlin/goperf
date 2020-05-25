@@ -9,7 +9,7 @@ const placeholder = "unknown"
 
 // Static project information.
 var (
-	Name = "cb"
+	Name = "goperf"
 )
 
 // Version and build information. Populated at build time.
