@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/mmcloughlin/cb/pkg/mod"
+	"github.com/mmcloughlin/goperf/pkg/mod"
 )
 
 type Job struct {

@@ -4,7 +4,7 @@ package sched
 import (
 	"context"
 
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 // Request for work.

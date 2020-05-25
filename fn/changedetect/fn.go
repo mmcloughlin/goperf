@@ -6,12 +6,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/change"
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/httputil"
-	"github.com/mmcloughlin/cb/app/service"
-	"github.com/mmcloughlin/cb/app/trace"
+	"github.com/mmcloughlin/goperf/app/change"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/httputil"
+	"github.com/mmcloughlin/goperf/app/service"
+	"github.com/mmcloughlin/goperf/app/trace"
 )
 
 // NumCommits is the number of most recent commits to look for changes in.

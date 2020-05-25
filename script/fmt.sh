@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-repo="github.com/mmcloughlin/cb"
+repo="github.com/mmcloughlin/goperf"
 
 # Files to apply formatting to.
 files=$(find . -name '*.go' -not -path '*/vendor/*')

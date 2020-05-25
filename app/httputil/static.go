@@ -12,7 +12,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/fs"
 )
 
 // Static serves static content from a filesystem. Filenames are extended with a

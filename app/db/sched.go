@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/db/internal/db"
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/db/internal/db"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 // CommitModule represents a commit module pair.

@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/proc"
+	"github.com/mmcloughlin/goperf/internal/errutil"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/proc"
 )
 
 func cpudirs() ([]string, error) {

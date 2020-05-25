@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/goperf/internal/errutil"
 )
 
 // MoveResult records the outcome of a batch task migration from one cpuset to

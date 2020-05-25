@@ -8,10 +8,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/change"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/trace"
-	"github.com/mmcloughlin/cb/pkg/mod"
+	"github.com/mmcloughlin/goperf/app/change"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/trace"
+	"github.com/mmcloughlin/goperf/pkg/mod"
 )
 
 // Sample entity objects for testing purposes.

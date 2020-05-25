@@ -11,9 +11,9 @@ import (
 	"github.com/golang/groupcache/lru"
 	"github.com/google/go-github/v29/github"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/gitiles"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/gitiles"
 )
 
 // GoURL is the URL for the canonical Go git repository.

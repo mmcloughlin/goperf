@@ -3,7 +3,7 @@ package entity
 import (
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/change"
+	"github.com/mmcloughlin/goperf/app/change"
 )
 
 // ChangeSummary is a change with associated metadata.

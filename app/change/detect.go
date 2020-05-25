@@ -5,7 +5,7 @@ import (
 
 	analysis "golang.org/x/perf/analysis/app"
 
-	"github.com/mmcloughlin/cb/app/trace"
+	"github.com/mmcloughlin/goperf/app/trace"
 )
 
 // Detector is a change detector.

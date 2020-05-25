@@ -15,8 +15,8 @@ import (
 	"github.com/mholt/archiver"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/lg"
 )
 
 type Workspace struct {
@@ -71,7 +71,7 @@ func NewWorkspace(opts ...Option) (*Workspace, error) {
 
 	// Use a temporary directory if none was specified.
 	if w.root == "" {
-		dir, err := ioutil.TempDir("", "contbench")
+		dir, err := ioutil.TempDir("", "bench")
 		if err != nil {
 			return nil, fmt.Errorf("create working directory: %w", err)
 		}

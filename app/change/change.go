@@ -2,7 +2,7 @@
 package change
 
 import (
-	"github.com/mmcloughlin/cb/pkg/units"
+	"github.com/mmcloughlin/goperf/pkg/units"
 )
 
 type Change struct {

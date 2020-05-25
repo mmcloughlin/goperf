@@ -3,7 +3,7 @@ package db
 import (
 	"testing"
 
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 func TestTaskTypeMapping(t *testing.T) {

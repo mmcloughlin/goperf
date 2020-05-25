@@ -9,9 +9,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/change"
-	"github.com/mmcloughlin/cb/app/id"
-	"github.com/mmcloughlin/cb/app/trace"
+	"github.com/mmcloughlin/goperf/app/change"
+	"github.com/mmcloughlin/goperf/app/id"
+	"github.com/mmcloughlin/goperf/app/trace"
 )
 
 type Person struct {

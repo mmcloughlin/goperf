@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/build/buildenv"
 
-	"github.com/mmcloughlin/cb/internal/test"
+	"github.com/mmcloughlin/goperf/internal/test"
 )
 
 func TestNewToolchain(t *testing.T) {

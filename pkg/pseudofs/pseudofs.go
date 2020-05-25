@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/goperf/internal/errutil"
 )
 
 // String reads a string from path, trimming whitespace.

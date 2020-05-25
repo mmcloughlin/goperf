@@ -4,7 +4,7 @@ package env
 import (
 	"strings"
 
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 // Short identifier of the environment.

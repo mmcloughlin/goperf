@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 // Reference: https://github.com/torvalds/linux/blob/0f137416247fe92c0779a9ab49e912a7006869e8/Documentation/driver-api/thermal/sysfs-api.rst#L365-L621

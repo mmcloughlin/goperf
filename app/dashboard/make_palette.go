@@ -14,7 +14,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/mmcloughlin/cb/app/brand"
+	"github.com/mmcloughlin/goperf/app/brand"
 )
 
 func main() {

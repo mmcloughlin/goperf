@@ -3,7 +3,7 @@ package sched
 import (
 	"time"
 
-	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/goperf/app/db"
 )
 
 // NewDefault builds a scheduler with sensible defaults.

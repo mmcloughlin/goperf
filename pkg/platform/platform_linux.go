@@ -5,11 +5,11 @@ import (
 
 	"github.com/google/subcommands"
 
-	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/runner"
-	"github.com/mmcloughlin/cb/pkg/shield"
-	"github.com/mmcloughlin/cb/pkg/sys"
-	"github.com/mmcloughlin/cb/pkg/wrap"
+	"github.com/mmcloughlin/goperf/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/runner"
+	"github.com/mmcloughlin/goperf/pkg/shield"
+	"github.com/mmcloughlin/goperf/pkg/sys"
+	"github.com/mmcloughlin/goperf/pkg/wrap"
 )
 
 type Platform struct {

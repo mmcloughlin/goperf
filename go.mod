@@ -1,4 +1,4 @@
-module github.com/mmcloughlin/cb
+module github.com/mmcloughlin/goperf
 
 go 1.13
 

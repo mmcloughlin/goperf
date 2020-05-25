@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mmcloughlin/cb/internal/test"
+	"github.com/mmcloughlin/goperf/internal/test"
 )
 
 func TestModuleProxyNetworkInfo(t *testing.T) {

@@ -1,9 +1,9 @@
 package sys
 
 import (
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/proc"
-	"github.com/mmcloughlin/cb/pkg/pseudofs"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/proc"
+	"github.com/mmcloughlin/goperf/pkg/pseudofs"
 )
 
 // Reference: https://github.com/torvalds/linux/blob/34dabd81160f7bfb18b67c1161b3c4d7ca6cab83/Documentation/ABI/testing/sysfs-devices-system-cpu#L511-L531

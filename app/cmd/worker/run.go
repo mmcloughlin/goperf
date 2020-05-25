@@ -11,12 +11,12 @@ import (
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/coordinator"
-	"github.com/mmcloughlin/cb/app/worker"
-	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/platform"
-	"github.com/mmcloughlin/cb/pkg/runner"
+	"github.com/mmcloughlin/goperf/app/coordinator"
+	"github.com/mmcloughlin/goperf/app/worker"
+	"github.com/mmcloughlin/goperf/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/platform"
+	"github.com/mmcloughlin/goperf/pkg/runner"
 )
 
 type Run struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mmcloughlin/cb/internal/test"
+	"github.com/mmcloughlin/goperf/internal/test"
 )
 
 func FilesystemTest(t *testing.T, f func(ctx context.Context, t *testing.T, fs Interface)) {

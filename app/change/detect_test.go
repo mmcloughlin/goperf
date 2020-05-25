@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/mmcloughlin/cb/app/change/changetest"
-	"github.com/mmcloughlin/cb/app/trace"
+	"github.com/mmcloughlin/goperf/app/change/changetest"
+	"github.com/mmcloughlin/goperf/app/trace"
 )
 
 var plot = flag.Bool("plot", false, "generate plots for test cases")

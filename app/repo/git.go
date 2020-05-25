@@ -9,7 +9,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 // Git is a cloned local git repository.

@@ -7,7 +7,7 @@ import (
 	"github.com/google/subcommands"
 	"github.com/pressly/goose"
 
-	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/command"
 )
 
 type Migrate struct {

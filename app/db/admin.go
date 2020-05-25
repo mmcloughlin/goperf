@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"github.com/mmcloughlin/cb/app/db/internal/db"
+	"github.com/mmcloughlin/goperf/app/db/internal/db"
 )
 
 // TruncateNonStatic deletes almost all data from the database. Only static

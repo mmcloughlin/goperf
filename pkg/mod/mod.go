@@ -15,7 +15,7 @@ import (
 	"github.com/golang/groupcache/lru"
 	"golang.org/x/mod/module"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/goperf/internal/errutil"
 )
 
 // IsMetaPackage checks if name is a reserved package name that expands to multiple packages.

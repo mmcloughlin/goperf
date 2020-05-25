@@ -8,11 +8,11 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/gcs"
-	"github.com/mmcloughlin/cb/app/ingest"
-	"github.com/mmcloughlin/cb/app/results"
-	"github.com/mmcloughlin/cb/app/service"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/gcs"
+	"github.com/mmcloughlin/goperf/app/ingest"
+	"github.com/mmcloughlin/goperf/app/results"
+	"github.com/mmcloughlin/goperf/app/service"
 )
 
 // Initialization.

@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mmcloughlin/cb/app/db/dbtest"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/internal/fixture"
+	"github.com/mmcloughlin/goperf/app/db/dbtest"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/internal/fixture"
 )
 
 func TestDBStoreChangesBatch(t *testing.T) {

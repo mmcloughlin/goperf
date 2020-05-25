@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/subcommands"
 
-	"github.com/mmcloughlin/cb/internal/flags"
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/goperf/internal/flags"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/command"
 )
 
 func NewConfig(b command.Base, providers cfg.Providers) subcommands.Command {

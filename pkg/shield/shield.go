@@ -7,8 +7,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
-	"github.com/mmcloughlin/cb/pkg/cpuset"
+	"github.com/mmcloughlin/goperf/internal/errutil"
+	"github.com/mmcloughlin/goperf/pkg/cpuset"
 )
 
 // Shield uses cpusets to setup exclusive access to some CPUs.

@@ -268,7 +268,7 @@ func (g *Generator) Format() ([]byte, error) {
 
 func (g *Generator) Methods(ps []Property) {
 	g.Linef("package %s", g.pkg)
-	g.Linef(`import "github.com/mmcloughlin/cb/pkg/pseudofs"`)
+	g.Linef(`import "github.com/mmcloughlin/goperf/pkg/pseudofs"`)
 	for _, p := range ps {
 		g.Property(p)
 	}

@@ -3,7 +3,7 @@ package shield
 import (
 	"testing"
 
-	"github.com/mmcloughlin/cb/pkg/runner"
+	"github.com/mmcloughlin/goperf/pkg/runner"
 )
 
 func TestShieldImplementsTuner(t *testing.T) {

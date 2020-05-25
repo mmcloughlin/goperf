@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/mmcloughlin/cb/pkg/pseudofs"
+	"github.com/mmcloughlin/goperf/pkg/pseudofs"
 )
 
 func listfile(path string) (Set, error) {

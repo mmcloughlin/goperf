@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/mmcloughlin/cb/app/trace"
+	"github.com/mmcloughlin/goperf/app/trace"
 )
 
 // Case is a change detection test case.

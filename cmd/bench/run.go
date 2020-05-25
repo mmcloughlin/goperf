@@ -10,12 +10,12 @@ import (
 	"github.com/google/subcommands"
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/internal/flags"
-	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/job"
-	"github.com/mmcloughlin/cb/pkg/platform"
-	"github.com/mmcloughlin/cb/pkg/runner"
+	"github.com/mmcloughlin/goperf/internal/flags"
+	"github.com/mmcloughlin/goperf/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/job"
+	"github.com/mmcloughlin/goperf/pkg/platform"
+	"github.com/mmcloughlin/goperf/pkg/runner"
 )
 
 var defaultModule = job.Module{

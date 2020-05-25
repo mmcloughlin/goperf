@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/id"
+	"github.com/mmcloughlin/goperf/app/id"
 )
 
 func ExampleUUID() {

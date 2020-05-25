@@ -11,8 +11,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
-	"github.com/mmcloughlin/cb/pkg/units"
+	"github.com/mmcloughlin/goperf/internal/errutil"
+	"github.com/mmcloughlin/goperf/pkg/units"
 )
 
 // SectionSeparator separates section levels in key names.

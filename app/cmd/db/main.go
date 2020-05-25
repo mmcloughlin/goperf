@@ -8,7 +8,7 @@ import (
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/command"
 
 	// Register database drivers
 	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres" // cloudsqlpostgres

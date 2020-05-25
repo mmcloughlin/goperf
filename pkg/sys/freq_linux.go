@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/proc"
-	"github.com/mmcloughlin/cb/pkg/pseudofs"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/proc"
+	"github.com/mmcloughlin/goperf/pkg/pseudofs"
 )
 
 // Reference: https://github.com/torvalds/linux/blob/4dd2ab9a0f84a446c65ff33c95339f1cd0e21a4b/Documentation/admin-guide/pm/intel_pstate.rst#L321-L426

@@ -7,8 +7,8 @@ import (
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/platform"
+	"github.com/mmcloughlin/goperf/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/platform"
 )
 
 func main() {
