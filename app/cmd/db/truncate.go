@@ -56,7 +56,7 @@ func (cmd *Truncate) Execute(ctx context.Context, f *flag.FlagSet, _ ...interfac
 	defer cmd.CheckClose(&status, d)
 
 	// Call truncate.
-	if err := d.TruncateNonStatic(ctx); err != nil {
+	if err := d.TruncateAll(ctx); err != nil {
 		return cmd.Error(err)
 	}
 

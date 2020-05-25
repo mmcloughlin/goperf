@@ -1,10 +1,15 @@
--- name: TruncateNonStatic :exec
--- TruncateNonStatic is a destructive query that deletes everything apart from
--- commits and modules.
+-- name: TruncateAll :exec
 TRUNCATE
     benchmarks,
+    changes,
+    changes_ranked,
+    commit_positions,
+    commit_refs,
+    commits,
     datafiles,
+    modules,
     packages,
+    points,
     properties,
     results,
     tasks

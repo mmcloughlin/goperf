@@ -7,19 +7,24 @@ import (
 	"context"
 )
 
-const truncateNonStatic = `-- name: TruncateNonStatic :exec
+const truncateAll = `-- name: TruncateAll :exec
 TRUNCATE
     benchmarks,
+    changes,
+    changes_ranked,
+    commit_positions,
+    commit_refs,
+    commits,
     datafiles,
+    modules,
     packages,
+    points,
     properties,
     results,
     tasks
 `
 
-// TruncateNonStatic is a destructive query that deletes everything apart from
-// commits and modules.
-func (q *Queries) TruncateNonStatic(ctx context.Context) error {
-	_, err := q.exec(ctx, q.truncateNonStaticStmt, truncateNonStatic)
+func (q *Queries) TruncateAll(ctx context.Context) error {
+	_, err := q.exec(ctx, q.truncateAllStmt, truncateAll)
 	return err
 }

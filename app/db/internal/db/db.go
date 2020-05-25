@@ -139,8 +139,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.transitionTaskStatusesBeforeStmt, err = db.PrepareContext(ctx, transitionTaskStatusesBefore); err != nil {
 		return nil, fmt.Errorf("error preparing query TransitionTaskStatusesBefore: %w", err)
 	}
-	if q.truncateNonStaticStmt, err = db.PrepareContext(ctx, truncateNonStatic); err != nil {
-		return nil, fmt.Errorf("error preparing query TruncateNonStatic: %w", err)
+	if q.truncateAllStmt, err = db.PrepareContext(ctx, truncateAll); err != nil {
+		return nil, fmt.Errorf("error preparing query TruncateAll: %w", err)
 	}
 	if q.workerTasksWithStatusStmt, err = db.PrepareContext(ctx, workerTasksWithStatus); err != nil {
 		return nil, fmt.Errorf("error preparing query WorkerTasksWithStatus: %w", err)
@@ -345,9 +345,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing transitionTaskStatusesBeforeStmt: %w", cerr)
 		}
 	}
-	if q.truncateNonStaticStmt != nil {
-		if cerr := q.truncateNonStaticStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing truncateNonStaticStmt: %w", cerr)
+	if q.truncateAllStmt != nil {
+		if cerr := q.truncateAllStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing truncateAllStmt: %w", cerr)
 		}
 	}
 	if q.workerTasksWithStatusStmt != nil {
@@ -433,7 +433,7 @@ type Queries struct {
 	tracePointsStmt                               *sql.Stmt
 	transitionTaskStatusStmt                      *sql.Stmt
 	transitionTaskStatusesBeforeStmt              *sql.Stmt
-	truncateNonStaticStmt                         *sql.Stmt
+	truncateAllStmt                               *sql.Stmt
 	workerTasksWithStatusStmt                     *sql.Stmt
 }
 
@@ -480,7 +480,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		tracePointsStmt:                  q.tracePointsStmt,
 		transitionTaskStatusStmt:         q.transitionTaskStatusStmt,
 		transitionTaskStatusesBeforeStmt: q.transitionTaskStatusesBeforeStmt,
-		truncateNonStaticStmt:            q.truncateNonStaticStmt,
+		truncateAllStmt:                  q.truncateAllStmt,
 		workerTasksWithStatusStmt:        q.workerTasksWithStatusStmt,
 	}
 }

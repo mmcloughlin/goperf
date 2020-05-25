@@ -6,10 +6,9 @@ import (
 	"github.com/mmcloughlin/goperf/app/db/internal/db"
 )
 
-// TruncateNonStatic deletes almost all data from the database. Only static
-// tables such as commits and modules are preserved.
-func (d *DB) TruncateNonStatic(ctx context.Context) error {
+// TruncateAll deletes all data from the database.
+func (d *DB) TruncateAll(ctx context.Context) error {
 	return d.txq(ctx, func(q *db.Queries) error {
-		return q.TruncateNonStatic(ctx)
+		return q.TruncateAll(ctx)
 	})
 }
