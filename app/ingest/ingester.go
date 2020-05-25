@@ -9,10 +9,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/results"
-	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/results"
+	"github.com/mmcloughlin/goperf/internal/errutil"
 )
 
 // Ingester loads task results files and inserts them in to the database.

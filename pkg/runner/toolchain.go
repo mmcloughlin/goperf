@@ -12,8 +12,8 @@ import (
 	"golang.org/x/build/buildenv"
 	"golang.org/x/build/dashboard"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/lg"
 )
 
 type Toolchain interface {

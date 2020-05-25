@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 var update = flag.Bool("update", false, "update golden files")

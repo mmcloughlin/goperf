@@ -10,12 +10,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/mod/module"
 
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/internal/fixture"
-	"github.com/mmcloughlin/cb/app/results"
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/mod"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/internal/fixture"
+	"github.com/mmcloughlin/goperf/app/results"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/mod"
 )
 
 func TestLoader(t *testing.T) {

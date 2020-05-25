@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/mmcloughlin/cb/internal/test"
-	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/goperf/internal/test"
+	"github.com/mmcloughlin/goperf/pkg/fs"
 )
 
 func TestLoaderTestdata(t *testing.T) {

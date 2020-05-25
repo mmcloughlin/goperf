@@ -1,6 +1,6 @@
 package cpuset
 
-import "github.com/mmcloughlin/cb/pkg/pseudofs"
+import "github.com/mmcloughlin/goperf/pkg/pseudofs"
 
 // Tasks returns the list of process IDs (PIDs) of the processes in the cpuset.
 //

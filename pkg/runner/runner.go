@@ -10,9 +10,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/job"
-	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/job"
+	"github.com/mmcloughlin/goperf/pkg/lg"
 )
 
 type Runner struct {

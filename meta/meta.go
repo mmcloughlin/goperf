@@ -2,7 +2,7 @@
 package meta
 
 import (
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 const placeholder = "unknown"

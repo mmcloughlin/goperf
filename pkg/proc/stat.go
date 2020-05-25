@@ -5,7 +5,7 @@ import (
 
 	"github.com/c9s/goprocinfo/linux"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 const selfstatfile = "/proc/self/stat"

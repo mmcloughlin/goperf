@@ -8,8 +8,8 @@ import (
 
 	"github.com/lib/pq"
 
-	"github.com/mmcloughlin/cb/app/db/internal/db"
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/db/internal/db"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 // StoreCommit writes commit to the database.

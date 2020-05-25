@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/mmcloughlin/cb/pkg/parse"
+	"github.com/mmcloughlin/goperf/pkg/parse"
 )
 
 func TestBytesValue(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 type fileproperty struct {

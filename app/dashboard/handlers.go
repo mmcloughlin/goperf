@@ -17,15 +17,15 @@ import (
 	"go.uber.org/zap"
 	analysis "golang.org/x/perf/analysis/app"
 
-	"github.com/mmcloughlin/cb/app/brand"
-	"github.com/mmcloughlin/cb/app/change"
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/env"
-	"github.com/mmcloughlin/cb/app/httputil"
-	"github.com/mmcloughlin/cb/internal/errutil"
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/units"
+	"github.com/mmcloughlin/goperf/app/brand"
+	"github.com/mmcloughlin/goperf/app/change"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/env"
+	"github.com/mmcloughlin/goperf/app/httputil"
+	"github.com/mmcloughlin/goperf/internal/errutil"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/units"
 )
 
 type Handlers struct {

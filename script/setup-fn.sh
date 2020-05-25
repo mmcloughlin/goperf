@@ -4,7 +4,7 @@ name=$1
 
 # parameters
 dir="fn/${name}"
-repo="github.com/mmcloughlin/cb"
+repo="github.com/mmcloughlin/goperf"
 mod="${repo}/${dir}"
 
 # setup directory

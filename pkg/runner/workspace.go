@@ -15,8 +15,8 @@ import (
 	"github.com/mholt/archiver"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/lg"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/lg"
 )
 
 type Workspace struct {

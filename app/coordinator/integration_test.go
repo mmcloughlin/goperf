@@ -17,16 +17,16 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap/zaptest"
 
-	"github.com/mmcloughlin/cb/app/coordinator"
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/db/dbtest"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/internal/fixture"
-	"github.com/mmcloughlin/cb/app/sched"
-	"github.com/mmcloughlin/cb/internal/test"
-	"github.com/mmcloughlin/cb/pkg/fs"
-	"github.com/mmcloughlin/cb/pkg/job"
-	"github.com/mmcloughlin/cb/pkg/parse"
+	"github.com/mmcloughlin/goperf/app/coordinator"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/db/dbtest"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/internal/fixture"
+	"github.com/mmcloughlin/goperf/app/sched"
+	"github.com/mmcloughlin/goperf/internal/test"
+	"github.com/mmcloughlin/goperf/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/job"
+	"github.com/mmcloughlin/goperf/pkg/parse"
 )
 
 type Integration struct {

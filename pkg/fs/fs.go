@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/goperf/internal/errutil"
 )
 
 // ErrNotExist is returned when a file does not exist.

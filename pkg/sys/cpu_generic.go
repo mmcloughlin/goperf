@@ -8,7 +8,7 @@ import (
 
 	cpuutil "github.com/shirou/gopsutil/cpu"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 func cpu() (cfg.Configuration, error) {

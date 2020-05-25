@@ -7,8 +7,8 @@ import (
 	"github.com/google/subcommands"
 	"github.com/manifoldco/promptui"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/pkg/command"
 )
 
 type Truncate struct {

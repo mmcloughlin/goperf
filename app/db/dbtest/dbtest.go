@@ -6,7 +6,7 @@ import (
 	"flag"
 	"testing"
 
-	"github.com/mmcloughlin/cb/app/db"
+	"github.com/mmcloughlin/goperf/app/db"
 )
 
 var conn = flag.String("conn", "", "database connection string")

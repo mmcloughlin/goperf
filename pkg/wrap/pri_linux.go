@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/pkg/proc"
+	"github.com/mmcloughlin/goperf/pkg/proc"
 )
 
 func prioritizeactions(l *zap.Logger) []action {

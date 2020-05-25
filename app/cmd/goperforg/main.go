@@ -9,12 +9,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/dashboard"
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/gcs"
-	"github.com/mmcloughlin/cb/internal/errutil"
-	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/goperf/app/dashboard"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/gcs"
+	"github.com/mmcloughlin/goperf/internal/errutil"
+	"github.com/mmcloughlin/goperf/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/fs"
 )
 
 func main() {

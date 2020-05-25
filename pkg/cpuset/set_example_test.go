@@ -3,7 +3,7 @@ package cpuset_test
 import (
 	"fmt"
 
-	"github.com/mmcloughlin/cb/pkg/cpuset"
+	"github.com/mmcloughlin/goperf/pkg/cpuset"
 )
 
 func ExampleSet_FormatMask() {

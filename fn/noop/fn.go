@@ -3,7 +3,7 @@ package noop
 import (
 	"net/http"
 
-	"github.com/mmcloughlin/cb/app/httputil"
+	"github.com/mmcloughlin/goperf/app/httputil"
 )
 
 // Handle HTTP trigger.

@@ -1,11 +1,11 @@
 package wrap
 
 import (
-	"github.com/mmcloughlin/cb/meta"
-	"github.com/mmcloughlin/cb/pkg/cfg"
-	"github.com/mmcloughlin/cb/pkg/gocfg"
-	"github.com/mmcloughlin/cb/pkg/proc"
-	"github.com/mmcloughlin/cb/pkg/sys"
+	"github.com/mmcloughlin/goperf/meta"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/gocfg"
+	"github.com/mmcloughlin/goperf/pkg/proc"
+	"github.com/mmcloughlin/goperf/pkg/sys"
 )
 
 // DefaultProviders is the default list of config providers on Linux.

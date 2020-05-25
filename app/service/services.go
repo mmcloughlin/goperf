@@ -12,9 +12,9 @@ import (
 	"go.uber.org/zap"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/gcs"
-	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/gcs"
+	"github.com/mmcloughlin/goperf/pkg/fs"
 )
 
 // Init is an initializaiton function.

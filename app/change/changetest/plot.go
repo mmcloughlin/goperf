@@ -6,7 +6,7 @@ import (
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 
-	"github.com/mmcloughlin/cb/app/trace"
+	"github.com/mmcloughlin/goperf/app/trace"
 )
 
 // PlotSeries generates a plot for debugging purposes.

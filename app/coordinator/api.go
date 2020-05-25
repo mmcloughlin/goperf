@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/pkg/job"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/pkg/job"
 )
 
 type JobsRequest struct {

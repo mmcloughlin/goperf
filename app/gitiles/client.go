@@ -9,8 +9,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/mmcloughlin/cb/app/httputil"
-	"github.com/mmcloughlin/cb/internal/errutil"
+	"github.com/mmcloughlin/goperf/app/httputil"
+	"github.com/mmcloughlin/goperf/internal/errutil"
 )
 
 type Client struct {

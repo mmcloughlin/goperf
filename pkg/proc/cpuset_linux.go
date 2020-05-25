@@ -3,7 +3,7 @@ package proc
 import (
 	"golang.org/x/sys/unix"
 
-	"github.com/mmcloughlin/cb/pkg/cpuset"
+	"github.com/mmcloughlin/goperf/pkg/cpuset"
 )
 
 // SetCPUSet moves pid to the named cpuset.

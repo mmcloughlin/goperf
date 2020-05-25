@@ -9,7 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/coordinator"
+	"github.com/mmcloughlin/goperf/app/coordinator"
 )
 
 // Processor executes jobs, returning the output file.

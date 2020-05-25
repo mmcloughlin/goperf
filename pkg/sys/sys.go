@@ -8,7 +8,7 @@ import (
 	loadutil "github.com/shirou/gopsutil/load"
 	memutil "github.com/shirou/gopsutil/mem"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 var (

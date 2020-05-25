@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/entity"
 )
 
 type recent struct {

@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/subcommands"
 
-	"github.com/mmcloughlin/cb/pkg/command"
-	"github.com/mmcloughlin/cb/pkg/proc"
-	"github.com/mmcloughlin/cb/pkg/runner"
+	"github.com/mmcloughlin/goperf/pkg/command"
+	"github.com/mmcloughlin/goperf/pkg/proc"
+	"github.com/mmcloughlin/goperf/pkg/runner"
 )
 
 func NewCPUSet(b command.Base) subcommands.Command {

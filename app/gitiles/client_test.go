@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mmcloughlin/cb/internal/test"
+	"github.com/mmcloughlin/goperf/internal/test"
 )
 
 func TestClientLog(t *testing.T) {

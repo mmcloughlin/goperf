@@ -9,7 +9,7 @@ import (
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
 
-	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/fs"
 )
 
 // gcs is a filesystem implementation backed by a Google Cloud Storage bucket.

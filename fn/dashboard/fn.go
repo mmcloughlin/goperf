@@ -7,9 +7,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/dashboard"
-	"github.com/mmcloughlin/cb/app/httputil"
-	"github.com/mmcloughlin/cb/app/service"
+	"github.com/mmcloughlin/goperf/app/dashboard"
+	"github.com/mmcloughlin/goperf/app/httputil"
+	"github.com/mmcloughlin/goperf/app/service"
 )
 
 // Initialization.

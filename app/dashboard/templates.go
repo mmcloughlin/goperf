@@ -7,7 +7,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/mmcloughlin/cb/pkg/fs"
+	"github.com/mmcloughlin/goperf/pkg/fs"
 )
 
 // Templates manages a set of templates with a base layout.

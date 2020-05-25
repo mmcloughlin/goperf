@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"github.com/mmcloughlin/cb/pkg/sig"
+	"github.com/mmcloughlin/goperf/pkg/sig"
 )
 
 // MainStatus is an entry point returnint an exit status.

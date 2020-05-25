@@ -7,10 +7,10 @@ import (
 	"github.com/google/subcommands"
 	"go.uber.org/zap"
 
-	"github.com/mmcloughlin/cb/app/db"
-	"github.com/mmcloughlin/cb/app/entity"
-	"github.com/mmcloughlin/cb/app/trace"
-	"github.com/mmcloughlin/cb/pkg/command"
+	"github.com/mmcloughlin/goperf/app/db"
+	"github.com/mmcloughlin/goperf/app/entity"
+	"github.com/mmcloughlin/goperf/app/trace"
+	"github.com/mmcloughlin/goperf/pkg/command"
 )
 
 type Traces struct {

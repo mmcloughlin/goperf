@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/mmcloughlin/cb/pkg/cfg"
+	"github.com/mmcloughlin/goperf/pkg/cfg"
 )
 
 // Provider for Go runtime information.
