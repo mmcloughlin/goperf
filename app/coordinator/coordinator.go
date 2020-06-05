@@ -137,6 +137,7 @@ func (c *Coordinator) modulejob(ctx context.Context, s entity.TaskSpec) (*Job, e
 			},
 			Short:     true,
 			BenchTime: 100 * time.Millisecond,
+			Timeout:   2 * time.Hour,
 		},
 	}, nil
 }
